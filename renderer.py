@@ -65,12 +65,29 @@ def generate_web_page(grouped_news, output_dir):
     templates_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     env = Environment(loader=FileSystemLoader(templates_dir))
 
+    from datetime import timedelta
     today = datetime.now()
     date_pt = f"{today.day} de {MONTHS_PT[today.month]} de {today.year}"
+    date_compact = f"{today.day:02d} {MONTHS_PT[today.month][:3].capitalize()} {today.year}"
+    date_slug = today.strftime("%Y-%m-%d")
+
+    prev_day = today - timedelta(days=1)
+    next_day = today + timedelta(days=1)
+    prev_slug = prev_day.strftime("%Y-%m-%d")
+    next_slug = next_day.strftime("%Y-%m-%d")
+
+    # Verifica se a página do dia anterior existe
+    output_base = os.path.dirname(output_dir)
+    prev_exists = os.path.exists(os.path.join(output_base, prev_slug, 'index.html'))
+    next_exists = os.path.exists(os.path.join(output_base, next_slug, 'index.html'))
 
     template = env.get_template('web_page.html')
     html = template.render(
         date_pt=date_pt.upper(),
+        date_compact=date_compact,
+        date_slug=date_slug,
+        prev_slug=prev_slug if prev_exists else None,
+        next_slug=next_slug if next_exists else None,
         grouped_news=grouped_news,
         accent_colors=ACCENT_COLORS,
         topic_names=TOPIC_NAMES,

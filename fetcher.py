@@ -15,7 +15,7 @@ def clean_html(text):
 def fetch_all_articles(max_per_feed=10):
     all_articles = []
     now_utc = datetime.now(timezone.utc)
-    cutoff = now_utc - timedelta(hours=6)
+    cutoff = now_utc - timedelta(hours=24)
 
     for topic, feeds in RSS_FEEDS.items():
         for feed_url in feeds:

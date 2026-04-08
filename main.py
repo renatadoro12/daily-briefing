@@ -3,6 +3,11 @@ import sys
 from datetime import datetime
 from dotenv import load_dotenv
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 load_dotenv()
 
 
@@ -55,7 +60,8 @@ def main():
         print("🚀  Enviando para Netlify...")
         try:
             from netlify_deploy import deploy_to_netlify
-            url = deploy_to_netlify(html_content, netlify_token, netlify_site_id)
+            output_base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+            url = deploy_to_netlify(output_base, date_folder, netlify_token, netlify_site_id)
             print()
             print("━" * 45)
             print(f"✅  Briefing publicado!")

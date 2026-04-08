@@ -37,12 +37,12 @@ def select_top_news(articles, api_key):
 
     prompt = f"""Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é {date_pt}.
 
-Abaixo estão artigos coletados de diversas fontes internacionais nas últimas 6 horas.
+Abaixo estão artigos coletados de diversas fontes internacionais nas últimas 24 horas.
 
 Sua tarefa:
 1. Selecione no máximo 12 das notícias mais importantes e relevantes (use quantas houver se for menos de 12)
-2. Distribua entre os temas: geopolitica, economia, ia, web3, crypto
-3. Deve ter pelo menos 1 notícia por tema — a distribuição pode variar conforme o volume do dia
+2. Distribua obrigatoriamente entre os 5 temas: geopolitica, economia, ia, web3, crypto
+3. OBRIGATÓRIO: deve haver pelo menos 1 notícia em CADA um dos 5 temas. Se não houver artigo disponível para algum tema, crie um resumo baseado em contexto geral do dia para aquele tema.
 4. Para cada notícia, escreva um resumo DETALHADO em português brasileiro com até 10 frases — explique o contexto, o que aconteceu, quem está envolvido e qual o impacto. Seja informativo e claro, sem jargão excessivo.
 5. Traduza os títulos para português brasileiro de forma natural
 6. Inclua o campo "published_time" com o horário da notícia (campo HORA do artigo, ou string vazia se não houver)
@@ -78,11 +78,24 @@ ARTIGOS DISPONÍVEIS:
 
     data = json.loads(response_text)
 
+    def _parse_time(t):
+        try:
+            h, m = t.split(':')
+            return (int(h), int(m))
+        except Exception:
+            return (0, 0)
+
     grouped = {}
     for item in data['news']:
         topic = item['topic']
+        if not item.get('published_time'):
+            item['published_time'] = '--:--'
         if topic not in grouped:
             grouped[topic] = []
         grouped[topic].append(item)
+
+    # Sort each topic oldest → newest
+    for topic in grouped:
+        grouped[topic].sort(key=lambda x: _parse_time(x.get('published_time', '')))
 
     return grouped
