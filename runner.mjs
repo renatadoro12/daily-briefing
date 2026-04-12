@@ -50,3 +50,4 @@ writeFileSync(
 
 const total = Object.values(grouped).reduce((s, v) => s + v.length, 0);
 console.log(`\n✅ ${total} notícias geradas → docs/${slug}/index.html\n`);
+process.exit(0);
