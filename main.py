@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 
 if hasattr(sys.stdout, 'reconfigure'):
@@ -47,7 +47,7 @@ def main():
     # 3. Generate web page
     print("🌐  Gerando página web...")
     from renderer import generate_web_page
-    date_folder = datetime.now().strftime("%Y-%m-%d")
+    date_folder = datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d")
     output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output", date_folder)
     html_content, html_path = generate_web_page(grouped_news, output_dir)
     print(f"    Página salva em: {html_path}\n")

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from jinja2 import Environment, FileSystemLoader
 from playwright.sync_api import sync_playwright
 from config import ACCENT_COLORS, TOPIC_NAMES, TOPIC_ORDER
@@ -26,7 +26,7 @@ def generate_cards(grouped_news, output_dir):
 
     os.makedirs(output_dir, exist_ok=True)
 
-    today = datetime.now()
+    today = datetime.now(timezone(timedelta(hours=-3)))
     date_str = today.strftime("%d.%m.%Y")
     date_pt = f"{today.day} de {MONTHS_PT[today.month]} de {today.year}"
 
@@ -65,8 +65,7 @@ def generate_web_page(grouped_news, output_dir):
     templates_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     env = Environment(loader=FileSystemLoader(templates_dir))
 
-    from datetime import timedelta
-    today = datetime.now()
+    today = datetime.now(timezone(timedelta(hours=-3)))
     date_pt = f"{today.day} de {MONTHS_PT[today.month]} de {today.year}"
     date_compact = f"{today.day:02d} {MONTHS_PT[today.month][:3].capitalize()} {today.year}"
     date_slug = today.strftime("%Y-%m-%d")

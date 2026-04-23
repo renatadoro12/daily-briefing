@@ -1,6 +1,6 @@
 import json
 import anthropic
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 MONTHS_PT = {
     1: "janeiro", 2: "fevereiro", 3: "março", 4: "abril",
@@ -12,7 +12,7 @@ MONTHS_PT = {
 def select_top_news(articles, api_key):
     client = anthropic.Anthropic(api_key=api_key.strip())
 
-    today = datetime.now()
+    today = datetime.now(timezone(timedelta(hours=-3)))
     date_pt = f"{today.day} de {MONTHS_PT[today.month]} de {today.year}"
 
     # Garante até 6 artigos por tema antes de enviar ao Claude
