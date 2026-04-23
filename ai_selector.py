@@ -10,7 +10,7 @@ MONTHS_PT = {
 
 
 def select_top_news(articles, api_key):
-    client = anthropic.Anthropic(api_key=api_key)
+    client = anthropic.Anthropic(api_key=api_key.strip())
 
     today = datetime.now()
     date_pt = f"{today.day} de {MONTHS_PT[today.month]} de {today.year}"
