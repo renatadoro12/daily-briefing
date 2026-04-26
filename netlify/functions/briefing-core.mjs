@@ -6,39 +6,49 @@ import Parser from 'rss-parser';
 
 const FEEDS = {
   geopolitica: [
+    // Breaking news — alta prioridade
+    'https://feeds.apnews.com/apnews/world-news',           // AP News (melhor para breaking news)
+    'https://feeds.apnews.com/apnews/us-news',              // AP News EUA
+    'https://feeds.reuters.com/reuters/worldNews',           // Reuters World
+    'http://feeds.bbci.co.uk/news/world/rss.xml',           // BBC World
+    // Complementares
     'https://www.theguardian.com/world/rss',
-    'https://feeds.reuters.com/reuters/worldNews',
-    'http://feeds.bbci.co.uk/news/world/rss.xml',
     'https://www.aljazeera.com/xml/rss/all.xml',
     'https://rss.dw.com/rdf/rss-en-world',
     'https://feeds.skynews.com/feeds/rss/world.xml',
+    'https://www.npr.org/rss/rss.php?id=1004',              // NPR World News
   ],
   economia: [
-    'https://www.forbes.com/business/feed/',
+    'https://feeds.apnews.com/apnews/business',             // AP News Business
     'https://feeds.reuters.com/reuters/businessNews',
     'https://www.theguardian.com/business/rss',
     'http://feeds.bbci.co.uk/news/business/rss.xml',
     'https://www.cnbc.com/id/10001147/device/rss/rss.html',
+    'https://www.forbes.com/business/feed/',
+    'https://feeds.a.dj.com/rss/RSSWorldNews.xml',         // Wall Street Journal
   ],
   ia: [
     'https://www.technologyreview.com/feed/',
     'https://venturebeat.com/category/ai/feed/',
     'https://techcrunch.com/category/artificial-intelligence/feed/',
     'https://www.theguardian.com/technology/artificialintelligenceai/rss',
+    'https://www.wired.com/feed/tag/artificial-intelligence/rss',
+    'https://feeds.apnews.com/apnews/technology',           // AP News Tech
   ],
   web3: [
-    'https://www.forbes.com/crypto-blockchain/feed/',
     'https://decrypt.co/feed',
     'https://www.theblock.co/rss.xml',
     'https://cointelegraph.com/tags/web3/rss',
     'https://beincrypto.com/category/web3/feed/',
+    'https://www.forbes.com/crypto-blockchain/feed/',
   ],
   crypto: [
-    'https://www.forbes.com/digital-assets/feed/',
     'https://www.coindesk.com/arc/outboundfeeds/rss/',
     'https://cointelegraph.com/rss',
     'https://cryptoslate.com/feed/',
     'https://bitcoinmagazine.com/.rss/full/',
+    'https://www.forbes.com/digital-assets/feed/',
+    'https://decrypt.co/feed',
   ],
 };
 
@@ -138,13 +148,13 @@ export async function selectAndSummarize(articles, apiKey) {
   const today = nowBR();
   const datePT = `${today.getUTCDate()} de ${MONTHS_PT[today.getUTCMonth()]} de ${today.getUTCFullYear()}`;
 
-  // Balanceia até 6 por tema, máx 30
+  // Balanceia até 8 por tema, máx 40
   const byTopic = {};
   for (const a of articles) {
     if (!byTopic[a.topic]) byTopic[a.topic] = [];
-    if (byTopic[a.topic].length < 6) byTopic[a.topic].push(a);
+    if (byTopic[a.topic].length < 8) byTopic[a.topic].push(a);
   }
-  const balanced = Object.values(byTopic).flat().slice(0, 30);
+  const balanced = Object.values(byTopic).flat().slice(0, 40);
 
   let articlesText = '';
   balanced.forEach((a, i) => {
@@ -159,11 +169,17 @@ export async function selectAndSummarize(articles, apiKey) {
 
   const prompt = `Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é ${datePT}.
 
-Selecione no máximo 12 das notícias mais importantes. Distribua entre os 5 temas: geopolitica, economia, ia, web3, crypto. Deve haver pelo menos 1 notícia em CADA tema.
+Selecione no máximo 18 das notícias mais importantes. Distribua entre os 5 temas: geopolitica, economia, ia, web3, crypto. Deve haver pelo menos 2 notícias em CADA tema.
 
-Para cada notícia: resumo detalhado em português brasileiro com até 10 frases. Traduza os títulos para português.
+REGRAS DE PRIORIDADE — siga nesta ordem:
+1. BREAKING NEWS e eventos de alto impacto mundial têm prioridade ABSOLUTA: atentados, guerras, crises, mortes de líderes, crashes de mercado, decisões históricas. Se houver uma notícia dessas, ela DEVE aparecer independentemente de qualquer outra.
+2. Prefira notícias das últimas 12 horas sobre notícias mais antigas.
+3. Evite duplicatas sobre o mesmo evento — escolha apenas a melhor cobertura.
+4. Para geopolítica: priorize EUA, Brasil, Europa, Oriente Médio e guerras ativas.
 
-Retorne APENAS JSON válido:
+Para cada notícia: resumo detalhado em português brasileiro com 3 a 5 frases explicando o contexto e o impacto. Traduza os títulos para português.
+
+Retorne APENAS JSON válido, sem texto antes ou depois:
 {
   "news": [
     {
@@ -181,7 +197,7 @@ ${articlesText}`;
 
   const msg = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 6000,
+    max_tokens: 8000,
     messages: [{ role: 'user', content: prompt }],
   });
 

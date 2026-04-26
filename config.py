@@ -1,52 +1,49 @@
 RSS_FEEDS = {
     "geopolitica": [
-        # Suas fontes
-        "https://www.theguardian.com/world/rss",
+        # Breaking news — alta prioridade
+        "https://feeds.apnews.com/apnews/world-news",       # AP News (melhor para breaking news)
+        "https://feeds.apnews.com/apnews/us-news",          # AP News EUA
         "https://feeds.reuters.com/reuters/worldNews",
-        # Complementares
         "http://feeds.bbci.co.uk/news/world/rss.xml",
+        # Complementares
+        "https://www.theguardian.com/world/rss",
         "https://www.aljazeera.com/xml/rss/all.xml",
         "https://rss.dw.com/rdf/rss-en-world",
         "https://feeds.skynews.com/feeds/rss/world.xml",
+        "https://www.npr.org/rss/rss.php?id=1004",          # NPR World News
     ],
     "economia": [
-        # Suas fontes
-        "https://www.forbes.com/business/feed/",
+        "https://feeds.apnews.com/apnews/business",         # AP News Business
         "https://feeds.reuters.com/reuters/businessNews",
         "https://www.theguardian.com/business/rss",
-        # Complementares
         "http://feeds.bbci.co.uk/news/business/rss.xml",
         "https://www.cnbc.com/id/10001147/device/rss/rss.html",
-        "https://www.ft.com/?format=rss",
+        "https://www.forbes.com/business/feed/",
+        "https://feeds.a.dj.com/rss/RSSWorldNews.xml",     # Wall Street Journal
     ],
     "ia": [
-        # Suas fontes
-        "https://www.technologyreview.com/feed/",          # MIT Technology Review
-        "https://thehackernews.com/feeds/posts/default",   # The Hacker News
-        "https://www.therundown.ai/rss",                   # The Rundown AI
-        # Complementares
+        "https://www.technologyreview.com/feed/",           # MIT Technology Review
         "https://venturebeat.com/category/ai/feed/",
-        "https://www.wired.com/feed/tag/artificial-intelligence/rss",
         "https://techcrunch.com/category/artificial-intelligence/feed/",
         "https://www.theguardian.com/technology/artificialintelligenceai/rss",
+        "https://www.wired.com/feed/tag/artificial-intelligence/rss",
+        "https://feeds.apnews.com/apnews/technology",       # AP News Tech
+        "https://thehackernews.com/feeds/posts/default",
     ],
     "web3": [
-        # Suas fontes
-        "https://www.forbes.com/crypto-blockchain/feed/",
-        # Complementares
         "https://decrypt.co/feed",
         "https://www.theblock.co/rss.xml",
         "https://cointelegraph.com/tags/web3/rss",
         "https://beincrypto.com/category/web3/feed/",
+        "https://www.forbes.com/crypto-blockchain/feed/",
     ],
     "crypto": [
-        # Suas fontes
-        "https://www.forbes.com/digital-assets/feed/",
-        # Complementares
         "https://www.coindesk.com/arc/outboundfeeds/rss/",
         "https://cointelegraph.com/rss",
         "https://cryptoslate.com/feed/",
         "https://bitcoinmagazine.com/.rss/full/",
+        "https://www.forbes.com/digital-assets/feed/",
+        "https://decrypt.co/feed",
     ],
 }
 
