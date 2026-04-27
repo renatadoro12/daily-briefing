@@ -6,65 +6,60 @@ import Parser from 'rss-parser';
 
 const FEEDS = {
   geopolitica: [
-    // Breaking news — alta prioridade
-    'https://feeds.apnews.com/apnews/world-news',           // AP News (melhor para breaking news)
+    'https://feeds.apnews.com/apnews/world-news',           // AP News World
     'https://feeds.apnews.com/apnews/us-news',              // AP News EUA
     'https://feeds.reuters.com/reuters/worldNews',           // Reuters World
     'http://feeds.bbci.co.uk/news/world/rss.xml',           // BBC World
     'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', // NYT World
-    // Brasil
+    'https://www.theguardian.com/world/rss',                // The Guardian (exclusivo aqui)
+    'https://www.aljazeera.com/xml/rss/all.xml',            // Al Jazeera
+    'https://rss.dw.com/rdf/rss-en-world',                  // Deutsche Welle
+    'https://feeds.skynews.com/feeds/rss/world.xml',        // Sky News
+    'https://www.npr.org/rss/rss.php?id=1004',              // NPR World
     'https://g1.globo.com/rss/g1/mundo/feed.xml',          // G1 Mundo
-    // Complementares
-    'https://www.theguardian.com/world/rss',
-    'https://www.aljazeera.com/xml/rss/all.xml',
-    'https://rss.dw.com/rdf/rss-en-world',
-    'https://feeds.skynews.com/feeds/rss/world.xml',
-    'https://www.npr.org/rss/rss.php?id=1004',
+    'https://rss.politico.com/politics-news.xml',           // Politico
   ],
   economia: [
-    'https://feeds.apnews.com/apnews/business',             // AP News Business
-    'https://feeds.reuters.com/reuters/businessNews',
+    'https://feeds.apnews.com/apnews/business',             // AP News Business (exclusivo aqui)
+    'https://feeds.reuters.com/reuters/businessNews',        // Reuters Business
     'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', // NYT Business
-    'http://feeds.bbci.co.uk/news/business/rss.xml',
-    'https://www.cnbc.com/id/10001147/device/rss/rss.html',
-    'https://www.theguardian.com/business/rss',
-    'https://www.forbes.com/business/feed/',
-    'https://feeds.a.dj.com/rss/RSSWorldNews.xml',         // Wall Street Journal
-    // Brasil
-    'https://www.infomoney.com.br/feed/',                   // InfoMoney
-    'https://valor.globo.com/rss/',                         // Valor Econômico
+    'http://feeds.bbci.co.uk/news/business/rss.xml',        // BBC Business
+    'https://www.cnbc.com/id/10001147/device/rss/rss.html', // CNBC
+    'https://www.forbes.com/business/feed/',                 // Forbes (exclusivo aqui)
+    'https://feeds.a.dj.com/rss/RSSWorldNews.xml',          // Wall Street Journal
+    'https://feeds.bloomberg.com/economics/news.rss',        // Bloomberg Economics
+    'https://www.infomoney.com.br/feed/',                    // InfoMoney
+    'https://valor.globo.com/rss/',                          // Valor Econômico
   ],
   ia: [
-    'https://www.technologyreview.com/feed/',               // MIT Technology Review
-    'https://feeds.bloomberg.com/technology/news.rss',      // Bloomberg Technology
-    'https://www.theverge.com/rss/index.xml',               // The Verge
-    'https://techcrunch.com/feed/',                         // TechCrunch (geral)
-    'https://techcrunch.com/category/artificial-intelligence/feed/',
-    'https://venturebeat.com/category/ai/feed/',
-    'https://www.wired.com/feed/tag/artificial-intelligence/rss',
-    'https://www.theguardian.com/technology/artificialintelligenceai/rss',
-    'https://feeds.apnews.com/apnews/technology',
+    'https://www.technologyreview.com/feed/',                // MIT Technology Review
+    'https://feeds.bloomberg.com/technology/news.rss',       // Bloomberg Tech (exclusivo aqui)
+    'https://www.theverge.com/rss/index.xml',                // The Verge
+    'https://techcrunch.com/feed/',                          // TechCrunch
+    'https://techcrunch.com/category/artificial-intelligence/feed/', // TechCrunch IA
+    'https://venturebeat.com/category/ai/feed/',             // VentureBeat AI
+    'https://www.wired.com/feed/tag/artificial-intelligence/rss', // Wired AI
+    'https://feeds.arstechnica.com/arstechnica/index',       // Ars Technica
+    'https://openai.com/blog/rss.xml',                       // OpenAI Blog
+    'https://blog.google/technology/ai/rss/',                // Google AI Blog
   ],
   web3: [
-    'https://decrypt.co/feed',
-    'https://www.theblock.co/rss.xml',
-    'https://cointelegraph.com/tags/web3/rss',
-    'https://beincrypto.com/category/web3/feed/',
-    'https://www.forbes.com/crypto-blockchain/feed/',
+    'https://www.theblock.co/rss.xml',                       // The Block (exclusivo aqui)
+    'https://beincrypto.com/category/web3/feed/',            // BeInCrypto Web3
+    'https://thedefiant.io/feed',                            // The Defiant
+    'https://www.bankless.com/feed',                         // Bankless
+    'https://messari.io/rss/news.xml',                       // Messari
   ],
   crypto: [
-    // Internacional
-    'https://www.coindesk.com/arc/outboundfeeds/rss/',
-    'https://cointelegraph.com/rss',
-    'https://cryptoslate.com/feed/',
-    'https://bitcoinmagazine.com/.rss/full/',
-    'https://www.forbes.com/digital-assets/feed/',
-    'https://decrypt.co/feed',
-    // Brasil
-    'https://br.cointelegraph.com/rss',                    // CoinTelegraph BR
-    'https://livecoins.com.br/feed/',                      // Livecoins
-    'https://portaldobitcoin.uol.com.br/feed/',            // Portal do Bitcoin
-    'https://cointimes.com.br/feed/',                      // Cointimes
+    'https://www.coindesk.com/arc/outboundfeeds/rss/',       // CoinDesk
+    'https://cointelegraph.com/rss',                         // CoinTelegraph (exclusivo aqui)
+    'https://cryptoslate.com/feed/',                         // CryptoSlate
+    'https://bitcoinmagazine.com/.rss/full/',                // Bitcoin Magazine
+    'https://decrypt.co/feed',                               // Decrypt (exclusivo aqui)
+    'https://br.cointelegraph.com/rss',                      // CoinTelegraph BR
+    'https://livecoins.com.br/feed/',                        // Livecoins
+    'https://portaldobitcoin.uol.com.br/feed/',              // Portal do Bitcoin
+    'https://cointimes.com.br/feed/',                        // Cointimes
   ],
 };
 
@@ -114,7 +109,7 @@ function escapeHTML(s) {
 
 export async function fetchArticles() {
   const parser = new Parser({ timeout: 10000 });
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const cutoff = new Date(Date.now() - 6 * 60 * 60 * 1000);
 
   // Monta lista plana de {topic, url}
   const tasks = [];
@@ -148,6 +143,7 @@ export async function fetchArticles() {
         summary: (item.contentSnippet || item.content || '').slice(0, 400).trim(),
         source,
         published,
+        link: item.link || item.guid || '',
       });
     }
   }
@@ -164,28 +160,31 @@ export async function selectAndSummarize(articles, apiKey) {
   const today = nowBR();
   const datePT = `${today.getUTCDate()} de ${MONTHS_PT[today.getUTCMonth()]} de ${today.getUTCFullYear()}`;
 
-  // Balanceia até 8 por tema, máx 40
+  // Balanceia: até 10 para IA, até 6 para os demais, máx 34
+  const TOPIC_LIMITS = { ia: 10, geopolitica: 6, economia: 6, web3: 6, crypto: 6 };
   const byTopic = {};
   for (const a of articles) {
     if (!byTopic[a.topic]) byTopic[a.topic] = [];
-    if (byTopic[a.topic].length < 8) byTopic[a.topic].push(a);
+    const limit = TOPIC_LIMITS[a.topic] || 6;
+    if (byTopic[a.topic].length < limit) byTopic[a.topic].push(a);
   }
-  const balanced = Object.values(byTopic).flat().slice(0, 40);
+  const balanced = Object.values(byTopic).flat().slice(0, 34);
 
   let articlesText = '';
   balanced.forEach((a, i) => {
     articlesText += `\n[${i+1}] TEMA: ${a.topic.toUpperCase()}\n`;
     articlesText += `TÍTULO: ${a.title}\n`;
     articlesText += `FONTE: ${a.source}\n`;
-    const h = String(a.published.getHours()).padStart(2,'0');
-    const m = String(a.published.getMinutes()).padStart(2,'0');
-    articlesText += `HORA: ${h}:${m}\n`;
+    const brHour = (a.published.getUTCHours() - 3 + 24) % 24;
+    const brMin = a.published.getUTCMinutes();
+    articlesText += `HORA: ${String(brHour).padStart(2,'0')}:${String(brMin).padStart(2,'0')} (horário de Brasília)\n`;
+    if (a.link) articlesText += `LINK: ${a.link}\n`;
     if (a.summary) articlesText += `DESCRIÇÃO: ${a.summary.slice(0,150)}\n`;
   });
 
   const prompt = `Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é ${datePT}.
 
-Selecione no máximo 18 das notícias mais importantes. Distribua entre os 5 temas: geopolitica, economia, ia, web3, crypto. Deve haver pelo menos 2 notícias em CADA tema.
+Selecione exatamente estas quantidades por tema: 10 para IA, 6 para geopolítica, 6 para economia, 6 para web3, 6 para crypto. Total: 34 notícias. Não repita notícias sobre o mesmo evento.
 
 REGRAS DE PRIORIDADE — siga nesta ordem:
 1. BREAKING NEWS e eventos de alto impacto mundial têm prioridade ABSOLUTA: atentados, guerras, crises, mortes de líderes, crashes de mercado, decisões históricas. Se houver uma notícia dessas, ela DEVE aparecer independentemente de qualquer outra.
@@ -193,7 +192,7 @@ REGRAS DE PRIORIDADE — siga nesta ordem:
 3. Evite duplicatas sobre o mesmo evento — escolha apenas a melhor cobertura.
 4. Para geopolítica: priorize EUA, Brasil, Europa, Oriente Médio e guerras ativas.
 
-Para cada notícia: resumo detalhado em português brasileiro com 3 a 5 frases explicando o contexto e o impacto. Traduza os títulos para português.
+Para cada notícia: escreva um resumo em português brasileiro com 12 a 16 linhas, explicando o contexto completo, os detalhes do evento, o impacto e as possíveis consequências. Seja detalhado. Traduza os títulos para português. Inclua o link original da notícia.
 
 Retorne APENAS JSON válido, sem texto antes ou depois:
 {
@@ -201,9 +200,10 @@ Retorne APENAS JSON válido, sem texto antes ou depois:
     {
       "topic": "geopolitica",
       "title": "Título em português",
-      "summary": "Resumo detalhado.",
+      "summary": "Resumo detalhado com 12 a 16 linhas.",
       "source": "Fonte",
-      "published_time": "HH:MM"
+      "published_time": "HH:MM",
+      "link": "https://..."
     }
   ]
 }
@@ -213,7 +213,7 @@ ${articlesText}`;
 
   const msg = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 8000,
+    max_tokens: 16000,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -271,6 +271,7 @@ export function generateHTML(grouped, today, prevSlug, nextSlug) {
         </div>
         <div class="news-title">${escapeHTML(item.title)}</div>
         <div class="news-summary">${escapeHTML(item.summary)}</div>
+        ${item.link ? `<div class="news-link"><a href="${escapeHTML(item.link)}" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>` : ''}
       </div>`).join('');
 
       return `
@@ -323,6 +324,9 @@ export function generateHTML(grouped, today, prevSlug, nextSlug) {
   .news-source { font-size: 11px; color: #3a3a3a; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
   .news-title { font-size: 21px; font-weight: 700; color: #f0f0f0; line-height: 1.4; margin-bottom: 14px; }
   .news-summary { font-size: 15px; color: #666; line-height: 1.85; }
+  .news-link { margin-top: 12px; }
+  .news-link a { font-size: 13px; color: #444; text-decoration: none; letter-spacing: 0.5px; }
+  .news-link a:hover { color: #888; }
   .search-empty { display: none; text-align: center; padding: 60px 24px; color: #333; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
   .footer { text-align: center; padding: 56px 24px; color: #222; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; border-top: 1px solid #0f0f0f; }
   .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }

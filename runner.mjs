@@ -5,7 +5,7 @@ import {
   selectAndSummarize,
   generateHTML,
 } from './netlify/functions/briefing-core.mjs';
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) { console.error('ANTHROPIC_API_KEY não definida'); process.exit(1); }
@@ -25,7 +25,26 @@ console.log(`${'─'.repeat(50)}\n`);
 const articles = await fetchArticles();
 if (!articles.length) { console.error('Nenhum artigo coletado'); process.exit(1); }
 
-const grouped = await selectAndSummarize(articles, apiKey);
+// ─── Deduplicação: carregar títulos já publicados nas últimas 24h ───────────
+const publishedFile = 'docs/published.json';
+let published = {};
+if (existsSync(publishedFile)) {
+  try { published = JSON.parse(readFileSync(publishedFile, 'utf-8')); } catch {}
+}
+// Limpar entradas com mais de 24h
+const cutoff24h = Date.now() - 24 * 60 * 60 * 1000;
+for (const key of Object.keys(published)) {
+  if (published[key] < cutoff24h) delete published[key];
+}
+// Normalizar título para comparação
+function normalizeTitle(t) {
+  return t.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+}
+// Filtrar artigos já publicados
+const filtered = articles.filter(a => !published[normalizeTitle(a.title)]);
+console.log(`Artigos após deduplicação: ${filtered.length} (${articles.length - filtered.length} repetidos removidos)`);
+
+const grouped = await selectAndSummarize(filtered.length ? filtered : articles, apiKey);
 
 const prevDate = new Date(today); prevDate.setUTCDate(prevDate.getUTCDate() - 1);
 const nextDate = new Date(today); nextDate.setUTCDate(nextDate.getUTCDate() + 1);
@@ -47,6 +66,15 @@ writeFileSync(
   `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/${slug}/"><title>Daily Briefing</title></head><body><script>window.location.replace("/${slug}/")<\/script></body></html>`,
   'utf-8'
 );
+
+// Salvar títulos publicados nesta rodada
+for (const items of Object.values(grouped)) {
+  for (const item of items) {
+    published[normalizeTitle(item.title)] = Date.now();
+  }
+}
+mkdirSync('docs', { recursive: true });
+writeFileSync(publishedFile, JSON.stringify(published, null, 2), 'utf-8');
 
 const total = Object.values(grouped).reduce((s, v) => s + v.length, 0);
 console.log(`\n✅ ${total} notícias geradas → docs/${slug}/index.html\n`);
