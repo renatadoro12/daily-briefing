@@ -205,13 +205,66 @@ export async function selectAndSummarize(articles, apiKey) {
 
 Selecione exatamente 6 notícias por tema: geopolítica, economia, IA, web3 e crypto. Total: 30 notícias. Não repita notícias sobre o mesmo evento.
 
-REGRAS DE PRIORIDADE — siga nesta ordem:
-1. BREAKING NEWS e eventos de alto impacto mundial têm prioridade ABSOLUTA: atentados, guerras, crises, mortes de líderes, crashes de mercado, decisões históricas.
-2. Prefira notícias das últimas 12 horas sobre notícias mais antigas.
-3. Evite duplicatas sobre o mesmo evento — escolha apenas a melhor cobertura.
-4. Para geopolítica: priorize EUA, Brasil, Europa, Oriente Médio e guerras ativas.
+REGRAS GERAIS — válidas para todos os temas:
+1. BREAKING NEWS e eventos de alto impacto têm prioridade ABSOLUTA.
+2. Prefira sempre notícias das últimas horas — quanto mais fresca, melhor.
+3. Evite duplicatas do mesmo evento — escolha apenas a melhor cobertura.
+4. EXCLUIR: análises muito técnicas, notícias de projetos pequenos e irrelevantes, opiniões sem fato concreto.
 
-Para cada notícia: escreva um resumo em português brasileiro com 8 a 10 linhas, explicando o contexto, o que aconteceu, quem está envolvido e o impacto. Traduza os títulos para português. Inclua o link original da notícia.
+REGRAS POR TEMA:
+
+GEOPOLÍTICA — priorizar:
+- Guerras ativas, escaladas militares e ataques relevantes
+- Eleições em países que impactam a ordem global
+- Tensões EUA-China, Rússia-Ucrânia, Oriente Médio
+- Sanções, embargos e movimentos diplomáticos importantes
+- Brasil no cenário internacional
+- Crises humanitárias de grande escala
+- Fatos políticos que impactam mercados, Fed, BCE ou juros globais
+- Decisões de líderes que afetam a economia global
+
+ECONOMIA — priorizar:
+- Decisões do Fed, BCE e Banco Central do Brasil
+- Dados de inflação, PIB e desemprego
+- Crashes e rallies relevantes no mercado de ações
+- Commodities (petróleo, ouro) e seu impacto
+- Tarifas, sanções e guerras comerciais
+- Crises econômicas em países relevantes
+- Economia brasileira
+- Reflexo de crises geopolíticas nos mercados e inflação
+
+INTELIGÊNCIA ARTIFICIAL — priorizar:
+- Lançamentos de modelos novos (OpenAI, Google, Anthropic, Meta e outros)
+- Regulação de IA na Europa, EUA e Brasil
+- Impacto da IA no mercado de trabalho e demissões em massa
+- Aplicações reais com casos de uso concretos
+- Financiamentos e aquisições grandes no setor
+- Parcerias entre big techs e governos
+- IA em saúde, educação e finanças
+- Competição EUA vs China em IA
+- Uso de IA em eleições e desinformação
+
+CRIPTOMOEDAS — priorizar:
+- Movimentos grandes de preço (BTC, ETH e altcoins relevantes)
+- Decisões regulatórias (SEC, CVM, governos)
+- Adoção institucional (empresas, bancos, ETFs)
+- Hacks, exploits e falências relevantes
+- Lançamentos e atualizações de protocolos importantes
+- Notícias brasileiras de cripto
+- Decisões do Fed e bancos centrais que afetam cripto
+- Movimentos de grandes carteiras (baleias)
+- Stablecoins — descolamentos, regulação, novos lançamentos
+- Bitcoin como reserva estratégica de países e empresas
+- ETFs de cripto
+
+WEB3 — priorizar:
+- Lançamentos e atualizações relevantes de protocolos
+- Regulação de DeFi e NFTs
+- Adoção institucional de Web3
+- Hacks e exploits em protocolos
+- Parcerias relevantes no ecossistema
+
+Para cada notícia: escreva um resumo em português brasileiro com 10 a 14 linhas, explicando o contexto, o que aconteceu, quem está envolvido, o impacto e as possíveis consequências. Traduza os títulos para português. Inclua o link original da notícia.
 
 Além das notícias, gere um "fio condutor do dia" (campo thread_of_day): um parágrafo editorial de 3 a 4 frases conectando os principais temas do dia, explicando o que une as notícias mais importantes desta edição.
 
