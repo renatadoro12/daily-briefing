@@ -378,21 +378,17 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
         globalNewsCount++;
         sectionItems += `
       <div class="news-item" style="border-left-color:${color};" data-searchable="${escapeHTML(item.title)} ${escapeHTML(item.summary)} ${escapeHTML(item.source)}" data-title="${escapeHTML(item.title)}" data-share-url="${escapeHTML(item.link || '')}">
-        <div class="news-header" onclick="toggleItem(this.closest('.news-item'))">
-          <div class="news-meta">
-            <span class="news-date">${dateCompact}</span>
-            <span class="news-time">${escapeHTML(item.published_time)}</span>
-            <span class="news-source">${escapeHTML(item.source)}</span>
-          </div>
-          <div class="news-title">${escapeHTML(item.title)}<span class="news-chevron">▼</span></div>
+        <div class="news-meta">
+          <span class="news-date">${dateCompact}</span>
+          <span class="news-time">${escapeHTML(item.published_time)}</span>
+          <span class="news-source">${escapeHTML(item.source)}</span>
         </div>
-        <div class="news-body">
-          <div class="news-summary">${escapeHTML(item.summary)}</div>
-          ${item.link ? `<div class="news-link"><a href="${escapeHTML(item.link)}" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>` : ''}
-          <div class="share-btns">
-            <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
-            <a class="share-btn share-x" href="#" target="_blank" rel="noopener">&#10005; X</a>
-          </div>
+        <div class="news-title">${escapeHTML(item.title)}</div>
+        <div class="news-summary">${escapeHTML(item.summary)}</div>
+        ${item.link ? `<div class="news-link"><a href="${escapeHTML(item.link)}" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>` : ''}
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">&#10005; X</a>
         </div>
       </div>`;
 
@@ -482,15 +478,10 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
 
   /* NEWS ITEMS */
-  .news-item { border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
   .news-item:last-child { border-bottom: none; }
   .news-item.hidden { display: none; }
-  .news-header { padding: 18px 0 18px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
-  .news-header:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
-  .news-chevron { font-size: 10px; color: #475569; margin-left: 6px; display: inline-block; transition: transform 0.2s; }
-  .news-item.open .news-chevron { transform: rotate(180deg); }
-  .news-body { display: none; padding: 0 14px 18px 14px; }
-  .news-item.open .news-body { display: block; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
   .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
   .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
   .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
