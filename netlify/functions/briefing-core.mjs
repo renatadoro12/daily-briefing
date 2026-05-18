@@ -180,14 +180,14 @@ export async function selectAndSummarize(articles, apiKey) {
   const today = nowBR();
   const datePT = `${today.getUTCDate()} de ${MONTHS_PT[today.getUTCMonth()]} de ${today.getUTCFullYear()}`;
 
-  const TOPIC_LIMITS = { ia: 10, geopolitica: 6, economia: 6, web3: 6, crypto: 6 };
+  const TOPIC_LIMITS = { ia: 6, geopolitica: 6, economia: 6, web3: 6, crypto: 6 };
   const byTopic = {};
   for (const a of articles) {
     if (!byTopic[a.topic]) byTopic[a.topic] = [];
     const limit = TOPIC_LIMITS[a.topic] || 6;
     if (byTopic[a.topic].length < limit) byTopic[a.topic].push(a);
   }
-  const balanced = Object.values(byTopic).flat().slice(0, 34);
+  const balanced = Object.values(byTopic).flat().slice(0, 30);
 
   let articlesText = '';
   balanced.forEach((a, i) => {
@@ -203,7 +203,7 @@ export async function selectAndSummarize(articles, apiKey) {
 
   const prompt = `Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é ${datePT}.
 
-Selecione exatamente estas quantidades por tema: 10 para IA, 6 para geopolítica, 6 para economia, 6 para web3, 6 para crypto. Total: 34 notícias. Não repita notícias sobre o mesmo evento.
+Selecione exatamente 6 notícias por tema: geopolítica, economia, IA, web3 e crypto. Total: 30 notícias. Não repita notícias sobre o mesmo evento.
 
 REGRAS DE PRIORIDADE — siga nesta ordem:
 1. BREAKING NEWS e eventos de alto impacto mundial têm prioridade ABSOLUTA: atentados, guerras, crises, mortes de líderes, crashes de mercado, decisões históricas.
@@ -211,7 +211,7 @@ REGRAS DE PRIORIDADE — siga nesta ordem:
 3. Evite duplicatas sobre o mesmo evento — escolha apenas a melhor cobertura.
 4. Para geopolítica: priorize EUA, Brasil, Europa, Oriente Médio e guerras ativas.
 
-Para cada notícia: escreva um resumo em português brasileiro com 12 a 16 linhas, explicando o contexto completo, os detalhes do evento, o impacto e as possíveis consequências. Seja detalhado. Traduza os títulos para português. Inclua o link original da notícia.
+Para cada notícia: escreva um resumo em português brasileiro com 8 a 10 linhas, explicando o contexto, o que aconteceu, quem está envolvido e o impacto. Traduza os títulos para português. Inclua o link original da notícia.
 
 Além das notícias, gere um "fio condutor do dia" (campo thread_of_day): um parágrafo editorial de 3 a 4 frases conectando os principais temas do dia, explicando o que une as notícias mais importantes desta edição.
 
