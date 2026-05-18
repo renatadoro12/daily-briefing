@@ -335,10 +335,12 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   ).join('');
   const dateDropdown = `<select class="date-select" id="date-select" onchange="goToDate(this.value)">${dropdownOptions}</select>`;
 
-  const topicNav = TOPIC_ORDER
-    .filter(t => grouped[t])
-    .map(t => `<a class="topic-pill" href="#${t}" style="color:${ACCENT_COLORS[t]};border-color:${ACCENT_COLORS[t]}40;background:${ACCENT_COLORS[t]}15;">${TOPIC_ICONS[t]} ${TOPIC_NAMES[t]}</a>`)
-    .join('\n    ');
+  const topicNav = [
+    `<button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>`,
+    ...TOPIC_ORDER
+      .filter(t => grouped[t])
+      .map(t => `<button class="topic-pill" data-topic="${t}" onclick="filterTopic('${t}')" style="color:${ACCENT_COLORS[t]};border-color:${ACCENT_COLORS[t]}40;background:${ACCENT_COLORS[t]}15;">${TOPIC_ICONS[t]} ${TOPIC_NAMES[t]}</button>`),
+  ].join('\n    ');
 
   const threadSection = threadOfDay ? `
 <div class="thread-section">
@@ -371,17 +373,21 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
         globalNewsCount++;
         sectionItems += `
       <div class="news-item" style="border-left-color:${color};" data-searchable="${escapeHTML(item.title)} ${escapeHTML(item.summary)} ${escapeHTML(item.source)}" data-title="${escapeHTML(item.title)}" data-share-url="${escapeHTML(item.link || '')}">
-        <div class="news-meta">
-          <span class="news-date">${dateCompact}</span>
-          <span class="news-time">${escapeHTML(item.published_time)}</span>
-          <span class="news-source">${escapeHTML(item.source)}</span>
+        <div class="news-header" onclick="toggleItem(this.closest('.news-item'))">
+          <div class="news-meta">
+            <span class="news-date">${dateCompact}</span>
+            <span class="news-time">${escapeHTML(item.published_time)}</span>
+            <span class="news-source">${escapeHTML(item.source)}</span>
+          </div>
+          <div class="news-title">${escapeHTML(item.title)}<span class="news-chevron">▼</span></div>
         </div>
-        <div class="news-title">${escapeHTML(item.title)}</div>
-        <div class="news-summary">${escapeHTML(item.summary)}</div>
-        ${item.link ? `<div class="news-link"><a href="${escapeHTML(item.link)}" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>` : ''}
-        <div class="share-btns">
-          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
-          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">&#10005; X</a>
+        <div class="news-body">
+          <div class="news-summary">${escapeHTML(item.summary)}</div>
+          ${item.link ? `<div class="news-link"><a href="${escapeHTML(item.link)}" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>` : ''}
+          <div class="share-btns">
+            <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+            <a class="share-btn share-x" href="#" target="_blank" rel="noopener">&#10005; X</a>
+          </div>
         </div>
       </div>`;
 
@@ -456,6 +462,7 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
   .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
   .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
 
   /* SEARCH */
   .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
@@ -471,10 +478,15 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
 
   /* NEWS ITEMS */
-  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item { border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
   .news-item:last-child { border-bottom: none; }
   .news-item.hidden { display: none; }
-  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-header { padding: 18px 0 18px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
+  .news-header:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-chevron { font-size: 10px; color: #475569; margin-left: 6px; display: inline-block; transition: transform 0.2s; }
+  .news-item.open .news-chevron { transform: rotate(180deg); }
+  .news-body { display: none; padding: 0 14px 18px 14px; }
+  .news-item.open .news-body { display: block; }
   .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
   .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
   .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
@@ -656,6 +668,23 @@ ${sections}
     if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\\n' + url);
     if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
   });
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
 
   // Busca
   function toggleSearch() {
