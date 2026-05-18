@@ -69,6 +69,7 @@ const html = generateHTML(
 
 mkdirSync(`docs/${slug}`, { recursive: true });
 writeFileSync(`docs/${slug}/index.html`, html, 'utf-8');
+writeFileSync(`docs/${slug}/data.json`, JSON.stringify({ grouped, threadOfDay, slug }, null, 2), 'utf-8');
 writeFileSync(
   'docs/index.html',
   `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=./${slug}/"><title>Daily Briefing</title></head><body><script>window.location.replace("./${slug}/")<\/script></body></html>`,
