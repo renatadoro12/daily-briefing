@@ -355,18 +355,7 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   </div>
 </div>` : '';
 
-  const newsletterHTML = `
-<div class="newsletter-section">
-  <div class="nl-title">Receba o Daily Briefing todo dia no seu email</div>
-  <div class="nl-sub">Notícias curadas e resumidas com IA. Gratuito.</div>
-  <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
-    <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
-    <button class="nl-btn" type="submit">Quero receber diariamente</button>
-  </form>
-</div>`;
-
   let globalNewsCount = 0;
-  let newsletterInserted = false;
 
   const sections = TOPIC_ORDER
     .filter(t => grouped[t])
@@ -392,10 +381,6 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
         </div>
       </div>`;
 
-        if (globalNewsCount === 5 && !newsletterInserted) {
-          sectionItems += newsletterHTML;
-          newsletterInserted = true;
-        }
       }
 
       return `
@@ -500,15 +485,19 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
   .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
 
-  /* NEWSLETTER */
-  .newsletter-section { max-width: 760px; margin: 16px auto; padding: 28px 24px; border: 1px solid rgba(0,196,180,0.15); border-radius: 12px; text-align: center; background: rgba(0,196,180,0.04); }
-  .nl-title { font-size: 16px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
-  .nl-sub { font-size: 12px; color: #94A3B8; margin-bottom: 16px; }
-  .nl-form { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; width: 220px; transition: .2s; }
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
   .nl-input:focus { border-color: #00C4B4; }
   .nl-input::placeholder { color: #475569; }
-  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: 0.5px; transition: opacity .15s; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
   .nl-btn:hover { opacity: 0.9; }
 
   /* SEARCH EMPTY */
@@ -589,7 +578,19 @@ ${sections}
   &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
   &nbsp;·&nbsp; © ${today.getUTCFullYear()}
 </div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
 <div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
   <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
   <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
 </div>
@@ -744,6 +745,14 @@ ${sections}
   }
   updateTicker();
   setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
 
   function nlSubmit(form) {
     var btn = form.querySelector('.nl-btn');
