@@ -335,15 +335,20 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   ).join('');
   const dateDropdown = `<select class="date-select" id="date-select" onchange="goToDate(this.value)">${dropdownOptions}</select>`;
 
+  const threadBtn = threadOfDay
+    ? `<button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>`
+    : '';
+
   const topicNav = [
     `<button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>`,
     ...TOPIC_ORDER
       .filter(t => grouped[t])
       .map(t => `<button class="topic-pill" data-topic="${t}" onclick="filterTopic('${t}')" style="color:${ACCENT_COLORS[t]};border-color:${ACCENT_COLORS[t]}40;background:${ACCENT_COLORS[t]}15;">${TOPIC_ICONS[t]} ${TOPIC_NAMES[t]}</button>`),
+    threadBtn,
   ].join('\n    ');
 
   const threadSection = threadOfDay ? `
-<div class="thread-section">
+<div class="thread-section" id="thread-section" style="display:none;">
   <div class="thread-inner">
     <div class="thread-label">Fio Condutor do Dia</div>
     <div class="thread-text">${escapeHTML(threadOfDay)}</div>
@@ -426,12 +431,11 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
 
   /* HERO */
-  .hero { padding: 40px 24px 28px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
-  .hero-label { font-size: 10px; letter-spacing: 5px; color: #00C4B4; text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
   .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .hero-date { font-size: 12px; color: #94A3B8; margin-top: 10px; letter-spacing: 3px; text-transform: uppercase; }
-  .hero-brand { font-size: 11px; color: #475569; margin-top: 6px; letter-spacing: 1px; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
 
   /* TICKER */
   .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -548,9 +552,9 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
 <canvas id="neural-bg"></canvas>
 
 <div class="hero">
-  <div class="hero-title">Daily Briefing by <span>Renata Doro IA &amp; Tech</span></div>
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
   <div class="hero-date">${datePT}</div>
-  <div class="hero-brand">Geopolítica · Economia · IA · Web3 · Cripto</div>
 </div>
 
 <div class="ticker-bar">
@@ -667,6 +671,16 @@ ${sections}
     if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\\n' + url);
     if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
   });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
 
   // Filtro por nicho
   function filterTopic(topic) {
