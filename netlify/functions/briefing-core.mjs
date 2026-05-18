@@ -486,7 +486,7 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
   .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
   .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
   .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
-  .news-title { font-size: 15px; font-weight: 700; color: #F8FAFC; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-title { font-size: 15px; font-weight: 700; color: #94A3B8; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
   .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
   .news-link { margin-bottom: 10px; }
   .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
