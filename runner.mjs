@@ -5,7 +5,7 @@ import {
   selectAndSummarize,
   generateHTML,
 } from './netlify/functions/briefing-core.mjs';
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) { console.error('ANTHROPIC_API_KEY não definida'); process.exit(1); }
@@ -44,7 +44,7 @@ function normalizeTitle(t) {
 const filtered = articles.filter(a => !published[normalizeTitle(a.title)]);
 console.log(`Artigos após deduplicação: ${filtered.length} (${articles.length - filtered.length} repetidos removidos)`);
 
-const grouped = await selectAndSummarize(filtered.length ? filtered : articles, apiKey);
+const { grouped, threadOfDay } = await selectAndSummarize(filtered.length ? filtered : articles, apiKey);
 
 const prevDate = new Date(today); prevDate.setUTCDate(prevDate.getUTCDate() - 1);
 const nextDate = new Date(today); nextDate.setUTCDate(nextDate.getUTCDate() + 1);
@@ -53,10 +53,18 @@ const nextSlug = dateSlug(nextDate);
 const hasPrev = existsSync(`docs/${prevSlug}/index.html`);
 const hasNext = existsSync(`docs/${nextSlug}/index.html`);
 
+// Coleta todos os slugs existentes para o dropdown de datas
+const allSlugs = readdirSync('docs')
+  .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+  .sort();
+if (!allSlugs.includes(slug)) allSlugs.push(slug);
+
 const html = generateHTML(
   grouped, today,
   hasPrev ? prevSlug : null,
-  hasNext ? nextSlug : null
+  hasNext ? nextSlug : null,
+  allSlugs,
+  threadOfDay
 );
 
 mkdirSync(`docs/${slug}`, { recursive: true });
