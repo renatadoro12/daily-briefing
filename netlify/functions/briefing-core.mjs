@@ -548,7 +548,6 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
 <canvas id="neural-bg"></canvas>
 
 <div class="hero">
-  <div class="hero-label">Resumo do dia</div>
   <div class="hero-title">Daily Briefing by <span>Renata Doro IA &amp; Tech</span></div>
   <div class="hero-date">${datePT}</div>
   <div class="hero-brand">Geopolítica · Economia · IA · Web3 · Cripto</div>
