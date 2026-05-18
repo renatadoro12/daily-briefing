@@ -377,7 +377,7 @@ export function generateHTML(grouped, today, prevSlug, nextSlug, allSlugs = [], 
         ${item.link ? `<div class="news-link"><a href="${escapeHTML(item.link)}" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>` : ''}
         <div class="share-btns">
           <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
-          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">&#10005; X</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
         </div>
       </div>`;
 
