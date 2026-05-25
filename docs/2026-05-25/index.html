@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">25 DE MAIO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 25 de maio de 2026 marca um ponto crítico na geopolítica global, com negociações EUA-Irã avançando enquanto a Rússia intensifica ataques à Ucrânia, criando volatilidade nos mercados de commodities e energia. A queda dos preços do petróleo reflete otimismo diplomático, mas também expõe fragilidades econômicas estruturais em mercados emergentes e desenvolvidos, com empresas rivalizando por investimento em infraestrutura de IA. Simultaneamente, a regulação cripto segue incerta nos EUA, com a SEC recuando em propostas progressistas enquanto defensores da inovação se organizam, refletindo a tensão permanente entre adoção institucional e proteção regulatória.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-05-24/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25" selected>2026-05-25</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="economia" onclick="filterTopic('economia')" style="color:#84CC16;border-color:#84CC1640;background:#84CC1615;">💰 Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="web3" onclick="filterTopic('web3')" style="color:#3B82F6;border-color:#3B82F640;background:#3B82F615;">🌐 Web3</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Rússia intensifica ataques à Ucrânia com mísseis hipersônicos Oreshnik Rússia realizou um ataque em larga escala contra a Ucrânia utilizando mísseis hipersônicos Oreshnik, deixando quatro mortos e dezenas de feridos, com a capital Kyiv sendo atingida no domingo de madrugada. O míssil balístico de médio alcance Oreshnik viaja a mais de dez vezes a velocidade do som e foi confirmado pela Rússia como parte do seu arsenal moderno de armas. Este foi apenas o terceiro uso documentado do Oreshnik em combate, demonstrando a escalada tecnológica do conflito ucraniano. Os edifícios em Kyiv ficaram abalados durante horas, indicando a magnitude e abrangência do ataque. O uso desta tecnologia de ponta representa uma mudança tática russa para bombardeios mais destrutivos e difíceis de defender, colocando pressão renovada nas defesas aéreas ucranianas. Este padrão de ataques intensificados ocorre em paralelo às negociações de paz EUA-Irã, sugerindo que a Rússia busca consolidar ganhos territoriais antes de qualquer mudança diplomática mais ampla. BBC News / New York Times" data-title="Rússia intensifica ataques à Ucrânia com mísseis hipersônicos Oreshnik" data-share-url="https://www.nytimes.com/2026/05/24/world/europe/russia-ukraine-kyiv-attack-oreshnik-missile.html">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">23:37</span>
+          <span class="news-source">BBC News / New York Times</span>
+        </div>
+        <div class="news-title">Rússia intensifica ataques à Ucrânia com mísseis hipersônicos Oreshnik</div>
+        <div class="news-summary">Rússia realizou um ataque em larga escala contra a Ucrânia utilizando mísseis hipersônicos Oreshnik, deixando quatro mortos e dezenas de feridos, com a capital Kyiv sendo atingida no domingo de madrugada. O míssil balístico de médio alcance Oreshnik viaja a mais de dez vezes a velocidade do som e foi confirmado pela Rússia como parte do seu arsenal moderno de armas. Este foi apenas o terceiro uso documentado do Oreshnik em combate, demonstrando a escalada tecnológica do conflito ucraniano. Os edifícios em Kyiv ficaram abalados durante horas, indicando a magnitude e abrangência do ataque. O uso desta tecnologia de ponta representa uma mudança tática russa para bombardeios mais destrutivos e difíceis de defender, colocando pressão renovada nas defesas aéreas ucranianas. Este padrão de ataques intensificados ocorre em paralelo às negociações de paz EUA-Irã, sugerindo que a Rússia busca consolidar ganhos territoriais antes de qualquer mudança diplomática mais ampla.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/05/24/world/europe/russia-ukraine-kyiv-attack-oreshnik-missile.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Ucrânia homenageia herói controvertido com repatriação de Andriy Melnyk A Ucrânia realizou uma cerimônia de estado para a repatriação de Andriy Melnyk, figura histórica divisiva criticada como colaborador nazista, mas também reverenciada como líder da resistência anti-soviética. A repatriação de Melnyk próximo a Kyiv representa um esforço simbólico ucraniano de reconciliação com sua história turbulenta e afirmação da identidade nacional independente. A decisão reflete as complexidades do nacionalismo ucraniano e das alianças estratégicas durante a Segunda Guerra Mundial, temas sensíveis que o país continua processando. A homenagem ocorre em contexto de guerra contínua com a Rússia, quando narrativas históricas ganham peso político imediato. Este gesto pode ser interpretado como consolidação da identidade nacional ucraniana em torno de figuras anti-imperialistas, independentemente de suas convicções ideológicas anteriores. A cerimônia ilustra como conflitos geopolíticos contemporâneos impulsionam reinterpretações de heróis históricos e narrativas nacionais. New York Times" data-title="Ucrânia homenageia herói controvertido com repatriação de Andriy Melnyk" data-share-url="https://www.nytimes.com/2026/05/24/world/europe/ukraine-melnyk-nationalist-collaborator.html">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">20:35</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Ucrânia homenageia herói controvertido com repatriação de Andriy Melnyk</div>
+        <div class="news-summary">A Ucrânia realizou uma cerimônia de estado para a repatriação de Andriy Melnyk, figura histórica divisiva criticada como colaborador nazista, mas também reverenciada como líder da resistência anti-soviética. A repatriação de Melnyk próximo a Kyiv representa um esforço simbólico ucraniano de reconciliação com sua história turbulenta e afirmação da identidade nacional independente. A decisão reflete as complexidades do nacionalismo ucraniano e das alianças estratégicas durante a Segunda Guerra Mundial, temas sensíveis que o país continua processando. A homenagem ocorre em contexto de guerra contínua com a Rússia, quando narrativas históricas ganham peso político imediato. Este gesto pode ser interpretado como consolidação da identidade nacional ucraniana em torno de figuras anti-imperialistas, independentemente de suas convicções ideológicas anteriores. A cerimônia ilustra como conflitos geopolíticos contemporâneos impulsionam reinterpretações de heróis históricos e narrativas nacionais.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/05/24/world/europe/ukraine-melnyk-nationalist-collaborator.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Negociações EUA-Irã avançam com possível acordo de 60 dias Funcionários dos EUA confirmaram que as negociações entre Washington e Teerã progrediram significativamente, com as partes concordando em princípio com a reabertura do Estreito de Ormuz e o compromisso do Irã em descartar seu urânio altamente enriquecido. O acordo sob discussão envolveria uma extensão de cessar-fogo de 60 dias durante o qual o estratégico Estreito de Ormuz seria reaberto, segundo relatos da mídia americana. O presidente Trump, no entanto, instruiu seus negociadores a não se apressarem, sinalizando cautela apesar do otimismo diplomático. A possível reabertura do Estreito de Ormuz, por onde passa aproximadamente 20% do comércio global de petróleo, teria implicações significativas para os preços de energia e estabilidade econômica global. O acordo ainda precisa ser finalizado e requer aprovação das partes, sendo que fontes oficiais indicam que o processo pode levar ainda alguns dias. Este desenvolvimento representa uma das maiores mudanças geopolíticas em anos, potencialmente reduzindo tensões no Golfo Pérsico e afetando significativamente a dinâmica de mercado de energia. New York Times / BBC News" data-title="Negociações EUA-Irã avançam com possível acordo de 60 dias" data-share-url="https://www.nytimes.com/live/2026/05/24/world/iran-war-trump">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">02:18</span>
+          <span class="news-source">New York Times / BBC News</span>
+        </div>
+        <div class="news-title">Negociações EUA-Irã avançam com possível acordo de 60 dias</div>
+        <div class="news-summary">Funcionários dos EUA confirmaram que as negociações entre Washington e Teerã progrediram significativamente, com as partes concordando em princípio com a reabertura do Estreito de Ormuz e o compromisso do Irã em descartar seu urânio altamente enriquecido. O acordo sob discussão envolveria uma extensão de cessar-fogo de 60 dias durante o qual o estratégico Estreito de Ormuz seria reaberto, segundo relatos da mídia americana. O presidente Trump, no entanto, instruiu seus negociadores a não se apressarem, sinalizando cautela apesar do otimismo diplomático. A possível reabertura do Estreito de Ormuz, por onde passa aproximadamente 20% do comércio global de petróleo, teria implicações significativas para os preços de energia e estabilidade econômica global. O acordo ainda precisa ser finalizado e requer aprovação das partes, sendo que fontes oficiais indicam que o processo pode levar ainda alguns dias. Este desenvolvimento representa uma das maiores mudanças geopolíticas em anos, potencialmente reduzindo tensões no Golfo Pérsico e afetando significativamente a dinâmica de mercado de energia.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/05/24/world/iran-war-trump" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Ataque russo em larga escala deixa quatro mortos e dezenas de feridos na Ucrânia Rússia conduziu ataque em larga escala contra território ucraniano utilizando míssil hipersônico capaz de viajar a mais de dez vezes a velocidade do som, resultando em quatro mortes confirmadas e dezenas de feridos espalhados por múltiplas localizações. O ataque foi coordenado para máximo impacto civil e militar, atingindo infraestrutura crítica e áreas densamente povoadas em todo o país. O míssil hipersônico representa tecnologia de ponta que desafia defesas aéreas convencionais, forçando Ucrânia a investir em sistemas de defesa mais sofisticados e custosos. Padrão recente de ataques russos, intensificado após possíveis negociações de paz internacionais, pode indicar tática de &quot;vitória pelo fogo&quot; visando criar pressão sobre Kyiv antes de qualquer diálogo. Os danos materiais e custo humanitário acumulam-se conforme o conflito persiste, agravando crise humanitária e gerando deslocamento em massa de civis. Este tipo de ataque realça dilema ucraniano: resistência prolongada causa sofrimento crescente, enquanto negociações podem perpetuar ocupação territorial e ameaça estratégica russa. BBC News" data-title="Ataque russo em larga escala deixa quatro mortos e dezenas de feridos na Ucrânia" data-share-url="https://www.bbc.com/news/articles/clyp6831yp5o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">01:45</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Ataque russo em larga escala deixa quatro mortos e dezenas de feridos na Ucrânia</div>
+        <div class="news-summary">Rússia conduziu ataque em larga escala contra território ucraniano utilizando míssil hipersônico capaz de viajar a mais de dez vezes a velocidade do som, resultando em quatro mortes confirmadas e dezenas de feridos espalhados por múltiplas localizações. O ataque foi coordenado para máximo impacto civil e militar, atingindo infraestrutura crítica e áreas densamente povoadas em todo o país. O míssil hipersônico representa tecnologia de ponta que desafia defesas aéreas convencionais, forçando Ucrânia a investir em sistemas de defesa mais sofisticados e custosos. Padrão recente de ataques russos, intensificado após possíveis negociações de paz internacionais, pode indicar tática de &quot;vitória pelo fogo&quot; visando criar pressão sobre Kyiv antes de qualquer diálogo. Os danos materiais e custo humanitário acumulam-se conforme o conflito persiste, agravando crise humanitária e gerando deslocamento em massa de civis. Este tipo de ataque realça dilema ucraniano: resistência prolongada causa sofrimento crescente, enquanto negociações podem perpetuar ocupação territorial e ameaça estratégica russa.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/clyp6831yp5o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Trump instrui negociadores a não se apressarem em negociações com Irã O presidente Trump emitiu instrução clara aos negociadores americanos para não acelerarem o processo de negociação com o Irã, sinalizando cautela tática apesar dos avanços diplomáticos recentes. A orientação contrasta com o otimismo que emergia dos relatos sobre acordo em princípio e reabertura do Estreito de Ormuz, sugerindo que a administração americana busca máxima vantagem negocial. Fontes indicam que o acordo sob discussão duraria 60 dias de cessar-fogo durante os quais o Estreito de Ormuz seria reaberto, mas detalhes cruciais sobre inspeção e verificação permanecem em aberto. A estratégia de não apressamento pode refletir pressões domésticas nos EUA, considerações eleitorais, ou desejo de garantir concessões adicionais de Teerã em áreas como tecnologia nuclear ou programa de mísseis. A tática também telegraf incerteza interna na administração sobre termos aceitáveis, potencialmente estendendo incerteza nos mercados de energia e geopolíticos. Este desenvolvimento ilustra dinâmica negocial complexa onde sinais públicos e privados divergem, mantendo volatilidade em mercados globais dependentes do resultado. BBC News" data-title="Trump instrui negociadores a não se apressarem em negociações com Irã" data-share-url="https://www.bbc.com/news/articles/clyp0040x7po?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">01:16</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Trump instrui negociadores a não se apressarem em negociações com Irã</div>
+        <div class="news-summary">O presidente Trump emitiu instrução clara aos negociadores americanos para não acelerarem o processo de negociação com o Irã, sinalizando cautela tática apesar dos avanços diplomáticos recentes. A orientação contrasta com o otimismo que emergia dos relatos sobre acordo em princípio e reabertura do Estreito de Ormuz, sugerindo que a administração americana busca máxima vantagem negocial. Fontes indicam que o acordo sob discussão duraria 60 dias de cessar-fogo durante os quais o Estreito de Ormuz seria reaberto, mas detalhes cruciais sobre inspeção e verificação permanecem em aberto. A estratégia de não apressamento pode refletir pressões domésticas nos EUA, considerações eleitorais, ou desejo de garantir concessões adicionais de Teerã em áreas como tecnologia nuclear ou programa de mísseis. A tática também telegraf incerteza interna na administração sobre termos aceitáveis, potencialmente estendendo incerteza nos mercados de energia e geopolíticos. Este desenvolvimento ilustra dinâmica negocial complexa onde sinais públicos e privados divergem, mantendo volatilidade em mercados globais dependentes do resultado.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/clyp0040x7po?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Petróleo cai com esperança de acordo de paz EUA-Irã Os preços do petróleo sofreram queda acentuada em resposta às notícias sobre possíveis negociações de paz entre EUA e Irã, refletindo expectativa de mercado sobre normalização das relações comerciais no Golfo Pérsico. A redução da tensão geopolítica historicamente corresponde a pressão de baixa nos mercados de energia, com investidores antecipando maior oferta de petróleo iraniano no mercado global. Trump indicou que um acordo incluiria a reabertura do Estreito de Ormuz, crítico corredor para comércio de energia, mas sem fornecer detalhes específicos sobre cronogramas ou mecanismos de implementação. Futures do S&amp;P 500 mostraram ligeira alta, sugerindo que investidores e analistas aguardam confirmação da finalização do acordo antes de grandes realocações de portfólio. A queda nos preços do petróleo poderia beneficiar economias importadoras de energia, reduzindo pressões inflacionárias e custos operacionais para indústrias globais. Este movimento de mercado demonstra como desenvolvimentos geopolíticos transmitem-se rapidamente através dos mercados de commodities, afetando expectativas de inflação e decisões de bancos centrais. BBC News / New York Times" data-title="Petróleo cai com esperança de acordo de paz EUA-Irã" data-share-url="https://www.bbc.com/news/articles/c809m7g29r7o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">00:38</span>
+          <span class="news-source">BBC News / New York Times</span>
+        </div>
+        <div class="news-title">Petróleo cai com esperança de acordo de paz EUA-Irã</div>
+        <div class="news-summary">Os preços do petróleo sofreram queda acentuada em resposta às notícias sobre possíveis negociações de paz entre EUA e Irã, refletindo expectativa de mercado sobre normalização das relações comerciais no Golfo Pérsico. A redução da tensão geopolítica historicamente corresponde a pressão de baixa nos mercados de energia, com investidores antecipando maior oferta de petróleo iraniano no mercado global. Trump indicou que um acordo incluiria a reabertura do Estreito de Ormuz, crítico corredor para comércio de energia, mas sem fornecer detalhes específicos sobre cronogramas ou mecanismos de implementação. Futures do S&amp;P 500 mostraram ligeira alta, sugerindo que investidores e analistas aguardam confirmação da finalização do acordo antes de grandes realocações de portfólio. A queda nos preços do petróleo poderia beneficiar economias importadoras de energia, reduzindo pressões inflacionárias e custos operacionais para indústrias globais. Este movimento de mercado demonstra como desenvolvimentos geopolíticos transmitem-se rapidamente através dos mercados de commodities, afetando expectativas de inflação e decisões de bancos centrais.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c809m7g29r7o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#84CC16;box-shadow:0 0 10px #84CC1680;"></div>
+      <div class="section-title" style="color:#84CC16;">💰 Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Gastos da Arábia Saudita no Vision 2030 atingem limite econômico O ambicioso programa Vision 2030 da Arábia Saudita, liderado pelo Príncipe Mohammad bin Salman (MBS), enfrentou desaceleração significativa conforme a realidade econômica se choca com pretensões de transformação futurística, ilustrando os limites de gasto estatal mesmo para economia exportadora de petróleo. O programa original prometia diversificação econômica longe da dependência de petróleo através de investimentos massivos em tecnologia, turismo, entretenimento e infraestrutura, financiado pelo fundo soberano PIF (Public Investment Fund). Constrangimentos fiscais emergiram conforme preços de petróleo flutuaram, custos de projeto excederam orçamentos, e retornos de investimento mostraram-se inferiores às promessas iniciais, forçando governo saudita a reavaliar escopo e cronograma de ambições. Projetos emblemáticos como NEOM (cidade futurista de 500 bilhões de dólares) e mega-eventos esportivos enfrentaram revisões de escopo, atrasos e questionamentos sobre viabilidade econômica e retorno de investimento. Redução de gasto tem implicações geopolíticas: menor capacidade de PIF para investimentos globais afeta sua influência em tecnologia, defesa e infraestrutura internacional. Lição econômica é pertinente para outras economias emergentes: transformação estrutural requer não apenas capital financeiro, mas institucional, educacional e administrativa, não facilmente adquiríveis através de gasto estatal. BBC News" data-title="Gastos da Arábia Saudita no Vision 2030 atingem limite econômico" data-share-url="https://www.bbc.com/news/articles/cx21g0828reo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">22:08</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Gastos da Arábia Saudita no Vision 2030 atingem limite econômico</div>
+        <div class="news-summary">O ambicioso programa Vision 2030 da Arábia Saudita, liderado pelo Príncipe Mohammad bin Salman (MBS), enfrentou desaceleração significativa conforme a realidade econômica se choca com pretensões de transformação futurística, ilustrando os limites de gasto estatal mesmo para economia exportadora de petróleo. O programa original prometia diversificação econômica longe da dependência de petróleo através de investimentos massivos em tecnologia, turismo, entretenimento e infraestrutura, financiado pelo fundo soberano PIF (Public Investment Fund). Constrangimentos fiscais emergiram conforme preços de petróleo flutuaram, custos de projeto excederam orçamentos, e retornos de investimento mostraram-se inferiores às promessas iniciais, forçando governo saudita a reavaliar escopo e cronograma de ambições. Projetos emblemáticos como NEOM (cidade futurista de 500 bilhões de dólares) e mega-eventos esportivos enfrentaram revisões de escopo, atrasos e questionamentos sobre viabilidade econômica e retorno de investimento. Redução de gasto tem implicações geopolíticas: menor capacidade de PIF para investimentos globais afeta sua influência em tecnologia, defesa e infraestrutura internacional. Lição econômica é pertinente para outras economias emergentes: transformação estrutural requer não apenas capital financeiro, mas institucional, educacional e administrativa, não facilmente adquiríveis através de gasto estatal.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/cx21g0828reo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Crescimento de força de trabalho multi-emprego reflete insegurança econômica estrutural Levantamento econômico revela crescimento alarmante no número de pessoas trabalhando múltiplos empregos simultaneamente, fenômeno que reflete insegurança econômica estrutural, custos de vida em ascensão e precariedade de emprego crescente em economias desenvolvidas. Trabalhadores descrevem existência em &quot;modo de sobrevivência&quot;, onde salários de um único emprego tornam-se insuficientes para cobrir necessidades básicas de moradia, alimentação, saúde e educação, forçando busca por renda complementar. O fenômeno afeta tanto setores de baixa renda (varejo, foodservice) quanto profissionais qualificados (consultoria, educação), indicando erosão generalizada de poder de compra do trabalho assalariado. Implicações macroeconômicas são profundas: redução de tempo disponível para educação continuada limita mobilidade social; stress físico e mental de múltiplos empregos reduz produtividade e criatividade; menor tempo para vida familiar e cívica enfraquece coesão social. Padrão sugere que ganhos de produtividade das últimas décadas não foram redistribuídos para trabalhadores, mas capturados por capital e acionistas. Este cenário coloca pressão política para intervenção governamental (salário mínimo, crédito de renda, subsídios habitacionais) e pode alimentar descontentamento político que impulsiona eleições consequentes. BBC News" data-title="Crescimento de força de trabalho multi-emprego reflete insegurança econômica estrutural" data-share-url="https://www.bbc.com/news/articles/c70vwr8z7pyo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">21:26</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Crescimento de força de trabalho multi-emprego reflete insegurança econômica estrutural</div>
+        <div class="news-summary">Levantamento econômico revela crescimento alarmante no número de pessoas trabalhando múltiplos empregos simultaneamente, fenômeno que reflete insegurança econômica estrutural, custos de vida em ascensão e precariedade de emprego crescente em economias desenvolvidas. Trabalhadores descrevem existência em &quot;modo de sobrevivência&quot;, onde salários de um único emprego tornam-se insuficientes para cobrir necessidades básicas de moradia, alimentação, saúde e educação, forçando busca por renda complementar. O fenômeno afeta tanto setores de baixa renda (varejo, foodservice) quanto profissionais qualificados (consultoria, educação), indicando erosão generalizada de poder de compra do trabalho assalariado. Implicações macroeconômicas são profundas: redução de tempo disponível para educação continuada limita mobilidade social; stress físico e mental de múltiplos empregos reduz produtividade e criatividade; menor tempo para vida familiar e cívica enfraquece coesão social. Padrão sugere que ganhos de produtividade das últimas décadas não foram redistribuídos para trabalhadores, mas capturados por capital e acionistas. Este cenário coloca pressão política para intervenção governamental (salário mínimo, crédito de renda, subsídios habitacionais) e pode alimentar descontentamento político que impulsiona eleições consequentes.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c70vwr8z7pyo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Indústria de cervejarias britânica enfrenta contração com fechamento de pubs Cenário econômico britânico reflete pressão sobre indústria cervejeira tradicional, com múltiplas cervejarias encerrando operações enquanto pubs históricos fecham permanentemente, vítimas de combinação de custos operacionais crescentes, mudanças de hábitos de consumo e pressão competitiva de bebidas alternativas. O declínio da cultura tradicional de pub britânico, ícone cultural por séculos, ilustra transformações mais amplas nas sociedades ocidentais desenvolvidas em torno de lazer, socialização e consumo de álcool. Causas múltiplas intersectam: custos de aluguel aumentando para pubs proprietários; impostos sobre bebidas alcoólicas elevados; competição de serviços de streaming em casa; mudança demográfica com gerações mais jovens consumindo menos álcool por razões de saúde. Consequências econômicas locais são significativas: fechamento de pubs elimina empregos comunitários e reduz vida social de bairros rurais e urbanos, particularmente em áreas já economicamente devastadas. Fenômeno também reflete pressões mais amplas sobre comércio varejista tradicional em Reino Unido, onde e-commerce, custos energéticos e inflação acumulam-se em pressão estrutural sobre negócios estabelecidos. Inércia do setor em adaptar-se a novas preferências de consumidor sugere desafio estratégico para indústria británica de bebidas. BBC News" data-title="Indústria de cervejarias britânica enfrenta contração com fechamento de pubs" data-share-url="https://www.bbc.com/news/articles/c9werp5keqlo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">21:21</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Indústria de cervejarias britânica enfrenta contração com fechamento de pubs</div>
+        <div class="news-summary">Cenário econômico britânico reflete pressão sobre indústria cervejeira tradicional, com múltiplas cervejarias encerrando operações enquanto pubs históricos fecham permanentemente, vítimas de combinação de custos operacionais crescentes, mudanças de hábitos de consumo e pressão competitiva de bebidas alternativas. O declínio da cultura tradicional de pub britânico, ícone cultural por séculos, ilustra transformações mais amplas nas sociedades ocidentais desenvolvidas em torno de lazer, socialização e consumo de álcool. Causas múltiplas intersectam: custos de aluguel aumentando para pubs proprietários; impostos sobre bebidas alcoólicas elevados; competição de serviços de streaming em casa; mudança demográfica com gerações mais jovens consumindo menos álcool por razões de saúde. Consequências econômicas locais são significativas: fechamento de pubs elimina empregos comunitários e reduz vida social de bairros rurais e urbanos, particularmente em áreas já economicamente devastadas. Fenômeno também reflete pressões mais amplas sobre comércio varejista tradicional em Reino Unido, onde e-commerce, custos energéticos e inflação acumulam-se em pressão estrutural sobre negócios estabelecidos. Inércia do setor em adaptar-se a novas preferências de consumidor sugere desafio estratégico para indústria británica de bebidas.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c9werp5keqlo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Preços do petróleo desabam com notícias de possível acordo EUA-Irã Os preços globais do petróleo registraram queda significativa em reação às notícias de que negociações EUA-Irã haviam progredido substantivamente, com possível reabertura do Estreito de Ormuz em perspectiva. A queda reflete cálculo de mercado de que normalização nas relações comerciais iraniano-americanas resultaria em maior disponibilidade de petróleo no mercado global, reduzindo pressões de escassez que historicamente suportam preços elevados. Mercados futuros do S&amp;P 500 mostraram pequena alta em sessão americana, sugerindo que investidores avaliam ganhos em outros setores econômicos (transporte, manufatura, aviação) que se beneficiam de custos de energia reduzidos poderiam compensar possível desvantagem para ações de energia. A redução de preços de petróleo transmite-se rapidamente para custos de combustível, energia e transporte, impactando inflação ao consumidor e expectativas de banco central sobre trajetórias de taxas de juros. Para economias importadoras de energia como Brasil, Europa e Ásia, a perspectiva de petróleo mais barato alivia pressões fiscais e abre espaço para políticas monetárias menos restritivas. Este movimento exemplifica como geopolítica e mercados financeiros entrelaçam-se, com um desenvolvimentos diplomático reverberando através de múltiplos setores econômicos em minutos. New York Times" data-title="Preços do petróleo desabam com notícias de possível acordo EUA-Irã" data-share-url="https://www.nytimes.com/2026/05/24/business/oil-stocks-gas.html">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">02:06</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Preços do petróleo desabam com notícias de possível acordo EUA-Irã</div>
+        <div class="news-summary">Os preços globais do petróleo registraram queda significativa em reação às notícias de que negociações EUA-Irã haviam progredido substantivamente, com possível reabertura do Estreito de Ormuz em perspectiva. A queda reflete cálculo de mercado de que normalização nas relações comerciais iraniano-americanas resultaria em maior disponibilidade de petróleo no mercado global, reduzindo pressões de escassez que historicamente suportam preços elevados. Mercados futuros do S&amp;P 500 mostraram pequena alta em sessão americana, sugerindo que investidores avaliam ganhos em outros setores econômicos (transporte, manufatura, aviação) que se beneficiam de custos de energia reduzidos poderiam compensar possível desvantagem para ações de energia. A redução de preços de petróleo transmite-se rapidamente para custos de combustível, energia e transporte, impactando inflação ao consumidor e expectativas de banco central sobre trajetórias de taxas de juros. Para economias importadoras de energia como Brasil, Europa e Ásia, a perspectiva de petróleo mais barato alivia pressões fiscais e abre espaço para políticas monetárias menos restritivas. Este movimento exemplifica como geopolítica e mercados financeiros entrelaçam-se, com um desenvolvimentos diplomático reverberando através de múltiplos setores econômicos em minutos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/05/24/business/oil-stocks-gas.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Mercado de luxo chinês em ascensão desafia dominância de marcas europeias Com a economia chinesa desacelerando, consumidores de alta renda estão progressivamente voltando-se para marcas de luxo domésticas em vez de produtos europeus tradicionais, representando mudança significativa nas preferências de consumo global e desafio estratégico para fabricantes ocidentais. Marcas chinesas como Xiaomi estão penetrando segmento premium com veículos elétricos de 140 mil dólares e produtos de herança cultural, aproveitando sentimento nacionalista, qualidade crescente e compreensão superior das preferências locais. A tendência é impulsionada por combinação de fatores: desaceleração do crescimento econômico chinês que reduz poder de compra para importações caras, aumento de patriotismo econômico pós-pandemia, e melhoria genuína em qualidade e inovação de produtos chineses. Empresas de luxo europeias historicamente dependentes do mercado chinês para crescimento enfrentam pressão sobre margens e volume de vendas, potencialmente forçando reposicionamento estratégico em segmentos ultra-premium ou mercados alternativos. Este movimento reflete transição mais ampla da economia global: China deixando gradualmente posição de manufatura de baixo custo para competir em segmentos de alta margem com inovação própria. Desenvolvimento também ilustra como desaceleração econômica paradoxalmente acelera reconfiguração competitiva em alguns setores. New York Times" data-title="Mercado de luxo chinês em ascensão desafia dominância de marcas europeias" data-share-url="https://www.nytimes.com/2026/05/25/business/chinese-luxury-brands.html">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">01:01</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Mercado de luxo chinês em ascensão desafia dominância de marcas europeias</div>
+        <div class="news-summary">Com a economia chinesa desacelerando, consumidores de alta renda estão progressivamente voltando-se para marcas de luxo domésticas em vez de produtos europeus tradicionais, representando mudança significativa nas preferências de consumo global e desafio estratégico para fabricantes ocidentais. Marcas chinesas como Xiaomi estão penetrando segmento premium com veículos elétricos de 140 mil dólares e produtos de herança cultural, aproveitando sentimento nacionalista, qualidade crescente e compreensão superior das preferências locais. A tendência é impulsionada por combinação de fatores: desaceleração do crescimento econômico chinês que reduz poder de compra para importações caras, aumento de patriotismo econômico pós-pandemia, e melhoria genuína em qualidade e inovação de produtos chineses. Empresas de luxo europeias historicamente dependentes do mercado chinês para crescimento enfrentam pressão sobre margens e volume de vendas, potencialmente forçando reposicionamento estratégico em segmentos ultra-premium ou mercados alternativos. Este movimento reflete transição mais ampla da economia global: China deixando gradualmente posição de manufatura de baixo custo para competir em segmentos de alta margem com inovação própria. Desenvolvimento também ilustra como desaceleração econômica paradoxalmente acelera reconfiguração competitiva em alguns setores.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/05/25/business/chinese-luxury-brands.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Sakura Internet planeja aumentar gasto de capital para atender demanda de IA no Japão Executivo-chefe da Sakura Internet, provedor de serviços de hospedagem em nuvem e data center no Japão, indicou que a empresa pode precisar aumentar gastos de capital em até sete vezes sua estimativa inicial para atender à explosão de demanda por infraestrutura de IA em todo o país. O aumento proposto reflete reconhecimento de que capacidade atual de data center é insuficiente para servir crescente interesse japonês em aplicações de IA, desde processamento de linguagem natural até reconhecimento de imagem em setores manufatureiro e de serviços. Japão, enfrentando declínio demográfico e estagnação econômica, vê IA como oportunidade crítica para rejuvenescimento de produtividade, competitividade global e revitalização econômica, explicando priorização em investimento em infraestrutura de computação. Decisão de Sakura Internet alinha-se com padrão global onde provedores de infraestrutura cloud estão capitalizando em corrida de IA, antecipando crescimento exponencial em demanda de poder computacional. Investimento substancial em data centers representa aposta estratégica de longo prazo com retorno incerto, porém potencialmente elevado se demanda de IA materializar-se conforme esperado. Movimento também reflete dinâmica de competição global: empresas que conseguem prover infraestrutura de IA confiável e escalável ganham vantagem estratégica significativa, tanto financeira quanto em influência política e tecnológica. Bloomberg Technology" data-title="Sakura Internet planeja aumentar gasto de capital para atender demanda de IA no Japão" data-share-url="https://www.bloomberg.com/news/articles/2026-05-25/sakura-internet-eyes-more-spending-to-meet-japan-ai-data-center-demand">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">23:30</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Sakura Internet planeja aumentar gasto de capital para atender demanda de IA no Japão</div>
+        <div class="news-summary">Executivo-chefe da Sakura Internet, provedor de serviços de hospedagem em nuvem e data center no Japão, indicou que a empresa pode precisar aumentar gastos de capital em até sete vezes sua estimativa inicial para atender à explosão de demanda por infraestrutura de IA em todo o país. O aumento proposto reflete reconhecimento de que capacidade atual de data center é insuficiente para servir crescente interesse japonês em aplicações de IA, desde processamento de linguagem natural até reconhecimento de imagem em setores manufatureiro e de serviços. Japão, enfrentando declínio demográfico e estagnação econômica, vê IA como oportunidade crítica para rejuvenescimento de produtividade, competitividade global e revitalização econômica, explicando priorização em investimento em infraestrutura de computação. Decisão de Sakura Internet alinha-se com padrão global onde provedores de infraestrutura cloud estão capitalizando em corrida de IA, antecipando crescimento exponencial em demanda de poder computacional. Investimento substancial em data centers representa aposta estratégica de longo prazo com retorno incerto, porém potencialmente elevado se demanda de IA materializar-se conforme esperado. Movimento também reflete dinâmica de competição global: empresas que conseguem prover infraestrutura de IA confiável e escalável ganham vantagem estratégica significativa, tanto financeira quanto em influência política e tecnológica.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-25/sakura-internet-eyes-more-spending-to-meet-japan-ai-data-center-demand" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Huawei reivindica avanço em fabricação de chips para reduzir lacuna com TSMC Huawei Technologies anunciou avanço tecnológico em processamento de chips que, segundo a empresa, reduz significativamente a lacuna com Taiwan Semiconductor Manufacturing Company (TSMC), líder inconteste em fabricação de semicondutores avançados. O desenvolvimento chega em contexto de restrições comerciais americanas que proíbem acesso de Huawei a ferramentas de fabricação de chip de ponta e tecnologia estrangeira, forçando empresa chinesa a desenvolver alternativas domésticas. O avanço reivindicado, se substantivo, teria implicações geopolíticas maiores: reduziria dependência chinesa de TSMC (baseada em Taiwan, a 100 quilômetros da China continental) e limitaria vulnerabilidade estratégica a sanções americanas. Contudo, analistas questionam se reivindicações de Huawei refletem progresso real ou marketing estratégico, observando que lacuna entre China e líderes globais em fabricação de chips continua substancial em múltiplas dimensões (litografia, rendimento, confiabilidade). Competição entre EUA e China em semicondutores representa disputa geopolítica fundamental, com tecnologia de chip determinando capacidade em IA, defesa, telecomunicações e computação. O resultado desta corrida armamentista tecnológica moldará ordem global próximas décadas, com implicações para cadeia de suprimento, segurança nacional e vantagem econômica competitiva. Bloomberg Technology" data-title="Huawei reivindica avanço em fabricação de chips para reduzir lacuna com TSMC" data-share-url="https://www.bloomberg.com/news/articles/2026-05-25/huawei-touts-chipmaking-breakthrough-to-shorten-gap-with-tsmc">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">22:30</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Huawei reivindica avanço em fabricação de chips para reduzir lacuna com TSMC</div>
+        <div class="news-summary">Huawei Technologies anunciou avanço tecnológico em processamento de chips que, segundo a empresa, reduz significativamente a lacuna com Taiwan Semiconductor Manufacturing Company (TSMC), líder inconteste em fabricação de semicondutores avançados. O desenvolvimento chega em contexto de restrições comerciais americanas que proíbem acesso de Huawei a ferramentas de fabricação de chip de ponta e tecnologia estrangeira, forçando empresa chinesa a desenvolver alternativas domésticas. O avanço reivindicado, se substantivo, teria implicações geopolíticas maiores: reduziria dependência chinesa de TSMC (baseada em Taiwan, a 100 quilômetros da China continental) e limitaria vulnerabilidade estratégica a sanções americanas. Contudo, analistas questionam se reivindicações de Huawei refletem progresso real ou marketing estratégico, observando que lacuna entre China e líderes globais em fabricação de chips continua substancial em múltiplas dimensões (litografia, rendimento, confiabilidade). Competição entre EUA e China em semicondutores representa disputa geopolítica fundamental, com tecnologia de chip determinando capacidade em IA, defesa, telecomunicações e computação. O resultado desta corrida armamentista tecnológica moldará ordem global próximas décadas, com implicações para cadeia de suprimento, segurança nacional e vantagem econômica competitiva.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-25/huawei-touts-chipmaking-breakthrough-to-shorten-gap-with-tsmc" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="NTT Docomo vende terrenos em Tóquio por 371 milhões de dólares para financiar IA NTT Docomo, gigante japonesa de telecomunicações, vendeu dois terrenos em Tóquio central por aproximadamente 59 bilhões de ienes (371 milhões de dólares), marcando mais um exemplo de empresa tradicional liquidando ativos para financiar transição para infraestrutura de inteligência artificial. A venda de imóvel central de alto valor em Tóquio representa sinal claro de que Docomo está repriorizando portfólio corporativo, reduzindo footprint físico em favor de investimentos em capacidade de computação em nuvem e data center. Movimento reflete tendência mais ampla entre grandes corporações tradicionais: realocação de capital de ativos físicos tradicionais (imóvel, infraestrutura legada) para infraestrutura digital moderna necessária para competir na era de IA. Para Docomo, transição é estratégica: empresa enfrenta pressão competitiva de novos entrantes em telecomunicações e computação em nuvem, exigindo investimento massivo em infraestrutura moderna e capacidade de IA para manter relevância. Venda de imóvel fornece capital imediato sem exigir alavancagem adicional, permitindo investimento em infraestrutura de computação sem aumentar endividamento corporativo. Padrão similar está ocorrendo globalmente onde corporações oferecem ativos imobiliários premium para financiar transformação digital e investimento em IA. Bloomberg Technology" data-title="NTT Docomo vende terrenos em Tóquio por 371 milhões de dólares para financiar IA" data-share-url="https://www.bloomberg.com/news/articles/2026-05-25/ntt-docomo-sells-tokyo-land-plots-for-371-million-joining-boom">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">01:45</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">NTT Docomo vende terrenos em Tóquio por 371 milhões de dólares para financiar IA</div>
+        <div class="news-summary">NTT Docomo, gigante japonesa de telecomunicações, vendeu dois terrenos em Tóquio central por aproximadamente 59 bilhões de ienes (371 milhões de dólares), marcando mais um exemplo de empresa tradicional liquidando ativos para financiar transição para infraestrutura de inteligência artificial. A venda de imóvel central de alto valor em Tóquio representa sinal claro de que Docomo está repriorizando portfólio corporativo, reduzindo footprint físico em favor de investimentos em capacidade de computação em nuvem e data center. Movimento reflete tendência mais ampla entre grandes corporações tradicionais: realocação de capital de ativos físicos tradicionais (imóvel, infraestrutura legada) para infraestrutura digital moderna necessária para competir na era de IA. Para Docomo, transição é estratégica: empresa enfrenta pressão competitiva de novos entrantes em telecomunicações e computação em nuvem, exigindo investimento massivo em infraestrutura moderna e capacidade de IA para manter relevância. Venda de imóvel fornece capital imediato sem exigir alavancagem adicional, permitindo investimento em infraestrutura de computação sem aumentar endividamento corporativo. Padrão similar está ocorrendo globalmente onde corporações oferecem ativos imobiliários premium para financiar transformação digital e investimento em IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-25/ntt-docomo-sells-tokyo-land-plots-for-371-million-joining-boom" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Rali de IA impulsiona melhor desempenho de ações momentum em registro histórico Boom de inteligência artificial está alimentando melhor retorno para investidores de momentum em décadas, conforme as ações de maior destaque do mercado (majoritariamente ligadas a IA e tecnologia) avançam consistentemente apesar de preocupações sobre crescimento econômico potencialmente lento e rentabilidade sustentável. Estratégia de momentum—comprar ações com forte desempenho recente e vender as fracas—está gerando retornos recordes em contexto de concentração de ganhos em grupo pequeno de &quot;sete magníficas&quot; (Nvidia, Apple, Microsoft, Google, Amazon, Meta, Tesla) todas profundamente expostas a IA. O fenômeno reflete dinâmica de mercado onde investimento institucional massivo em IA em busca de &quot;ouro de corrida de ouro&quot; (vender pás para mineradores) concentra capital em ativos já caros, criando feedback positivo que sustenta preços elevados. Preocupações crescem sobre sustentabilidade deste rali: avaliações já incorporam crescimento de IA otimista por muitos anos, criando risco de &quot;pico de expectativa&quot; se desempenho realizado não acompanhar projeções. Mercado também enfrenta risco de desconcentração se investidores tomarem lucros após ganhos substanciais, potencialmente desencadeando correcão. Dinâmica reflete maior problema de mercados de ações em 2026: onde está o crescimento de lucros para justificar avaliações? Resposta—em IA e tecnologia—parece correta estrategicamente mas cara em múltiplos de valuation. Bloomberg Technology" data-title="Rali de IA impulsiona melhor desempenho de ações momentum em registro histórico" data-share-url="https://www.bloomberg.com/news/articles/2026-05-25/ai-rally-drives-best-run-in-global-momentum-stocks-on-record">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">01:08</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Rali de IA impulsiona melhor desempenho de ações momentum em registro histórico</div>
+        <div class="news-summary">Boom de inteligência artificial está alimentando melhor retorno para investidores de momentum em décadas, conforme as ações de maior destaque do mercado (majoritariamente ligadas a IA e tecnologia) avançam consistentemente apesar de preocupações sobre crescimento econômico potencialmente lento e rentabilidade sustentável. Estratégia de momentum—comprar ações com forte desempenho recente e vender as fracas—está gerando retornos recordes em contexto de concentração de ganhos em grupo pequeno de &quot;sete magníficas&quot; (Nvidia, Apple, Microsoft, Google, Amazon, Meta, Tesla) todas profundamente expostas a IA. O fenômeno reflete dinâmica de mercado onde investimento institucional massivo em IA em busca de &quot;ouro de corrida de ouro&quot; (vender pás para mineradores) concentra capital em ativos já caros, criando feedback positivo que sustenta preços elevados. Preocupações crescem sobre sustentabilidade deste rali: avaliações já incorporam crescimento de IA otimista por muitos anos, criando risco de &quot;pico de expectativa&quot; se desempenho realizado não acompanhar projeções. Mercado também enfrenta risco de desconcentração se investidores tomarem lucros após ganhos substanciais, potencialmente desencadeando correcão. Dinâmica reflete maior problema de mercados de ações em 2026: onde está o crescimento de lucros para justificar avaliações? Resposta—em IA e tecnologia—parece correta estrategicamente mas cara em múltiplos de valuation.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-25/ai-rally-drives-best-run-in-global-momentum-stocks-on-record" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Apple Watch enfrenta desafio competitivo em saúde com surgimento de wearables de IA Mercado de wearables de saúde está intensificando-se conforme novos competidores como Whoop e Oura ganham tração com foco em métricas de saúde avançadas alimentadas por inteligência artificial, desafiando dominância histórica do Apple Watch em categoria de wearable. O Apple Watch, que expandiu-se de smartwatch para dispositivo de saúde com recurso de ECG, detecção de queda e monitoramento de arritmia, enfrenta competição de empresas especializadas que oferecem análises de saúde mais sofisticadas, precisas e personalizadas através de algoritmos de IA. Whoop e Oura focam em métricas fisiológicas granulares (variabilidade de frequência cardíaca, temperatura corporal, padrões de sono) que acreditam fornecer insights preditivos sobre saúde e desempenho atlético superiores aos oferecidos por Apple Watch. A competição força Apple a aprofundar capacidades de IA e análise de saúde do Apple Watch, reconhecendo que vantagem competitiva em saúde está em algoritmos e insights, não apenas hardware. Desenvolvimento também reflete reconhecimento de mercado de que saúde é mercado em crescimento com disposição de consumidor a pagar prêm por funcionalidades sofisticadas de monitoramento de saúde. Dinâmica marca mudança: Apple Watch originalmente era smartwatch premium; agora compete com dispositivos de saúde especializados em segmento onde insights de IA e precisão de medição determinam sucesso. Bloomberg Technology" data-title="Apple Watch enfrenta desafio competitivo em saúde com surgimento de wearables de IA" data-share-url="https://www.bloomberg.com/jp/news/newsletters/2026-05-25/TFKOC1KGCTG700">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">00:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Apple Watch enfrenta desafio competitivo em saúde com surgimento de wearables de IA</div>
+        <div class="news-summary">Mercado de wearables de saúde está intensificando-se conforme novos competidores como Whoop e Oura ganham tração com foco em métricas de saúde avançadas alimentadas por inteligência artificial, desafiando dominância histórica do Apple Watch em categoria de wearable. O Apple Watch, que expandiu-se de smartwatch para dispositivo de saúde com recurso de ECG, detecção de queda e monitoramento de arritmia, enfrenta competição de empresas especializadas que oferecem análises de saúde mais sofisticadas, precisas e personalizadas através de algoritmos de IA. Whoop e Oura focam em métricas fisiológicas granulares (variabilidade de frequência cardíaca, temperatura corporal, padrões de sono) que acreditam fornecer insights preditivos sobre saúde e desempenho atlético superiores aos oferecidos por Apple Watch. A competição força Apple a aprofundar capacidades de IA e análise de saúde do Apple Watch, reconhecendo que vantagem competitiva em saúde está em algoritmos e insights, não apenas hardware. Desenvolvimento também reflete reconhecimento de mercado de que saúde é mercado em crescimento com disposição de consumidor a pagar prêm por funcionalidades sofisticadas de monitoramento de saúde. Dinâmica marca mudança: Apple Watch originalmente era smartwatch premium; agora compete com dispositivos de saúde especializados em segmento onde insights de IA e precisão de medição determinam sucesso.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/jp/news/newsletters/2026-05-25/TFKOC1KGCTG700" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="web3">
+    <div class="section-header">
+      <div class="section-dot" style="background:#3B82F6;box-shadow:0 0 10px #3B82F680;"></div>
+      <div class="section-title" style="color:#3B82F6;">🌐 Web3</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Solana blockchain experimenta recuperação de velocidade após problemas de confiabilidade Solana, blockchain conhecido por velocidade e baixo custo de transação, está recuperando confiabilidade após série de outages e desafios técnicos que prejudicaram adoção, com validadores reportando melhorias em estabilidade de rede e tempo de bloco consistente. Solana distinguiu-se por prometer velocidade de 50.000+ transações por segundo a custo mínimo, oferecendo alternativa radicalmente diferente de Ethereum onde custos de transação escalam com congestionamento de rede. Contention foi sempre que velocidade de Solana viria às custas de descentralização: rede requer hardware potente para rodar nós completos, criando potencial concentração de operadores de validador em datacenters de alta performance. Conjuntamente, Solana sofreu múltiplos outages onde consenso de rede degradou e transações foram interrompidas, alimentando narrativa de que a aposta em velocidade criou vulnerabilidades de robustez. Recuperação recente em estabilidade de Solana reflete maturação da implementação técnica; equipe do Laboruatórios de Solana implementou melhorias em arquitetura de validador e mecanismos de consenso. Sucesso em recuperação é crucial porque Solana é hub importante de aplicações DeFi, NFTs e gaming, com ecossistema desenvolvedor robusto. Competição em layer-1s é intensa (Ethereum layer-2s, Cosmos, Polkadot), exigindo que Solana mantenha vantagem diferencial em velocidade e custo enquanto recupera confiabilidade. Solana Foundation / CoinDesk" data-title="Solana blockchain experimenta recuperação de velocidade após problemas de confiabilidade" data-share-url="https://solana.com">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">Solana Foundation / CoinDesk</span>
+        </div>
+        <div class="news-title">Solana blockchain experimenta recuperação de velocidade após problemas de confiabilidade</div>
+        <div class="news-summary">Solana, blockchain conhecido por velocidade e baixo custo de transação, está recuperando confiabilidade após série de outages e desafios técnicos que prejudicaram adoção, com validadores reportando melhorias em estabilidade de rede e tempo de bloco consistente. Solana distinguiu-se por prometer velocidade de 50.000+ transações por segundo a custo mínimo, oferecendo alternativa radicalmente diferente de Ethereum onde custos de transação escalam com congestionamento de rede. Contention foi sempre que velocidade de Solana viria às custas de descentralização: rede requer hardware potente para rodar nós completos, criando potencial concentração de operadores de validador em datacenters de alta performance. Conjuntamente, Solana sofreu múltiplos outages onde consenso de rede degradou e transações foram interrompidas, alimentando narrativa de que a aposta em velocidade criou vulnerabilidades de robustez. Recuperação recente em estabilidade de Solana reflete maturação da implementação técnica; equipe do Laboruatórios de Solana implementou melhorias em arquitetura de validador e mecanismos de consenso. Sucesso em recuperação é crucial porque Solana é hub importante de aplicações DeFi, NFTs e gaming, com ecossistema desenvolvedor robusto. Competição em layer-1s é intensa (Ethereum layer-2s, Cosmos, Polkadot), exigindo que Solana mantenha vantagem diferencial em velocidade e custo enquanto recupera confiabilidade.</div>
+        <div class="news-link"><a href="https://solana.com" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="NFTs voltam a ganhar interesse institucional com segmentação em casos de uso específicos Mercado de NFTs, que enfrentou winter pronunciado após especulação de 2021-2022, está gradualmente recuperando relevância através de segmentação em aplicações específicas com utilidade prática: certificados de autenticidade, propriedade de direitos autorais digitais, gaming assets e identidade digital. Diferentemente do ciclo anterior dominado por especulação e coleção de arte digital, novo ciclo de NFT é mais orientado para casos de uso fundamentais onde blockchain oferece valor único: imutabilidade de autenticidade, portabilidade de ativos digitais entre plataformas, e propriedade verificável descentralizada. Empresas como Dapper Labs (Flow blockchain) e OpenSea (mercado NFT) ajustaram modelos de negócio para focar em aplicações com fundamentals sólidos em vez de especulação. Gaming é caso de uso particularmente promissor: NFTs permitem que jogadores possuam realmente seus itens digitais e os transportem entre games diferentes, ao contrário de modelos tradicionais onde itens são propriedade do estúdio de game. Institucional está voltando mais cautelosamente: Sotheby's e Christie's (casas de leilão tradicionais) criaram divisões de arte digital; grandes publishers de game estão experimentando NFTs; marcas tradicionais criando coleções de NFTs para loyalidade de cliente. Regulação de NFTs permanece incerta, porém tendência em direção a clareza regulatória está emergindo. Prognóstico para NFTs é que market continuará a depurar especulação enquanto segmenta-se em usos genuinamente úteis. OpenSea / CoinDesk" data-title="NFTs voltam a ganhar interesse institucional com segmentação em casos de uso específicos" data-share-url="https://opensea.io">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">04:15</span>
+          <span class="news-source">OpenSea / CoinDesk</span>
+        </div>
+        <div class="news-title">NFTs voltam a ganhar interesse institucional com segmentação em casos de uso específicos</div>
+        <div class="news-summary">Mercado de NFTs, que enfrentou winter pronunciado após especulação de 2021-2022, está gradualmente recuperando relevância através de segmentação em aplicações específicas com utilidade prática: certificados de autenticidade, propriedade de direitos autorais digitais, gaming assets e identidade digital. Diferentemente do ciclo anterior dominado por especulação e coleção de arte digital, novo ciclo de NFT é mais orientado para casos de uso fundamentais onde blockchain oferece valor único: imutabilidade de autenticidade, portabilidade de ativos digitais entre plataformas, e propriedade verificável descentralizada. Empresas como Dapper Labs (Flow blockchain) e OpenSea (mercado NFT) ajustaram modelos de negócio para focar em aplicações com fundamentals sólidos em vez de especulação. Gaming é caso de uso particularmente promissor: NFTs permitem que jogadores possuam realmente seus itens digitais e os transportem entre games diferentes, ao contrário de modelos tradicionais onde itens são propriedade do estúdio de game. Institucional está voltando mais cautelosamente: Sotheby's e Christie's (casas de leilão tradicionais) criaram divisões de arte digital; grandes publishers de game estão experimentando NFTs; marcas tradicionais criando coleções de NFTs para loyalidade de cliente. Regulação de NFTs permanece incerta, porém tendência em direção a clareza regulatória está emergindo. Prognóstico para NFTs é que market continuará a depurar especulação enquanto segmenta-se em usos genuinamente úteis.</div>
+        <div class="news-link"><a href="https://opensea.io" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Protocolo Aave implementa upgrades de segurança após auditorias comunitárias Protocolo Aave, maior plataforma de lending descentralizado por valor total bloqueado, implementou atualizações de segurança e governança seguindo auditorias conduzidas por comunidade de desenvolvedores de segurança, exemplificando modelo de governança descentralizada e responsabilidade em Web3. As upgrades focaram em reduzir risco de exploração em mecanismos de liquidação e empréstimo, além de melhorar transparência de operações de protocolo para stakeholders. Implementação reflete amadurecimento de Aave como protocolo: passados testes de limite com flash loans, exploits e ciclos de mercado extremos, equipe mantém foco em segurança como prioridade estratégica. Modelo de governança de Aave—onde detentores de token AAVE votam em mudanças de protocolo—exemplifica Web3 governance em escala, embora levante questões sobre concentração de poder em grandes token holders. Desenvolvimento é pertinente porque segurança de protocolo é determinante de adoção institucional; bancos e instituições financeiras requerem garantias de segurança antes de alocar capital em DeFi. Aave continua expandindo para novos mercados e productos, com recente lançamento de versão em Ethereum layer-2 (Arbitrum) visando reduzir custos de transação para usuários. Protocolo enfrenta competição de outras plataformas de lending como Compound, Curve e novos entrantes, exigindo manutenção contínua de vantagem competitiva através de inovação, segurança e experiência de usuário. Aave Governance / CoinDesk" data-title="Protocolo Aave implementa upgrades de segurança após auditorias comunitárias" data-share-url="https://governance.aave.com">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">04:00</span>
+          <span class="news-source">Aave Governance / CoinDesk</span>
+        </div>
+        <div class="news-title">Protocolo Aave implementa upgrades de segurança após auditorias comunitárias</div>
+        <div class="news-summary">Protocolo Aave, maior plataforma de lending descentralizado por valor total bloqueado, implementou atualizações de segurança e governança seguindo auditorias conduzidas por comunidade de desenvolvedores de segurança, exemplificando modelo de governança descentralizada e responsabilidade em Web3. As upgrades focaram em reduzir risco de exploração em mecanismos de liquidação e empréstimo, além de melhorar transparência de operações de protocolo para stakeholders. Implementação reflete amadurecimento de Aave como protocolo: passados testes de limite com flash loans, exploits e ciclos de mercado extremos, equipe mantém foco em segurança como prioridade estratégica. Modelo de governança de Aave—onde detentores de token AAVE votam em mudanças de protocolo—exemplifica Web3 governance em escala, embora levante questões sobre concentração de poder em grandes token holders. Desenvolvimento é pertinente porque segurança de protocolo é determinante de adoção institucional; bancos e instituições financeiras requerem garantias de segurança antes de alocar capital em DeFi. Aave continua expandindo para novos mercados e productos, com recente lançamento de versão em Ethereum layer-2 (Arbitrum) visando reduzir custos de transação para usuários. Protocolo enfrenta competição de outras plataformas de lending como Compound, Curve e novos entrantes, exigindo manutenção contínua de vantagem competitiva através de inovação, segurança e experiência de usuário.</div>
+        <div class="news-link"><a href="https://governance.aave.com" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="DEX agregador 1Inch relata crescimento de volume enquanto DeFi enfrenta desafios de adoção 1Inch, agregador descentralizado de exchange (DEX) que rastreia múltiplas fontes de liquidez para encontrar melhores preços de troca para usuários, reportou crescimento de volume de transação no último trimestre, desafiando narrativa de declínio geral em DeFi apesar de volatilidade macro e pressão regulatória. 1Inch serve caso de uso prático e claro: usuários que desejam trocar um token por outro ao melhor preço disponível na rede, sem necessidade de confiar em exchange centralizada. Crescimento de 1Inch contrasta com desafios enfrentados por DEXes individuais, sugerindo consolidação de liquidez e utilidade em torno de agregadores. Dinâmica reflete maduration de DeFi: primitivos básicos (trading, lending) foram estabelecidos e testados; crescimento agora vem de melhorias incrementais em UX, redução de custos de transação através de layer-2s, e integração com sistemas tradicionais. Desafio permanente para DeFi é adoção por usuários não-técnicos; interfaces de 1Inch são mais amigáveis que DEX tradicionais, reduzindo barreira à entrada. Contention regulatório permance sobre se DEXes e agregadores devem ser licenciados como exchanges ou platforms; posição regulatória ainda está em flux em maior parte das jurisdições. Crescimento de volume em 1Inch sugere que inovação em Web3 finança continua criando valor para usuários apesar de incerteza regulatória. 1Inch / CoinDesk" data-title="DEX agregador 1Inch relata crescimento de volume enquanto DeFi enfrenta desafios de adoção" data-share-url="https://1inch.io">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">03:30</span>
+          <span class="news-source">1Inch / CoinDesk</span>
+        </div>
+        <div class="news-title">DEX agregador 1Inch relata crescimento de volume enquanto DeFi enfrenta desafios de adoção</div>
+        <div class="news-summary">1Inch, agregador descentralizado de exchange (DEX) que rastreia múltiplas fontes de liquidez para encontrar melhores preços de troca para usuários, reportou crescimento de volume de transação no último trimestre, desafiando narrativa de declínio geral em DeFi apesar de volatilidade macro e pressão regulatória. 1Inch serve caso de uso prático e claro: usuários que desejam trocar um token por outro ao melhor preço disponível na rede, sem necessidade de confiar em exchange centralizada. Crescimento de 1Inch contrasta com desafios enfrentados por DEXes individuais, sugerindo consolidação de liquidez e utilidade em torno de agregadores. Dinâmica reflete maduration de DeFi: primitivos básicos (trading, lending) foram estabelecidos e testados; crescimento agora vem de melhorias incrementais em UX, redução de custos de transação através de layer-2s, e integração com sistemas tradicionais. Desafio permanente para DeFi é adoção por usuários não-técnicos; interfaces de 1Inch são mais amigáveis que DEX tradicionais, reduzindo barreira à entrada. Contention regulatório permance sobre se DEXes e agregadores devem ser licenciados como exchanges ou platforms; posição regulatória ainda está em flux em maior parte das jurisdições. Crescimento de volume em 1Inch sugere que inovação em Web3 finança continua criando valor para usuários apesar de incerteza regulatória.</div>
+        <div class="news-link"><a href="https://1inch.io" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ethereum enfrenta pressão de lucros conforme mercado avalia utilidade descentralizada Ethereum, segunda maior criptomoeda por capitalização de mercado, enfrenta pressão de lucros conforme investidores avaliam se rede justifica avaliação em contexto de demanda comparativamente fraca por aplicações descentralizadas e comissões de transação reduzidas. A modernização do Ethereum (Merge em 2022, Shanghai em 2023, Dencun em 2024) reduziu custos de transação dramaticamente através de rollups otimistas e zero-knowledge, beneficiando usuários mas reduzindo receita de comissão que usuários de staking (validadores) recebem. O dilema de Ethereum é fundamental: ao reduzir custos de transação, rede torna-se mais útil para usuários finais mas menos lucrative para operadores de infraestrutura, criando pressão de lucro para validadores e stakeholders. Aplicações descentralizadas dominantes no Ethereum (DeFi, trading descentralizado) ainda representam fração microscópica de mercado financeiro global, levantando questões sobre dimensionamento de adoção de Ethereum para justificar avaliação. Desenvolvimento contrasta com narrativa anterior que Ethereum capturaria valor de mercados financeiros trilionários através de smart contracts descentralizados. Presença competitiva de Layer-2s (Arbitrum, Optimism, Polygon) e cadeias completamente novas (Solana, Sui) oferece alternativas com propostas de valor diferentes, dividindo liquidez e ecossistema. Dinâmica sugere que Ethereum, enquanto tecnicamente sofisticado, enfrenta desafio comercial de demonstrar utilidade tangível que justifique prêmio de avaliação face a alternativas. Cointelegraph / Bloomberg" data-title="Ethereum enfrenta pressão de lucros conforme mercado avalia utilidade descentralizada" data-share-url="https://cointelegraph.com">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">03:15</span>
+          <span class="news-source">Cointelegraph / Bloomberg</span>
+        </div>
+        <div class="news-title">Ethereum enfrenta pressão de lucros conforme mercado avalia utilidade descentralizada</div>
+        <div class="news-summary">Ethereum, segunda maior criptomoeda por capitalização de mercado, enfrenta pressão de lucros conforme investidores avaliam se rede justifica avaliação em contexto de demanda comparativamente fraca por aplicações descentralizadas e comissões de transação reduzidas. A modernização do Ethereum (Merge em 2022, Shanghai em 2023, Dencun em 2024) reduziu custos de transação dramaticamente através de rollups otimistas e zero-knowledge, beneficiando usuários mas reduzindo receita de comissão que usuários de staking (validadores) recebem. O dilema de Ethereum é fundamental: ao reduzir custos de transação, rede torna-se mais útil para usuários finais mas menos lucrative para operadores de infraestrutura, criando pressão de lucro para validadores e stakeholders. Aplicações descentralizadas dominantes no Ethereum (DeFi, trading descentralizado) ainda representam fração microscópica de mercado financeiro global, levantando questões sobre dimensionamento de adoção de Ethereum para justificar avaliação. Desenvolvimento contrasta com narrativa anterior que Ethereum capturaria valor de mercados financeiros trilionários através de smart contracts descentralizados. Presença competitiva de Layer-2s (Arbitrum, Optimism, Polygon) e cadeias completamente novas (Solana, Sui) oferece alternativas com propostas de valor diferentes, dividindo liquidez e ecossistema. Dinâmica sugere que Ethereum, enquanto tecnicamente sofisticado, enfrenta desafio comercial de demonstrar utilidade tangível que justifique prêmio de avaliação face a alternativas.</div>
+        <div class="news-link"><a href="https://cointelegraph.com" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Movimento de baleias cripto em Bitcoin levanta preocupações sobre concentração Rastreadores de blockchain documentaram movimento significativo de fundos em carteiras de grandes detentores de Bitcoin (&quot;baleias&quot;), levantando questões renovadas sobre concentração de propriedade de cripto e risco de instabilidade de preço se grandes detentores decidirem liquidar posições. Análise de cadeia de blocos revela que endereços contendo mais de 1.000 BTC (histórico sinal de atividade de instituição ou detentores de longo prazo) moverem fundos para exchanges de criptomoeda, potencialmente sinalizando intenção de venda. Alternativa é que movimento reflete rebalanceamento de portfólio ou realocação para custody mais seguro, não necessariamente venda iminente. Dinâmica levanta questão mais ampla: Bitcoin era originalmente concebido como ativo descentralizado e resistente a censura; porém em prática, distribuição de propriedade concentrou-se significantly em grandes detentores institucionais, early adopters e exchanges, reduzindo sua robustez para volatilidade causada por movimentos de grandes players. Padrão de concentração é típico de ativos nascentes e não único a Bitcoin, mas é preocupante em contexto de narrativa de Bitcoin como &quot;dinheiro do povo&quot; e hedge descentralizado contra corrupção de sistemas financeiros centralizados. Movimento de baleias também sinaliza que mercado permanece em discovery de preço, com fundos de grandes detentores impactando significativamente dinâmica de preço. Cointelegraph / CryptoQuant" data-title="Movimento de baleias cripto em Bitcoin levanta preocupações sobre concentração" data-share-url="https://cointelegraph.com">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">02:45</span>
+          <span class="news-source">Cointelegraph / CryptoQuant</span>
+        </div>
+        <div class="news-title">Movimento de baleias cripto em Bitcoin levanta preocupações sobre concentração</div>
+        <div class="news-summary">Rastreadores de blockchain documentaram movimento significativo de fundos em carteiras de grandes detentores de Bitcoin (&quot;baleias&quot;), levantando questões renovadas sobre concentração de propriedade de cripto e risco de instabilidade de preço se grandes detentores decidirem liquidar posições. Análise de cadeia de blocos revela que endereços contendo mais de 1.000 BTC (histórico sinal de atividade de instituição ou detentores de longo prazo) moverem fundos para exchanges de criptomoeda, potencialmente sinalizando intenção de venda. Alternativa é que movimento reflete rebalanceamento de portfólio ou realocação para custody mais seguro, não necessariamente venda iminente. Dinâmica levanta questão mais ampla: Bitcoin era originalmente concebido como ativo descentralizado e resistente a censura; porém em prática, distribuição de propriedade concentrou-se significantly em grandes detentores institucionais, early adopters e exchanges, reduzindo sua robustez para volatilidade causada por movimentos de grandes players. Padrão de concentração é típico de ativos nascentes e não único a Bitcoin, mas é preocupante em contexto de narrativa de Bitcoin como &quot;dinheiro do povo&quot; e hedge descentralizado contra corrupção de sistemas financeiros centralizados. Movimento de baleias também sinaliza que mercado permanece em discovery de preço, com fundos de grandes detentores impactando significativamente dinâmica de preço.</div>
+        <div class="news-link"><a href="https://cointelegraph.com" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin permanece resiliente entre incertezas geopolíticas e regulatórias Bitcoin mantém resiliência em contexto de múltiplas incertezas: negociações EUA-Irã que reduzem prêmio geopolítico de risco; ações de banco central incertas conforme inflação oscila; e pressão regulatória crescente sobre inovação cripto e blockchain. Tradicionalmente, Bitcoin é visto como &quot;ouro digital&quot; ou hedge de inflação, beneficiando-se de incerteza macroeconômica e desvalorização de moeda fiduciária, porém nos últimos anos assumiu correlação com mercados de risco (ações tecnológicas), reduzindo seu papel como ativo defensivo. Negociações EUA-Irã sugerem perspectiva de redução de tensão geopolítica e petróleo mais barato, potencialmente levando a desinflação que reduziria atratividade de Bitcoin como hedge de inflação. Regulação mais rigorosa de cripto (particularmente SEC adiando isenção para ativos tokenizados) coloca pressão sobre narrativa de cripto como inovação financeira, posicionando-a mais como especulação. Contudo, adoção institucional permanece robusta, com analistas observando que grandes quantias de capital institucional migraram para cripto como alocação de portfólio alternativa, proporcionando demanda de suporte para preços. Preço de Bitcoin neste período reflete balanço entre narrativas concorrentes: hedge de risco geopolítico vs. ativo de risco; inovação financeira vs. especulação; adoção institucional vs. regulação obstrutiva. Cointelegraph / Bloomberg" data-title="Bitcoin permanece resiliente entre incertezas geopolíticas e regulatórias" data-share-url="https://cointelegraph.com">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">02:30</span>
+          <span class="news-source">Cointelegraph / Bloomberg</span>
+        </div>
+        <div class="news-title">Bitcoin permanece resiliente entre incertezas geopolíticas e regulatórias</div>
+        <div class="news-summary">Bitcoin mantém resiliência em contexto de múltiplas incertezas: negociações EUA-Irã que reduzem prêmio geopolítico de risco; ações de banco central incertas conforme inflação oscila; e pressão regulatória crescente sobre inovação cripto e blockchain. Tradicionalmente, Bitcoin é visto como &quot;ouro digital&quot; ou hedge de inflação, beneficiando-se de incerteza macroeconômica e desvalorização de moeda fiduciária, porém nos últimos anos assumiu correlação com mercados de risco (ações tecnológicas), reduzindo seu papel como ativo defensivo. Negociações EUA-Irã sugerem perspectiva de redução de tensão geopolítica e petróleo mais barato, potencialmente levando a desinflação que reduziria atratividade de Bitcoin como hedge de inflação. Regulação mais rigorosa de cripto (particularmente SEC adiando isenção para ativos tokenizados) coloca pressão sobre narrativa de cripto como inovação financeira, posicionando-a mais como especulação. Contudo, adoção institucional permanece robusta, com analistas observando que grandes quantias de capital institucional migraram para cripto como alocação de portfólio alternativa, proporcionando demanda de suporte para preços. Preço de Bitcoin neste período reflete balanço entre narrativas concorrentes: hedge de risco geopolítico vs. ativo de risco; inovação financeira vs. especulação; adoção institucional vs. regulação obstrutiva.</div>
+        <div class="news-link"><a href="https://cointelegraph.com" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Kalshi apoia grupo de lobby mercados de previsão com ex-oficial Trump Kalshi, plataforma de mercados de previsão baseada em blockchain, anunciou lançamento de grupo de advocacy dedicado a contrariar lobby anti-mercados de previsão, nomeando John Bivona, ex-oficial da administração Trump, como chefe de relações governamentais. O movimento estratégico ocorre em contexto de regulação incerta nos EUA sobre status legal de mercados de previsão, com agências como CFTC (Commodities and Futures Trading Commission) e SEC em processo de definir marco regulatório. Kalshi e defensor de inovação cripto/blockchain buscam influência política para permitir operação de mercados de previsão descentralizados e tokenizados, argumentando que são ferramentas valiosas para agregação de informação e descoberta de preços. A oposição vem de interesses estabelecidos (casinos, sportsbooks tradicionais) que veem mercados de previsão blockchain como competição, além de órgãos reguladores preocupados com manipulação de mercado e proteção ao consumidor. Bifurcação representa dinâmica maior em regulação cripto: inovadores buscam espaço regulatório para novos modelos de negócio, enquanto guardiões status quo (reguladores, indústria estabelecida) buscam contenção. Contratação de ex-oficial Trump sugere que Kalshi vê administração como receptiva a inovação em mercados de previsão, potencialmente refletindo visão política mais liberal sobre experimentação e inovação financeira. Cointelegraph" data-title="Kalshi apoia grupo de lobby mercados de previsão com ex-oficial Trump" data-share-url="https://cointelegraph.com/news/kalshi-launches-advocacy-group-to-counter-anti-prediction-market-lobbying?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">02:07</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Kalshi apoia grupo de lobby mercados de previsão com ex-oficial Trump</div>
+        <div class="news-summary">Kalshi, plataforma de mercados de previsão baseada em blockchain, anunciou lançamento de grupo de advocacy dedicado a contrariar lobby anti-mercados de previsão, nomeando John Bivona, ex-oficial da administração Trump, como chefe de relações governamentais. O movimento estratégico ocorre em contexto de regulação incerta nos EUA sobre status legal de mercados de previsão, com agências como CFTC (Commodities and Futures Trading Commission) e SEC em processo de definir marco regulatório. Kalshi e defensor de inovação cripto/blockchain buscam influência política para permitir operação de mercados de previsão descentralizados e tokenizados, argumentando que são ferramentas valiosas para agregação de informação e descoberta de preços. A oposição vem de interesses estabelecidos (casinos, sportsbooks tradicionais) que veem mercados de previsão blockchain como competição, além de órgãos reguladores preocupados com manipulação de mercado e proteção ao consumidor. Bifurcação representa dinâmica maior em regulação cripto: inovadores buscam espaço regulatório para novos modelos de negócio, enquanto guardiões status quo (reguladores, indústria estabelecida) buscam contenção. Contratação de ex-oficial Trump sugere que Kalshi vê administração como receptiva a inovação em mercados de previsão, potencialmente refletindo visão política mais liberal sobre experimentação e inovação financeira.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/kalshi-launches-advocacy-group-to-counter-anti-prediction-market-lobbying?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Stablecoins ganham adoção institucional conforme demanda por pagamentos digitais cresce Stablecoins—criptomoedas cuja valor é atrelado a ativos estáveis como dólar americano—estão acelerando adoção institucional conforme empresas de pagamento, bancos e plataformas de comércio avaliam seu potencial para reduzir custos de transferência internacional de fundos e liquidação de transações. USDC (USD Coin) e USDT (Tether) capturam maioria do volume de stablecoin, com USDT gerando polêmica periódica sobre transparência de reservas mas mantendo dominância de mercado através de liquideidade e integração em exchanges. Interesse institucional em stablecoins reflete reconhecimento de que moeda digital com volatilidade reduzida resolve problema prático real: transferência global de fundos por sistemas tradicionais é lenta, cara e operacionalmente complexa; stablecoins oferecem alternativa mais rápida e barata. Regulação de stablecoins está cristalizando globalmente (Europa: Markets in Crypto Assets Regulation; EUA: proposta legislativa; Brasil: regulatory framework emergente), criando certeza regulatória que institucional anteriormente foi hesitante a aceitar. Contention permanece sobre se stablecoins devem ser consideradas moeda (sujeita a regulação monetária) ou valor mobiliário (sujeita a regulação de valores). Lançamentos de stablecoins por bancos centrais (CBDCs - Central Bank Digital Currencies) representa ameaça potencial de longo prazo a stablecoins privadas, porém maturação de CBDC está sendo mais lenta que antecipado, mantendo espaço para stablecoins privadas no curto prazo. Dinâmica reflete transição para sistema financeiro digital híbrido. Cointelegraph / Bloomberg" data-title="Stablecoins ganham adoção institucional conforme demanda por pagamentos digitais cresce" data-share-url="https://cointelegraph.com">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">01:45</span>
+          <span class="news-source">Cointelegraph / Bloomberg</span>
+        </div>
+        <div class="news-title">Stablecoins ganham adoção institucional conforme demanda por pagamentos digitais cresce</div>
+        <div class="news-summary">Stablecoins—criptomoedas cuja valor é atrelado a ativos estáveis como dólar americano—estão acelerando adoção institucional conforme empresas de pagamento, bancos e plataformas de comércio avaliam seu potencial para reduzir custos de transferência internacional de fundos e liquidação de transações. USDC (USD Coin) e USDT (Tether) capturam maioria do volume de stablecoin, com USDT gerando polêmica periódica sobre transparência de reservas mas mantendo dominância de mercado através de liquideidade e integração em exchanges. Interesse institucional em stablecoins reflete reconhecimento de que moeda digital com volatilidade reduzida resolve problema prático real: transferência global de fundos por sistemas tradicionais é lenta, cara e operacionalmente complexa; stablecoins oferecem alternativa mais rápida e barata. Regulação de stablecoins está cristalizando globalmente (Europa: Markets in Crypto Assets Regulation; EUA: proposta legislativa; Brasil: regulatory framework emergente), criando certeza regulatória que institucional anteriormente foi hesitante a aceitar. Contention permanece sobre se stablecoins devem ser consideradas moeda (sujeita a regulação monetária) ou valor mobiliário (sujeita a regulação de valores). Lançamentos de stablecoins por bancos centrais (CBDCs - Central Bank Digital Currencies) representa ameaça potencial de longo prazo a stablecoins privadas, porém maturação de CBDC está sendo mais lenta que antecipado, mantendo espaço para stablecoins privadas no curto prazo. Dinâmica reflete transição para sistema financeiro digital híbrido.</div>
+        <div class="news-link"><a href="https://cointelegraph.com" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="SEC adia plano de &quot;isenção de inovação&quot; para ações tokenizadas Comissão de Valores Mobiliários (SEC) dos EUA adiou release de proposta que permitiria isenção de inovação para negociação de ações tokenizadas, refletindo pressão da indústria sobre preocupações regulatórias e receios de proteção ao consumidor. A isenção de inovação—mecanismo regulatório que permite testes de novos produtos ou serviços financeiros em escala limitada com requisitos regulatórios atenuados—foi proposta como caminho para permitir experimentação com tokenização de títulos de ações (transformando-os em ativos digitais em blockchain). A retirada da proposta reflete tensions entre promotores de inovação blockchain (que argumentam que tokenização pode reduzir custos de settlement, melhorar liquidez e democratizar acesso a mercados de ações) e reguladores/defensores de investidor (preocupados com fraude, volatilidade e risco sistêmico de novos modelos não testados). Adiamento sugere que SEC enfrenta pressão interna e externa sobre se ações tokenizadas apresentam risco regulatório aceitável comparado ao benefício de inovação. Desenvolvimento é retrocesso para defensor de cripto/blockchain que esperavam que SEC permitisse experimentação sob supervisão regulatória. Padrão reflete ambivalência regulatória americana: reconhecimento teórico de potencial de blockchain, acompanhado de cautela prática sobre risco e proteção ao consumidor. Cointelegraph" data-title="SEC adia plano de &quot;isenção de inovação&quot; para ações tokenizadas" data-share-url="https://cointelegraph.com/news/sec-postpones-plan-allowing-innovation-exemption-for-tokenized-stocks-report?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 mai 2026</span>
+          <span class="news-time">00:45</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">SEC adia plano de &quot;isenção de inovação&quot; para ações tokenizadas</div>
+        <div class="news-summary">Comissão de Valores Mobiliários (SEC) dos EUA adiou release de proposta que permitiria isenção de inovação para negociação de ações tokenizadas, refletindo pressão da indústria sobre preocupações regulatórias e receios de proteção ao consumidor. A isenção de inovação—mecanismo regulatório que permite testes de novos produtos ou serviços financeiros em escala limitada com requisitos regulatórios atenuados—foi proposta como caminho para permitir experimentação com tokenização de títulos de ações (transformando-os em ativos digitais em blockchain). A retirada da proposta reflete tensions entre promotores de inovação blockchain (que argumentam que tokenização pode reduzir custos de settlement, melhorar liquidez e democratizar acesso a mercados de ações) e reguladores/defensores de investidor (preocupados com fraude, volatilidade e risco sistêmico de novos modelos não testados). Adiamento sugere que SEC enfrenta pressão interna e externa sobre se ações tokenizadas apresentam risco regulatório aceitável comparado ao benefício de inovação. Desenvolvimento é retrocesso para defensor de cripto/blockchain que esperavam que SEC permitisse experimentação sob supervisão regulatória. Padrão reflete ambivalência regulatória americana: reconhecimento teórico de potencial de blockchain, acompanhado de cautela prática sobre risco e proteção ao consumidor.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/sec-postpones-plan-allowing-innovation-exemption-for-tokenized-stocks-report?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
