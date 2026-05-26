@@ -268,7 +268,7 @@ Para cada notícia: escreva um resumo em português brasileiro com 10 a 14 linha
 
 Além das notícias, gere um "fio condutor do dia" (campo thread_of_day): um parágrafo editorial de 3 a 4 frases conectando os principais temas do dia, explicando o que une as notícias mais importantes desta edição.
 
-Retorne APENAS JSON válido, sem texto antes ou depois:
+Retorne APENAS JSON válido, sem texto antes ou depois. IMPORTANTE: nos campos de texto (summary, title, thread_of_day), nunca use aspas duplas — use aspas simples ou reescreva a frase para evitá-las:
 {
   "thread_of_day": "Parágrafo editorial de 3 a 4 frases conectando os principais temas do dia.",
   "news": [
@@ -296,7 +296,18 @@ ${articlesText}`;
   if (text.includes('```json')) text = text.split('```json')[1].split('```')[0].trim();
   else if (text.includes('```')) text = text.split('```')[1].split('```')[0].trim();
 
-  const data = JSON.parse(text);
+  // Remove caracteres de controle que quebram JSON (exceto \t \n \r que são válidos escapados)
+  text = text.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '');
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    console.warn(`JSON inválido, tentando recuperar: ${e.message}`);
+    // Remove vírgulas antes de } ou ] (trailing commas que Claude às vezes gera)
+    const cleaned = text.replace(/,(\s*[}\]])/g, '$1');
+    data = JSON.parse(cleaned);
+  }
   const threadOfDay = data.thread_of_day || '';
 
   const grouped = {};
