@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">29 DE MAIO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">Enquanto negociações entre EUA e Irã avançam para estender o cessar-fogo e aliviar tensões geopolíticas, os mercados globais reagem com cautela: ações atingem recordes, mas criptomoedas permanecem estagnadas e a procura por novos compradores enfraquece. A adoção acelerada de IA e robótica humanoides impulsiona setores específicos na Europa e Ásia, enquanto reguladores nos EUA intensificam pressões sobre grandes corporações, criando um cenário de tensão entre inovação tecnológica e controle governamental.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-05-28/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29" selected>2026-05-29</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="economia" onclick="filterTopic('economia')" style="color:#84CC16;border-color:#84CC1640;background:#84CC1615;">💰 Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="web3" onclick="filterTopic('web3')" style="color:#3B82F6;border-color:#3B82F640;background:#3B82F615;">🌐 Web3</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Chefe da OMS chega na RDC prometendo frear surto de Ebola Tedros Adhanom Ghebreyesus, diretor-geral da Organização Mundial da Saúde, chegou à República Democrática do Congo para avaliar pessoalmente o surto de Ebola que assola a província de Ituri. O chefe da OMS prometeu que o surto pode ser contido, mas alertou para a necessidade de cessar imediatamente os conflitos armados que estão impedindo os esforços de contenção. A situação humanitária é crítica, com centenas de mortes confirmadas e sistemas de saúde sobrecarregados. A insegurança regional, alimentada por conflitos entre grupos armados, tem prejudicado campanhas de vacinação e rastreamento de contatos. Esta é uma crise que combina emergência epidemiológica com instabilidade geopolítica, exigindo ação coordenada internacional. The Guardian" data-title="Chefe da OMS chega na RDC prometendo frear surto de Ebola" data-share-url="https://www.theguardian.com/world/2026/may/29/who-chief-tedros-adhanom-ghebreyesus-drc-ebola-outbreak-epidemic">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">23:10</span>
+          <span class="news-source">The Guardian</span>
+        </div>
+        <div class="news-title">Chefe da OMS chega na RDC prometendo frear surto de Ebola</div>
+        <div class="news-summary">Tedros Adhanom Ghebreyesus, diretor-geral da Organização Mundial da Saúde, chegou à República Democrática do Congo para avaliar pessoalmente o surto de Ebola que assola a província de Ituri. O chefe da OMS prometeu que o surto pode ser contido, mas alertou para a necessidade de cessar imediatamente os conflitos armados que estão impedindo os esforços de contenção. A situação humanitária é crítica, com centenas de mortes confirmadas e sistemas de saúde sobrecarregados. A insegurança regional, alimentada por conflitos entre grupos armados, tem prejudicado campanhas de vacinação e rastreamento de contatos. Esta é uma crise que combina emergência epidemiológica com instabilidade geopolítica, exigindo ação coordenada internacional.</div>
+        <div class="news-link"><a href="https://www.theguardian.com/world/2026/may/29/who-chief-tedros-adhanom-ghebreyesus-drc-ebola-outbreak-epidemic" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Atualizações da Guerra no Irã: EUA dizem estar fechando acordo para reabrir Estreito de Ormuz Autoridades dos EUA confirmaram ao New York Times estar na etapa final de negociações para estender o cessar-fogo e reabrir o Estreito de Ormuz, uma das rotas de comércio mais críticas do mundo. Segundo funcionários americanos, o marco conceitual de um acordo emergencial foi acordado, mas ainda aguarda aprovação do presidente Trump. A reabertura do Estreito, bloqueado durante escaladas recentes, é essencial para restaurar o fluxo de petróleo global e reduzir pressões inflacionárias. O acordo poderia ter implicações profundas para a geopolítica do Oriente Médio e preços de energia. Mercados globais antecipam a notícia com cautela, já que qualquer sinal de proximidade de paz reduz prêmios de risco de conflito. New York Times" data-title="Atualizações da Guerra no Irã: EUA dizem estar fechando acordo para reabrir Estreito de Ormuz" data-share-url="https://www.nytimes.com/live/2026/05/28/world/iran-war-us-trump-deal">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">23:06</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Atualizações da Guerra no Irã: EUA dizem estar fechando acordo para reabrir Estreito de Ormuz</div>
+        <div class="news-summary">Autoridades dos EUA confirmaram ao New York Times estar na etapa final de negociações para estender o cessar-fogo e reabrir o Estreito de Ormuz, uma das rotas de comércio mais críticas do mundo. Segundo funcionários americanos, o marco conceitual de um acordo emergencial foi acordado, mas ainda aguarda aprovação do presidente Trump. A reabertura do Estreito, bloqueado durante escaladas recentes, é essencial para restaurar o fluxo de petróleo global e reduzir pressões inflacionárias. O acordo poderia ter implicações profundas para a geopolítica do Oriente Médio e preços de energia. Mercados globais antecipam a notícia com cautela, já que qualquer sinal de proximidade de paz reduz prêmios de risco de conflito.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/05/28/world/iran-war-us-trump-deal" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Itália restaura testículos de sorte em mosaico de touro desgastado por turistas Restauradores italianos concluíram trabalho de revitalização de um mosaico histórico de um touro em Pompeia cujos testículos foram desgastados por turistas tocando-os como tradição de boa sorte. A obra é centro de prática cultural centenária que envolve visitantes realizarem três giros no mosaico em busca de fortuna. O desgaste do artefato arqueológico ilustra tensões entre preservação de patrimônio cultural e fluxos de turismo de massa. Restauradores utilizaram técnicas especializadas para recriar as características danificadas. Este caso exemplifica desafios globais na conservação de sítios históricos sob pressão do turismo crescente pós-pandemia. BBC News" data-title="Itália restaura testículos de sorte em mosaico de touro desgastado por turistas" data-share-url="https://www.bbc.com/news/articles/c1m215npjp2o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">23:01</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Itália restaura testículos de sorte em mosaico de touro desgastado por turistas</div>
+        <div class="news-summary">Restauradores italianos concluíram trabalho de revitalização de um mosaico histórico de um touro em Pompeia cujos testículos foram desgastados por turistas tocando-os como tradição de boa sorte. A obra é centro de prática cultural centenária que envolve visitantes realizarem três giros no mosaico em busca de fortuna. O desgaste do artefato arqueológico ilustra tensões entre preservação de patrimônio cultural e fluxos de turismo de massa. Restauradores utilizaram técnicas especializadas para recriar as características danificadas. Este caso exemplifica desafios globais na conservação de sítios históricos sob pressão do turismo crescente pós-pandemia.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c1m215npjp2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Portugal quebra recorde de dia mais quente em maio enquanto Europa suda em onda de calor Portugal registrou seu dia mais quente em maio, consolidando uma onda de calor sem precedentes que varreu a Europa nesta semana. Na França, estudantes realizam exames em escolas-padaria como medida de adaptação, enquanto Itália emitiu alertas vermelhos de perigo extremo. As temperaturas recorde estão causando impactos significativos na saúde pública, economia e infraestrutura. Este evento climático extremo reforça preocupações sobre mudanças climáticas aceleradas e seus efeitos devastadores. As ondas de calor prolongadas podem afetar a produção agrícola europeia, aumentando pressões inflacionárias sobre commodities alimentares e impactando decisões de política monetária dos bancos centrais europeus. BBC News" data-title="Portugal quebra recorde de dia mais quente em maio enquanto Europa suda em onda de calor" data-share-url="https://www.bbc.com/news/articles/c3v2yv5207xo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">20:36</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Portugal quebra recorde de dia mais quente em maio enquanto Europa suda em onda de calor</div>
+        <div class="news-summary">Portugal registrou seu dia mais quente em maio, consolidando uma onda de calor sem precedentes que varreu a Europa nesta semana. Na França, estudantes realizam exames em escolas-padaria como medida de adaptação, enquanto Itália emitiu alertas vermelhos de perigo extremo. As temperaturas recorde estão causando impactos significativos na saúde pública, economia e infraestrutura. Este evento climático extremo reforça preocupações sobre mudanças climáticas aceleradas e seus efeitos devastadores. As ondas de calor prolongadas podem afetar a produção agrícola europeia, aumentando pressões inflacionárias sobre commodities alimentares e impactando decisões de política monetária dos bancos centrais europeus.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c3v2yv5207xo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EUA e Irã estão muito perto de um acordo, mas ainda não chegaram lá, diz Vance Autoridades americanas revelaram ao BBC estar muito próximos de um acordo para estender o cessar-fogo entre EUA e Irã, com o marco conceitual já acordado. No entanto, a aprovação final depende da confirmação do presidente Trump e da liderança iraniana. O vice-presidente JD Vance afirmou que as partes estão muito próximas, mas ainda não fecharam completamente o acordo. Esta negociação é crítica para estabilizar o Oriente Médio após meses de escalada militar. Um possível acordo poderia incluir a reabertura do Estreito de Ormuz e alívio de tensões que vêm afetando os mercados de petróleo e a economia global. Analistas apontam que a assinatura de Trump é essencial para legitimidade internacional do acordo. BBC News" data-title="EUA e Irã estão muito perto de um acordo, mas ainda não chegaram lá, diz Vance" data-share-url="https://www.bbc.com/news/articles/c87qng40wz9o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">20:32</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">EUA e Irã estão muito perto de um acordo, mas ainda não chegaram lá, diz Vance</div>
+        <div class="news-summary">Autoridades americanas revelaram ao BBC estar muito próximos de um acordo para estender o cessar-fogo entre EUA e Irã, com o marco conceitual já acordado. No entanto, a aprovação final depende da confirmação do presidente Trump e da liderança iraniana. O vice-presidente JD Vance afirmou que as partes estão muito próximas, mas ainda não fecharam completamente o acordo. Esta negociação é crítica para estabilizar o Oriente Médio após meses de escalada militar. Um possível acordo poderia incluir a reabertura do Estreito de Ormuz e alívio de tensões que vêm afetando os mercados de petróleo e a economia global. Analistas apontam que a assinatura de Trump é essencial para legitimidade internacional do acordo.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c87qng40wz9o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Foguete Blue Origin explode durante teste na Flórida Um foguete New Glenn da Blue Origin explodiu na plataforma de lançamento em Cape Canaveral, Flórida, durante testes críticos de pré-voo. O incidente, ocorrido na noite de quinta-feira, representa um revés significativo para o programa de exploração espacial da empresa fundada por Jeff Bezos. O bilionário descreveu o dia como extremamente difícil, evidenciando a importância do teste para a cronologia do projeto. A explosão levanta questões sobre segurança dos testes de foguetes pesados e pode impactar cronogramas de lançamentos futuros. Este acidente também toca a competição entre programas espaciais privados e governs, relevante para investimentos em defesa e exploração. BBC News" data-title="Foguete Blue Origin explode durante teste na Flórida" data-share-url="https://www.bbc.com/news/videos/cvgz0pdg32mo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">00:02</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Foguete Blue Origin explode durante teste na Flórida</div>
+        <div class="news-summary">Um foguete New Glenn da Blue Origin explodiu na plataforma de lançamento em Cape Canaveral, Flórida, durante testes críticos de pré-voo. O incidente, ocorrido na noite de quinta-feira, representa um revés significativo para o programa de exploração espacial da empresa fundada por Jeff Bezos. O bilionário descreveu o dia como extremamente difícil, evidenciando a importância do teste para a cronologia do projeto. A explosão levanta questões sobre segurança dos testes de foguetes pesados e pode impactar cronogramas de lançamentos futuros. Este acidente também toca a competição entre programas espaciais privados e governs, relevante para investimentos em defesa e exploração.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/videos/cvgz0pdg32mo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#84CC16;box-shadow:0 0 10px #84CC1680;"></div>
+      <div class="section-title" style="color:#84CC16;">💰 Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Foguete Blue Origin explode em bola gigante de chama na plataforma de lançamento na Flórida O foguete New Glenn da Blue Origin foi destruído em explosão espetacular na plataforma de lançamento em Cape Canaveral, gerando uma bola de fogo massiva visível de longas distâncias. O bilionário Jeff Bezos, fundador da empresa, descreveu-o como um dia extremamente difícil. Este foi um dos testes mais críticos antes de tentativas de lançamento orbital, significando revés importante no cronograma do programa. A empresa agora enfrenta investigação de causas e possível redesenho de sistemas críticos. O acidente tem implicações para a competição comercial de foguetes pesados e investimentos em empresas de tecnologia aeroespacial. BBC News" data-title="Foguete Blue Origin explode em bola gigante de chama na plataforma de lançamento na Flórida" data-share-url="https://www.bbc.com/news/articles/cvgzl5wd8xeo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">23:59</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Foguete Blue Origin explode em bola gigante de chama na plataforma de lançamento na Flórida</div>
+        <div class="news-summary">O foguete New Glenn da Blue Origin foi destruído em explosão espetacular na plataforma de lançamento em Cape Canaveral, gerando uma bola de fogo massiva visível de longas distâncias. O bilionário Jeff Bezos, fundador da empresa, descreveu-o como um dia extremamente difícil. Este foi um dos testes mais críticos antes de tentativas de lançamento orbital, significando revés importante no cronograma do programa. A empresa agora enfrenta investigação de causas e possível redesenho de sistemas críticos. O acidente tem implicações para a competição comercial de foguetes pesados e investimentos em empresas de tecnologia aeroespacial.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/cvgzl5wd8xeo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="ABC acusa administração Trump de ameaçar suas licenças de transmissão A rede de televisão ABC acusou a Comissão Federal de Comunicações de visar suas licenças de estação em campanha considerada 'inconstitucional' pela emissora. A acusação envolve Brendan Carr, regulador apontado pela administração Trump, sob alegações de retaliação contra cobertura crítica. O caso levanta questões significativas sobre liberdade de imprensa e independência regulatória nos EUA. Este conflito exemplifica tensões crescentes entre administração Trump e mídia tradicional, que podem ter implicações para ambiente regulatório das telecomunicações. A disputa poderia estabelecer precedentes importantes para futuras interações entre governo e setor de mídia. New York Times" data-title="ABC acusa administração Trump de ameaçar suas licenças de transmissão" data-share-url="https://www.nytimes.com/2026/05/28/business/media/abc-licenses-fcc-brendan-carr.html">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">20:36</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">ABC acusa administração Trump de ameaçar suas licenças de transmissão</div>
+        <div class="news-summary">A rede de televisão ABC acusou a Comissão Federal de Comunicações de visar suas licenças de estação em campanha considerada 'inconstitucional' pela emissora. A acusação envolve Brendan Carr, regulador apontado pela administração Trump, sob alegações de retaliação contra cobertura crítica. O caso levanta questões significativas sobre liberdade de imprensa e independência regulatória nos EUA. Este conflito exemplifica tensões crescentes entre administração Trump e mídia tradicional, que podem ter implicações para ambiente regulatório das telecomunicações. A disputa poderia estabelecer precedentes importantes para futuras interações entre governo e setor de mídia.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/05/28/business/media/abc-licenses-fcc-brendan-carr.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Robôs humanoides são o futuro da fabricação automotiva, diz BMW A BMW anunciou estar introduzindo robôs humanoides em uma fábrica automotiva na Europa, expandindo projetos semelhantes já em andamento nos EUA. A montadora vê a robótica humanóide como futuro essencial da manufatura, capaz de aumentar eficiência e segurança em linhas de produção. Os robôs humanoides oferecem flexibilidade superior a robôs tradicionais fixos, adaptando-se melhor a tarefas complexas em ambientes dinâmicos. Esta decisão reflete confiança crescente da indústria automotiva em tecnologias de IA e robótica avançada. O movimento tem implicações significativas para emprego industrial e transformação do setor automotivo europeu. BBC News" data-title="Robôs humanoides são o futuro da fabricação automotiva, diz BMW" data-share-url="https://www.bbc.com/news/articles/cgmpwzzvxr2o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">20:36</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Robôs humanoides são o futuro da fabricação automotiva, diz BMW</div>
+        <div class="news-summary">A BMW anunciou estar introduzindo robôs humanoides em uma fábrica automotiva na Europa, expandindo projetos semelhantes já em andamento nos EUA. A montadora vê a robótica humanóide como futuro essencial da manufatura, capaz de aumentar eficiência e segurança em linhas de produção. Os robôs humanoides oferecem flexibilidade superior a robôs tradicionais fixos, adaptando-se melhor a tarefas complexas em ambientes dinâmicos. Esta decisão reflete confiança crescente da indústria automotiva em tecnologias de IA e robótica avançada. O movimento tem implicações significativas para emprego industrial e transformação do setor automotivo europeu.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/cgmpwzzvxr2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Quando o comércio azedou, este fabricante americano de bebidas se mudou para o Canadá A Phillips Distilling, fabricante americana de bebidas alcoólicas, reposicionou sua operação para o Canadá após perder setenta por cento do negócio canadense por causa de proibições provinciais contra álcool importado dos EUA. A decisão ilustra como guerras comerciais e barreiras tarifárias forçam empresas a reestruturarem operações internacionais. A empresa encontrou solução criativa: produzir no Canadá para vender localmente, contornando restrições. Este caso exemplifica impactos reais de tensões comerciais EUA-Canadá na pequena e média empresa. A mudança reforça fragmentação de cadeias de suprimento globais em resposta a protecionismo crescente. BBC News" data-title="Quando o comércio azedou, este fabricante americano de bebidas se mudou para o Canadá" data-share-url="https://www.bbc.com/news/articles/c2l22ypl909o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">20:29</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Quando o comércio azedou, este fabricante americano de bebidas se mudou para o Canadá</div>
+        <div class="news-summary">A Phillips Distilling, fabricante americana de bebidas alcoólicas, reposicionou sua operação para o Canadá após perder setenta por cento do negócio canadense por causa de proibições provinciais contra álcool importado dos EUA. A decisão ilustra como guerras comerciais e barreiras tarifárias forçam empresas a reestruturarem operações internacionais. A empresa encontrou solução criativa: produzir no Canadá para vender localmente, contornando restrições. Este caso exemplifica impactos reais de tensões comerciais EUA-Canadá na pequena e média empresa. A mudança reforça fragmentação de cadeias de suprimento globais em resposta a protecionismo crescente.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c2l22ypl909o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Netflix cancela série animada adulta 'Strip Law' após uma temporada A Netflix decidiu não renovar a série animada adulta 'Strip Law' para uma segunda temporada, segundo anúncio do criador Cullen Crawford em redes sociais na noite de quinta-feira. O cancelamento segue a estratégia mais ampla da plataforma de cortar conteúdo com audiência limitada para otimizar gastos de produção. Este movimento reflete pressão contínua sobre a Netflix de Wall Street para demonstrar rentabilidade mesmo em portfólio de conteúdo reduzido. O cancelamento ilustra desafios enfrentados por plataformas de streaming na era pós-crescimento exponencial. A decisão pode sinalizar mudança na abordagem de conteúdo original adulto da empresa. Forbes" data-title="Netflix cancela série animada adulta 'Strip Law' após uma temporada" data-share-url="https://www.forbes.com/sites/rickellis/2026/05/29/netflix-cancels-adult-animated-series-strip-law-after-one-season/">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">01:06</span>
+          <span class="news-source">Forbes</span>
+        </div>
+        <div class="news-title">Netflix cancela série animada adulta 'Strip Law' após uma temporada</div>
+        <div class="news-summary">A Netflix decidiu não renovar a série animada adulta 'Strip Law' para uma segunda temporada, segundo anúncio do criador Cullen Crawford em redes sociais na noite de quinta-feira. O cancelamento segue a estratégia mais ampla da plataforma de cortar conteúdo com audiência limitada para otimizar gastos de produção. Este movimento reflete pressão contínua sobre a Netflix de Wall Street para demonstrar rentabilidade mesmo em portfólio de conteúdo reduzido. O cancelamento ilustra desafios enfrentados por plataformas de streaming na era pós-crescimento exponencial. A decisão pode sinalizar mudança na abordagem de conteúdo original adulto da empresa.</div>
+        <div class="news-link"><a href="https://www.forbes.com/sites/rickellis/2026/05/29/netflix-cancels-adult-animated-series-strip-law-after-one-season/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Europa está à beira de uma guerra comercial com a China. Eis por quê A União Europeia enfrenta pressão crescente de produtos chineses baratos que ameaçam o setor manufatureiro europeu, levando a busca acelerada por soluções comerciais. Bens de baixo custo inundam mercados europeus, particularmente em setores de tecnologia e manufatura tradicional, criando desequilíbrio comercial significativo. Autoridades europeias discutem medidas protecionistas, incluindo tarifas adicionais e revisão de acordos comerciais. A situação reflete dinâmica mais ampla de rivalidade econômica EUA-China transferindo impactos para aliados transatlânticos. Especialistas alertam que escalada tarifária poderia prejudicar cadeias de suprimento globais e aumentar inflação de consumidor na Europa. New York Times" data-title="Europa está à beira de uma guerra comercial com a China. Eis por quê" data-share-url="https://www.nytimes.com/2026/05/29/world/europe/europe-china-trade-war-electric-cars.html">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">01:01</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Europa está à beira de uma guerra comercial com a China. Eis por quê</div>
+        <div class="news-summary">A União Europeia enfrenta pressão crescente de produtos chineses baratos que ameaçam o setor manufatureiro europeu, levando a busca acelerada por soluções comerciais. Bens de baixo custo inundam mercados europeus, particularmente em setores de tecnologia e manufatura tradicional, criando desequilíbrio comercial significativo. Autoridades europeias discutem medidas protecionistas, incluindo tarifas adicionais e revisão de acordos comerciais. A situação reflete dinâmica mais ampla de rivalidade econômica EUA-China transferindo impactos para aliados transatlânticos. Especialistas alertam que escalada tarifária poderia prejudicar cadeias de suprimento globais e aumentar inflação de consumidor na Europa.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/05/29/world/europe/europe-china-trade-war-electric-cars.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Temas principais para observar na maior mostra de tecnologia de IA da Ásia O Jensen Huang, CEO da Nvidia, lidera desfile de líderes de computação de IA na Taiwan para a Computex 2026, maior vitrine tecnológica de IA da Ásia. O evento reúne fabricantes de chips, construtores de software e investidores para apresentar avanços em tecnologia de IA e suas aplicações práticas. A programação carregada promete revelações de novos chips, processadores e arquiteturas de computação otimizadas para IA. A Computex serve como barômetro para direção da indústria de computação e importância crescente de IA em toda cadeia de suprimento tecnológica. Observadores monitoram anúncios de Nvidia, Intel e outras empresas para sinais sobre próxima onda de inovação em computação. Bloomberg Technology" data-title="Temas principais para observar na maior mostra de tecnologia de IA da Ásia" data-share-url="https://www.bloomberg.com/news/articles/2026-05-29/computex-2026-what-to-watch-from-nvidia-intel-at-asia-s-top-ai-tech-show">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">23:57</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Temas principais para observar na maior mostra de tecnologia de IA da Ásia</div>
+        <div class="news-summary">O Jensen Huang, CEO da Nvidia, lidera desfile de líderes de computação de IA na Taiwan para a Computex 2026, maior vitrine tecnológica de IA da Ásia. O evento reúne fabricantes de chips, construtores de software e investidores para apresentar avanços em tecnologia de IA e suas aplicações práticas. A programação carregada promete revelações de novos chips, processadores e arquiteturas de computação otimizadas para IA. A Computex serve como barômetro para direção da indústria de computação e importância crescente de IA em toda cadeia de suprimento tecnológica. Observadores monitoram anúncios de Nvidia, Intel e outras empresas para sinais sobre próxima onda de inovação em computação.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-29/computex-2026-what-to-watch-from-nvidia-intel-at-asia-s-top-ai-tech-show" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fundo Jupiter aproveita boom de energia de IA europeia para superar noventa e dois por cento dos pares O fundo de tecnologia da Jupiter Asset Management superou noventa e dois por cento de seus pares ao focar em ações no cerne do impulso de eletrificação europeu alimentado por demanda de IA. A estratégia de concentração em empresas de infraestrutura de energia e eletrônica relacionada à IA revelou-se altamente lucrativa. O fundo aproveitou a convergência de dois megathemas: transição energética europeia e adoção acelerada de IA em todo o continente. A performance excepcional demonstra potencial de retornos significativos para investidores alinhados com tendências tecnológicas em longo prazo. Este sucesso catalisa interesse crescente em fundos temáticos focados em IA e transição energética. Bloomberg Technology" data-title="Fundo Jupiter aproveita boom de energia de IA europeia para superar noventa e dois por cento dos pares" data-share-url="https://www.bloomberg.com/news/articles/2026-05-29/jupiter-fund-taps-europe-s-ai-energy-boom-to-beat-92-of-peers">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">02:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Fundo Jupiter aproveita boom de energia de IA europeia para superar noventa e dois por cento dos pares</div>
+        <div class="news-summary">O fundo de tecnologia da Jupiter Asset Management superou noventa e dois por cento de seus pares ao focar em ações no cerne do impulso de eletrificação europeu alimentado por demanda de IA. A estratégia de concentração em empresas de infraestrutura de energia e eletrônica relacionada à IA revelou-se altamente lucrativa. O fundo aproveitou a convergência de dois megathemas: transição energética europeia e adoção acelerada de IA em todo o continente. A performance excepcional demonstra potencial de retornos significativos para investidores alinhados com tendências tecnológicas em longo prazo. Este sucesso catalisa interesse crescente em fundos temáticos focados em IA e transição energética.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-29/jupiter-fund-taps-europe-s-ai-energy-boom-to-beat-92-of-peers" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Lenovo dobra em melhor mês desde mil novecentos noventa e nove em rali impulsionado por IA A Lenovo está a caminho de seu melhor mês em mais de vinte e cinco anos, com ações dobrando em maio enquanto entusiasmo de investidores cresce em torno da empresa. A fabricante de computadores ganhou destaque como beneficiária chave do boom de demanda por computadores com capacidades de IA avançadas. O rally excepcional reflete confiança em posicionamento da Lenovo para capitalizar sobre PC refresh cycle impulsionado por processadores e capacidades de IA. O desempenho representa recuperação notável após anos de pressão de mercado em segmento de PCs. Esta tendência sugere potencial de mercado substancial para empresas de computação adaptadas ao ciclo de IA. Bloomberg Technology" data-title="Lenovo dobra em melhor mês desde mil novecentos noventa e nove em rali impulsionado por IA" data-share-url="https://www.bloomberg.com/news/articles/2026-05-29/lenovo-doubles-in-best-month-since-1999-on-ai-fueled-rally">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">00:57</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Lenovo dobra em melhor mês desde mil novecentos noventa e nove em rali impulsionado por IA</div>
+        <div class="news-summary">A Lenovo está a caminho de seu melhor mês em mais de vinte e cinco anos, com ações dobrando em maio enquanto entusiasmo de investidores cresce em torno da empresa. A fabricante de computadores ganhou destaque como beneficiária chave do boom de demanda por computadores com capacidades de IA avançadas. O rally excepcional reflete confiança em posicionamento da Lenovo para capitalizar sobre PC refresh cycle impulsionado por processadores e capacidades de IA. O desempenho representa recuperação notável após anos de pressão de mercado em segmento de PCs. Esta tendência sugere potencial de mercado substancial para empresas de computação adaptadas ao ciclo de IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-29/lenovo-doubles-in-best-month-since-1999-on-ai-fueled-rally" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Investidores apostam alto em robôs humanoides Investidores de todo o mundo estão concentrando recursos significativos em startups e empresas de robótica humanóide, com o Humanoids Summit em Tóquio reunindo líderes de empresas, construtores e investidores para demonstrações ao vivo de robôs humanoides de ponta. O evento evidencia momento crítico no desenvolvimento de robótica humanóide como classe de ativos de investimento emergente. Demonstrações ao vivo de protótipos avançados e discussões sobre casos de uso comerciais reforçam confiança em viabilidade da tecnologia. Capitalistas de risco, fundos de private equity e empresas de tecnologia estabelecidas participam ativamente de rodadas de financiamento. Esta convergência de interesse sinalizando aceleração próxima da comercialização de humanoides. Bloomberg Technology" data-title="Investidores apostam alto em robôs humanoides" data-share-url="https://www.bloomberg.com/news/videos/2026-05-29/investors-bet-big-on-humanoid-robots-video">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">00:21</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Investidores apostam alto em robôs humanoides</div>
+        <div class="news-summary">Investidores de todo o mundo estão concentrando recursos significativos em startups e empresas de robótica humanóide, com o Humanoids Summit em Tóquio reunindo líderes de empresas, construtores e investidores para demonstrações ao vivo de robôs humanoides de ponta. O evento evidencia momento crítico no desenvolvimento de robótica humanóide como classe de ativos de investimento emergente. Demonstrações ao vivo de protótipos avançados e discussões sobre casos de uso comerciais reforçam confiança em viabilidade da tecnologia. Capitalistas de risco, fundos de private equity e empresas de tecnologia estabelecidas participam ativamente de rodadas de financiamento. Esta convergência de interesse sinalizando aceleração próxima da comercialização de humanoides.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/videos/2026-05-29/investors-bet-big-on-humanoid-robots-video" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Sea de Singapura estabelece equipe de investimento em IA como parte de pivô tecnológico A Sea Ltd., gigante de tecnologia de Singapura, constituiu equipe dedicada para identificar e avaliar novas oportunidades de investimento em IA como parte de estratégia mais ampla de aceleração de atuação em tecnologia. A empresa reconhece IA como área crítica para crescimento futuro e busca participar cedo em desenvolvimento de startups e tecnologias de IA emergentes. Este movimento reflete sentimento em todo o setor de tecnologia asiático de que IA representa próxima fronteira de criação de valor. A Sea está posicionando-se como participante ativo no ecossistema de inovação de IA, potencialmente levando a aquisições ou parcerias estratégicas. A decisão reforça importância crescente de IA para gigantes de tecnologia tradicionais. Bloomberg Technology" data-title="Sea de Singapura estabelece equipe de investimento em IA como parte de pivô tecnológico" data-share-url="https://www.bloomberg.com/news/articles/2026-05-29/singapore-s-sea-sets-up-ai-investment-team-as-part-of-tech-pivot">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">00:05</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Sea de Singapura estabelece equipe de investimento em IA como parte de pivô tecnológico</div>
+        <div class="news-summary">A Sea Ltd., gigante de tecnologia de Singapura, constituiu equipe dedicada para identificar e avaliar novas oportunidades de investimento em IA como parte de estratégia mais ampla de aceleração de atuação em tecnologia. A empresa reconhece IA como área crítica para crescimento futuro e busca participar cedo em desenvolvimento de startups e tecnologias de IA emergentes. Este movimento reflete sentimento em todo o setor de tecnologia asiático de que IA representa próxima fronteira de criação de valor. A Sea está posicionando-se como participante ativo no ecossistema de inovação de IA, potencialmente levando a aquisições ou parcerias estratégicas. A decisão reforça importância crescente de IA para gigantes de tecnologia tradicionais.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-05-29/singapore-s-sea-sets-up-ai-investment-team-as-part-of-tech-pivot" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="web3">
+    <div class="section-header">
+      <div class="section-dot" style="background:#3B82F6;box-shadow:0 0 10px #3B82F680;"></div>
+      <div class="section-title" style="color:#3B82F6;">🌐 Web3</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Secretário do Tesouro Scott Bessent reitera compromisso de não haver CBDC sob administração Trump Scott Bessent, Secretário do Tesouro dos EUA, reafirmou durante coletiva de imprensa quinta-feira o compromisso da administração Trump de não desenvolver moeda digital de banco central nos EUA. Bessent também instou o Congresso a finalizar o Clarity Act, legislação que busca fornecer clareza regulatória para criptomoedas e ativos digitais. Este posicionamento oferece certeza ao ecossistema de criptomoedas sobre intenções governamentais e potencial aprovação de legislação de criptomoedas amigável. A recusa em desenvolver CBDC alinha-se com retorica pró-Bitcoin e pró-descentralização da administração Trump. Este sinal positivo pode reforçar confiança de investidores institucionais no setor de ativos digitais. The Block" data-title="Secretário do Tesouro Scott Bessent reitera compromisso de não haver CBDC sob administração Trump" data-share-url="https://www.theblock.co/post/402971/scott-bessent-reiterates-no-cbdc?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">23:53</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Secretário do Tesouro Scott Bessent reitera compromisso de não haver CBDC sob administração Trump</div>
+        <div class="news-summary">Scott Bessent, Secretário do Tesouro dos EUA, reafirmou durante coletiva de imprensa quinta-feira o compromisso da administração Trump de não desenvolver moeda digital de banco central nos EUA. Bessent também instou o Congresso a finalizar o Clarity Act, legislação que busca fornecer clareza regulatória para criptomoedas e ativos digitais. Este posicionamento oferece certeza ao ecossistema de criptomoedas sobre intenções governamentais e potencial aprovação de legislação de criptomoedas amigável. A recusa em desenvolver CBDC alinha-se com retorica pró-Bitcoin e pró-descentralização da administração Trump. Este sinal positivo pode reforçar confiança de investidores institucionais no setor de ativos digitais.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/402971/scott-bessent-reiterates-no-cbdc?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="NEAR revela Envio Universal para pagamentos confidenciais entre cadeias O protocolo NEAR introduziu recurso inovador chamado Universal Send que permite pagamentos confidenciais automáticos entre diferentes blockchains sem que o usuário necessite coordenar manualmente o roteamento entre cadeias. A feature resolve problema crítico em DeFi de complexidade de transações cross-chain mantendo privacidade completa dos usuários. O Universal Send automatiza o roteamento de liquidez entre cadeias enquanto criptografa informações de transação, oferecendo experiência de usuário superior. Este avanço representa progresso significativo em interoperabilidade entre cadeias, tema crucial para adoção em massa de Web3. A inovação posiciona NEAR como líder em soluções de pagamento descentralizado cross-chain. Bankless" data-title="NEAR revela Envio Universal para pagamentos confidenciais entre cadeias" data-share-url="https://www.bankless.com/read/news/near-unveils-universal-send-for-confidential-crosschain-payments">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">00:49</span>
+          <span class="news-source">Bankless</span>
+        </div>
+        <div class="news-title">NEAR revela Envio Universal para pagamentos confidenciais entre cadeias</div>
+        <div class="news-summary">O protocolo NEAR introduziu recurso inovador chamado Universal Send que permite pagamentos confidenciais automáticos entre diferentes blockchains sem que o usuário necessite coordenar manualmente o roteamento entre cadeias. A feature resolve problema crítico em DeFi de complexidade de transações cross-chain mantendo privacidade completa dos usuários. O Universal Send automatiza o roteamento de liquidez entre cadeias enquanto criptografa informações de transação, oferecendo experiência de usuário superior. Este avanço representa progresso significativo em interoperabilidade entre cadeias, tema crucial para adoção em massa de Web3. A inovação posiciona NEAR como líder em soluções de pagamento descentralizado cross-chain.</div>
+        <div class="news-link"><a href="https://www.bankless.com/read/news/near-unveils-universal-send-for-confidential-crosschain-payments" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Base implementa sua atualização Azul na mainnet A rede Base, blockchain compatível com Ethereum de camada dois construída pela Coinbase, implementou a atualização Azul em sua mainnet, representando sua atualização mais significativa desde o lançamento original. A atualização Azul traz melhorias substanciais em escalabilidade, velocidade de transação e eficiência de custos. O deployment de Azul sugere amadurecimento técnico da rede Base e seu posicionamento como alternativa competitiva para aplicações DeFi e Web3. A implementação de grandes atualizações maiores em protocolos de blockchain reflete iteração contínua em direção a melhores experiências de usuário. Este desenvolvimento pode acelerar migração de volume para Base de outras cadeias de camada dois. Bankless" data-title="Base implementa sua atualização Azul na mainnet" data-share-url="https://www.bankless.com/read/news/base-deploys-its-azul-upgrade-on-mainnet">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">00:23</span>
+          <span class="news-source">Bankless</span>
+        </div>
+        <div class="news-title">Base implementa sua atualização Azul na mainnet</div>
+        <div class="news-summary">A rede Base, blockchain compatível com Ethereum de camada dois construída pela Coinbase, implementou a atualização Azul em sua mainnet, representando sua atualização mais significativa desde o lançamento original. A atualização Azul traz melhorias substanciais em escalabilidade, velocidade de transação e eficiência de custos. O deployment de Azul sugere amadurecimento técnico da rede Base e seu posicionamento como alternativa competitiva para aplicações DeFi e Web3. A implementação de grandes atualizações maiores em protocolos de blockchain reflete iteração contínua em direção a melhores experiências de usuário. Este desenvolvimento pode acelerar migração de volume para Base de outras cadeias de camada dois.</div>
+        <div class="news-link"><a href="https://www.bankless.com/read/news/base-deploys-its-azul-upgrade-on-mainnet" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="XRP sobe acima de um dólar e trinta centavos após pico de volume, mas ursos ainda controlam quadro maior A criptomoeda XRP rebotou acima da marca de um dólar e trinta centavos após pico de volume de negociação, quebrando sequência de mínimos cada vez mais baixos. Porém, analistas observam que o token permanece aprisionado abaixo de níveis de resistência principais que limitaram todas as altas este ano. O rali de volume sugere alguns compradores agressivos entrando em posição, mas estrutura técnica permanece fraca com ursos mantendo controle do movimento maior. Os dados de cadeia indicam que grandes detentores não estão comprando agressivamente no nível de preço atual. O contexto técnico misto deixa incerteza quanto à sustentabilidade do rali de curto prazo. CoinDesk" data-title="XRP sobe acima de um dólar e trinta centavos após pico de volume, mas ursos ainda controlam quadro maior" data-share-url="https://www.coindesk.com/markets/2026/05/29/xrp-rebounds-above-usd1-30-after-volume-surge-but-bears-still-control-the-bigger-picture">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">02:01</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">XRP sobe acima de um dólar e trinta centavos após pico de volume, mas ursos ainda controlam quadro maior</div>
+        <div class="news-summary">A criptomoeda XRP rebotou acima da marca de um dólar e trinta centavos após pico de volume de negociação, quebrando sequência de mínimos cada vez mais baixos. Porém, analistas observam que o token permanece aprisionado abaixo de níveis de resistência principais que limitaram todas as altas este ano. O rali de volume sugere alguns compradores agressivos entrando em posição, mas estrutura técnica permanece fraca com ursos mantendo controle do movimento maior. Os dados de cadeia indicam que grandes detentores não estão comprando agressivamente no nível de preço atual. O contexto técnico misto deixa incerteza quanto à sustentabilidade do rali de curto prazo.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/05/29/xrp-rebounds-above-usd1-30-after-volume-surge-but-bears-still-control-the-bigger-picture" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin e ether pouco alterados apesar de ações em nível recorde, queda de petróleo e redução de medos de guerra Bitcoin e Ethereum permaneceram relativamente estáveis em trading range apesar de catalistas macroeconômicos positivos: ações globais atingiram recordes, petróleo caiu em antecipação a possível extensão de cessar-fogo no Irã, e medos de conflito geopolítico diminuíram significativamente. O desempenho frouxo de criptomoedas em face de notícias positivas sugere falta de momentum comprador genuíno e possível apatia de investidores. Alguns analistas apontam que mercado de criptomoedas pode estar esperando por evento catalizador adicional para retomar movimento direcional. O cenário contrasta com comportamento histórico onde queda de prêmio de risco geopolítico normalmente beneficia ativos de risco como criptomoedas. CoinDesk" data-title="Bitcoin e ether pouco alterados apesar de ações em nível recorde, queda de petróleo e redução de medos de guerra" data-share-url="https://www.coindesk.com/markets/2026/05/29/bitcoin-ether-little-changed-despite-record-stocks-falling-oil-and-easing-war-fears">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">01:41</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin e ether pouco alterados apesar de ações em nível recorde, queda de petróleo e redução de medos de guerra</div>
+        <div class="news-summary">Bitcoin e Ethereum permaneceram relativamente estáveis em trading range apesar de catalistas macroeconômicos positivos: ações globais atingiram recordes, petróleo caiu em antecipação a possível extensão de cessar-fogo no Irã, e medos de conflito geopolítico diminuíram significativamente. O desempenho frouxo de criptomoedas em face de notícias positivas sugere falta de momentum comprador genuíno e possível apatia de investidores. Alguns analistas apontam que mercado de criptomoedas pode estar esperando por evento catalizador adicional para retomar movimento direcional. O cenário contrasta com comportamento histórico onde queda de prêmio de risco geopolítico normalmente beneficia ativos de risco como criptomoedas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/05/29/bitcoin-ether-little-changed-despite-record-stocks-falling-oil-and-easing-war-fears" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Principais detentores de Bitcoin interrompem compras enquanto procura por demanda desacelera CryptoQuant reporta que estrutura de holdings entre grandes investidores em Bitcoin está se deteriorando, com principais coortes de investidores reduzindo posições ao invés de ampliá-las. Historicamente, este padrão de enfraquecimento estrutural precedeu períodos de fraqueza de preço sustentada em Bitcoin. Os dados sugerem que institucional e investidores sofisticados estão perdendo confiança em prospecto de curto prazo. A desaceleração de demanda coincide com período de alta volatilidade macro e preocupações sobre resilência econômica global. Analistas apontam que ausência de compra institucional está deixando mercado vulnerável a movimentos de vendas surpresa. Cointelegraph" data-title="Principais detentores de Bitcoin interrompem compras enquanto procura por demanda desacelera" data-share-url="https://cointelegraph.com/news/bitcoin-hodling-structure-weakening-across-major-investor-cohorts-cryptoquant?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">01:33</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Principais detentores de Bitcoin interrompem compras enquanto procura por demanda desacelera</div>
+        <div class="news-summary">CryptoQuant reporta que estrutura de holdings entre grandes investidores em Bitcoin está se deteriorando, com principais coortes de investidores reduzindo posições ao invés de ampliá-las. Historicamente, este padrão de enfraquecimento estrutural precedeu períodos de fraqueza de preço sustentada em Bitcoin. Os dados sugerem que institucional e investidores sofisticados estão perdendo confiança em prospecto de curto prazo. A desaceleração de demanda coincide com período de alta volatilidade macro e preocupações sobre resilência econômica global. Analistas apontam que ausência de compra institucional está deixando mercado vulnerável a movimentos de vendas surpresa.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bitcoin-hodling-structure-weakening-across-major-investor-cohorts-cryptoquant?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fornecimento recordista de Bitcoin esconde escassez de compradores, diz CryptoQuant Análise da CryptoQuant revela que fornecimento recordista de Bitcoin em posse de titulares de longo prazo mascara problema mais profundo: falta de novos compradores entrando no mercado. Historicamente, aumento em posse de longo prazo sinaliza convicção de investidores confiantes em preços futuros, mas CryptoQuant argumenta que padrão atual reflete apenas detenção passiva sem nova demanda compradora. A métrica sugere que mercado atingiu platô de demanda, potencialmente precursor de fraqueza de preço sustentada. Os padrões de alocação indicam que baleias não estão ampliando posições em níveis de preço atuais. Este contexto levanta questões sobre sustentabilidade dos preços de Bitcoin no curto a médio prazo. CoinDesk" data-title="Fornecimento recordista de Bitcoin esconde escassez de compradores, diz CryptoQuant" data-share-url="https://www.coindesk.com/markets/2026/05/29/bitcoin-s-record-holder-supply-hides-a-buyer-drought-cryptoquant-says">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">01:23</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Fornecimento recordista de Bitcoin esconde escassez de compradores, diz CryptoQuant</div>
+        <div class="news-summary">Análise da CryptoQuant revela que fornecimento recordista de Bitcoin em posse de titulares de longo prazo mascara problema mais profundo: falta de novos compradores entrando no mercado. Historicamente, aumento em posse de longo prazo sinaliza convicção de investidores confiantes em preços futuros, mas CryptoQuant argumenta que padrão atual reflete apenas detenção passiva sem nova demanda compradora. A métrica sugere que mercado atingiu platô de demanda, potencialmente precursor de fraqueza de preço sustentada. Os padrões de alocação indicam que baleias não estão ampliando posições em níveis de preço atuais. Este contexto levanta questões sobre sustentabilidade dos preços de Bitcoin no curto a médio prazo.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/05/29/bitcoin-s-record-holder-supply-hides-a-buyer-drought-cryptoquant-says" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Rede Sui volta online após bug de falha causa interrupção de seis horas A mainnet do Sui foi restaurada após interrupção de cinco horas e cinquenta e cinco minutos causada por bug crítico em atualização de rede que deixou a blockchain completamente offline. O incidente testou resiliência da rede e processos de recuperação da equipe de desenvolvimento. O downtime impactou negociações, transferências de ativos e operações DeFi durante o período de interrupção. A equipe do Sui rapidamente identificou a causa e implementou correção, restaurando funcionalidade. Porém, o incidente levanta questões sobre robustez do protocolo e confiabilidade para aplicações financeiras críticas dependentes de disponibilidade contínua. Cointelegraph" data-title="Rede Sui volta online após bug de falha causa interrupção de seis horas" data-share-url="https://cointelegraph.com/news/sui-network-back-online-after-crash-bug-six-hour-outage?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">01:08</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Rede Sui volta online após bug de falha causa interrupção de seis horas</div>
+        <div class="news-summary">A mainnet do Sui foi restaurada após interrupção de cinco horas e cinquenta e cinco minutos causada por bug crítico em atualização de rede que deixou a blockchain completamente offline. O incidente testou resiliência da rede e processos de recuperação da equipe de desenvolvimento. O downtime impactou negociações, transferências de ativos e operações DeFi durante o período de interrupção. A equipe do Sui rapidamente identificou a causa e implementou correção, restaurando funcionalidade. Porém, o incidente levanta questões sobre robustez do protocolo e confiabilidade para aplicações financeiras críticas dependentes de disponibilidade contínua.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/sui-network-back-online-after-crash-bug-six-hour-outage?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin preso abaixo de setenta e quatro mil enquanto expiração de nove bilhões em opções se aproxima: ursos voltam ao controle? Bitcoin permanece capturado abaixo da barreira psicológica de setenta e quatro mil dólares enquanto aproxima-se expiração de nove bilhões em opções de Bitcoin na sexta-feira. Ursos claramente controlam momentum, com saídas significativas de ETFs de Bitcoin e vendas corporativas aumentando pressão descendente. O acúmulo de posições shorts indica expectativa de mercado por movimento para baixo durante período de expiração de opções. Os fluxos de saída de ETFs sugerem que investidores institucionais estão reduzindo exposição em vez de aumentar. Este cenário técnico deixa Bitcoin vulnerável a queda se suportes críticos forem penetrados durante a expiração. Cointelegraph" data-title="Bitcoin preso abaixo de setenta e quatro mil enquanto expiração de nove bilhões em opções se aproxima: ursos voltam ao controle?" data-share-url="https://cointelegraph.com/markets/bitcoins-trapped-under-74k-while-9b-options-expiry-looms-are-bears-back-in-control?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">29 mai 2026</span>
+          <span class="news-time">00:44</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin preso abaixo de setenta e quatro mil enquanto expiração de nove bilhões em opções se aproxima: ursos voltam ao controle?</div>
+        <div class="news-summary">Bitcoin permanece capturado abaixo da barreira psicológica de setenta e quatro mil dólares enquanto aproxima-se expiração de nove bilhões em opções de Bitcoin na sexta-feira. Ursos claramente controlam momentum, com saídas significativas de ETFs de Bitcoin e vendas corporativas aumentando pressão descendente. O acúmulo de posições shorts indica expectativa de mercado por movimento para baixo durante período de expiração de opções. Os fluxos de saída de ETFs sugerem que investidores institucionais estão reduzindo exposição em vez de aumentar. Este cenário técnico deixa Bitcoin vulnerável a queda se suportes críticos forem penetrados durante a expiração.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoins-trapped-under-74k-while-9b-options-expiry-looms-are-bears-back-in-control?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
