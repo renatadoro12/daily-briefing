@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">3 DE JUNHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 3 de junho de 2026 marca uma escalada geopolítica crítica no Oriente Médio com ataques mútuos entre EUA e Irã, enquanto mercados globais enfrentam pressão simultânea com Bitcoin caindo abaixo de $66 mil e liquidações massivas de posições cripto. A incerteza geopolítica, combinada com volatilidade do mercado de IA e realocação de capital para stablecoins, reflete uma busca por segurança em ativos defensivos em meio a tensões que podem impactar a inflação e as decisões de bancos centrais nos próximos meses.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-06-02/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03" selected>2026-06-03</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="economia" onclick="filterTopic('economia')" style="color:#84CC16;border-color:#84CC1640;background:#84CC1615;">💰 Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="web3" onclick="filterTopic('web3')" style="color:#3B82F6;border-color:#3B82F640;background:#3B82F615;">🌐 Web3</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Congressista desaparecido vence primária após apoio de Trump Tom Kean Jr., congressista republicano de Nova Jersey, venceu sua primária legislativa com endosso do ex-presidente Donald Trump, apesar de não ter sido visto em Washington ou em seu distrito por vários meses. A vitória levanta questões sobre a saúde política americana e o poder de facto do endosso de Trump mesmo em candidatos com perfil questionável. Kean Jr. é membro de uma família de políticos republicanos proeminentes, e sua campanha recebeu visibilidade significativa das redes Trump. A desaparição prolongada de um congressista em exercício durante período eleitoral é altamente incomum, criando preocupações sobre capacidade de exercer o cargo. O resultado reflete a fragmentação do Partido Republicano e o controle que Trump ainda exerce sobre sua base, mesmo após deixar a presidência. Este movimento político pode impactar dinâmicas legislativas do Congresso americano nos próximos anos, afetando potencialmente votações sobre regulação de tecnologia, cripto e política fiscal. BBC News" data-title="Congressista desaparecido vence primária após apoio de Trump" data-share-url="https://www.bbc.com/news/articles/c5y7nnjlrd5o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">23:10</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Congressista desaparecido vence primária após apoio de Trump</div>
+        <div class="news-summary">Tom Kean Jr., congressista republicano de Nova Jersey, venceu sua primária legislativa com endosso do ex-presidente Donald Trump, apesar de não ter sido visto em Washington ou em seu distrito por vários meses. A vitória levanta questões sobre a saúde política americana e o poder de facto do endosso de Trump mesmo em candidatos com perfil questionável. Kean Jr. é membro de uma família de políticos republicanos proeminentes, e sua campanha recebeu visibilidade significativa das redes Trump. A desaparição prolongada de um congressista em exercício durante período eleitoral é altamente incomum, criando preocupações sobre capacidade de exercer o cargo. O resultado reflete a fragmentação do Partido Republicano e o controle que Trump ainda exerce sobre sua base, mesmo após deixar a presidência. Este movimento político pode impactar dinâmicas legislativas do Congresso americano nos próximos anos, afetando potencialmente votações sobre regulação de tecnologia, cripto e política fiscal.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c5y7nnjlrd5o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Sete mortos em ataque com drone em ônibus na Ucrânia ocupada pela Rússia Um ônibus que viajava entre Moscou e Simferopol, na Crimeia ocupada pela Rússia, foi alvo de um ataque com drone que deixou sete pessoas mortas. O incidente marca uma escalada nos ataques a infraestrutura civil em territórios controlados pela Rússia na Ucrânia. O ataque foi reivindicado por forças ucranianas como parte de operações para prejudicar a logística militar russa na região. Autoridades russas acusam Kiev de violar normas humanitárias internacionais ao atacar transporte civil. O incidente ocorre em contexto de guerra desgastante que entrou em seu quinto ano, com ambos os lados sofrendo perdas significativas. A rota de transporte entre a Rússia e a Crimeia é estratégica para o esforço militar russo e um alvo constante para a defesa ucraniana. Este ataque reforça a volatilidade contínua no leste europeu e mantém pressão sobre os mercados de energia e commodities. BBC News" data-title="Sete mortos em ataque com drone em ônibus na Ucrânia ocupada pela Rússia" data-share-url="https://www.bbc.com/news/articles/cp3peyykxd5o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">02:42</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Sete mortos em ataque com drone em ônibus na Ucrânia ocupada pela Rússia</div>
+        <div class="news-summary">Um ônibus que viajava entre Moscou e Simferopol, na Crimeia ocupada pela Rússia, foi alvo de um ataque com drone que deixou sete pessoas mortas. O incidente marca uma escalada nos ataques a infraestrutura civil em territórios controlados pela Rússia na Ucrânia. O ataque foi reivindicado por forças ucranianas como parte de operações para prejudicar a logística militar russa na região. Autoridades russas acusam Kiev de violar normas humanitárias internacionais ao atacar transporte civil. O incidente ocorre em contexto de guerra desgastante que entrou em seu quinto ano, com ambos os lados sofrendo perdas significativas. A rota de transporte entre a Rússia e a Crimeia é estratégica para o esforço militar russo e um alvo constante para a defesa ucraniana. Este ataque reforça a volatilidade contínua no leste europeu e mantém pressão sobre os mercados de energia e commodities.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/cp3peyykxd5o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Tensões diplomáticas no Golfo Pérsico atingem pico com ataques coordenados A situação no Oriente Médio alcançou um ponto de inflexão crítico com ataques coordenados entre EUA, Irã e possíveis aliados regionais, marcando o pior escalada militar em meses. Negociações mediadas internacionalmente fracassaram completamente, com ambos os lados endurecendo posições e rejeitando propostas de cessar-fogo. O Irã mobilizou recursos militares adicionais enquanto EUA reforçam presença naval e aérea na região. Aviões comerciais sofrem risco aumentado em corredor aéreo crítico, potencialmente afetando conexões aéreas internacionais. Mercados de seguro marítimo estão precificando prêmios muito mais altos para rotas no Golfo. A crise desestabiliza múltiplas economias aliadas e cria clima de incerteza para investimentos internacionais na região. Consequências econômicas globais incluem pressão de preços de petróleo, potencial inflação em transporte e energia, e possível realocação de capital para ativos de segurança. BBC News / NYT" data-title="Tensões diplomáticas no Golfo Pérsico atingem pico com ataques coordenados" data-share-url="https://www.bbc.com/news/articles/c5yx135yg53o">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">02:30</span>
+          <span class="news-source">BBC News / NYT</span>
+        </div>
+        <div class="news-title">Tensões diplomáticas no Golfo Pérsico atingem pico com ataques coordenados</div>
+        <div class="news-summary">A situação no Oriente Médio alcançou um ponto de inflexão crítico com ataques coordenados entre EUA, Irã e possíveis aliados regionais, marcando o pior escalada militar em meses. Negociações mediadas internacionalmente fracassaram completamente, com ambos os lados endurecendo posições e rejeitando propostas de cessar-fogo. O Irã mobilizou recursos militares adicionais enquanto EUA reforçam presença naval e aérea na região. Aviões comerciais sofrem risco aumentado em corredor aéreo crítico, potencialmente afetando conexões aéreas internacionais. Mercados de seguro marítimo estão precificando prêmios muito mais altos para rotas no Golfo. A crise desestabiliza múltiplas economias aliadas e cria clima de incerteza para investimentos internacionais na região. Consequências econômicas globais incluem pressão de preços de petróleo, potencial inflação em transporte e energia, e possível realocação de capital para ativos de segurança.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c5yx135yg53o" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Irã visa vizinhos enquanto EUA condenam ataques 'agressivos' O Irã direcionou ataques contra Bahrain e Kuwait como parte de sua resposta aos ataques americanos, mas os mísseis foram interceptados ou falharam em seus objetivos, de acordo com o Pentágono. A administração americana condenou os ataques como atos agressivos injustificados que violam a soberania de nações aliadas. O Irã alega estar respondendo a provocações americanas e oferecendo suporte a grupos regionais aliados. Os ataques representam uma escalada significativa com potencial de envolver múltiplos países do Golfo Pérsico e ameaçar rotas comerciais marítimas críticas. Bahrain é sede da Frota Naval americana no Golfo, tornando os ataques contra suas instalações particularmente provocativos. Kuwait, importante produtor de petróleo, também é considerado aliado americano estratégico. A volatilidade geopolítica contínua nesta região crucial para energia global alimenta incerteza nos mercados de commodities e pode pressionar bancos centrais para políticas mais restritivas. NYT" data-title="Irã visa vizinhos enquanto EUA condenam ataques 'agressivos'" data-share-url="https://www.nytimes.com/live/2026/06/02/world/iran-war-trump-israel-lebanon">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">02:01</span>
+          <span class="news-source">NYT</span>
+        </div>
+        <div class="news-title">Irã visa vizinhos enquanto EUA condenam ataques 'agressivos'</div>
+        <div class="news-summary">O Irã direcionou ataques contra Bahrain e Kuwait como parte de sua resposta aos ataques americanos, mas os mísseis foram interceptados ou falharam em seus objetivos, de acordo com o Pentágono. A administração americana condenou os ataques como atos agressivos injustificados que violam a soberania de nações aliadas. O Irã alega estar respondendo a provocações americanas e oferecendo suporte a grupos regionais aliados. Os ataques representam uma escalada significativa com potencial de envolver múltiplos países do Golfo Pérsico e ameaçar rotas comerciais marítimas críticas. Bahrain é sede da Frota Naval americana no Golfo, tornando os ataques contra suas instalações particularmente provocativos. Kuwait, importante produtor de petróleo, também é considerado aliado americano estratégico. A volatilidade geopolítica contínua nesta região crucial para energia global alimenta incerteza nos mercados de commodities e pode pressionar bancos centrais para políticas mais restritivas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/06/02/world/iran-war-trump-israel-lebanon" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EUA e Irã lançam novos ataques enquanto negociações de cessar-fogo fracassam Os EUA lançaram novos ataques contra o Irã e um petroleiro no Golfo Pérsico, enquanto Teerã afirma ter atacado bases americanas na região. A escalada ocorre após meses de tensões incrementais que incluem ataques com drones, operações aéreas e ataques a instalações petrolíferas no Golfo. As negociações de cessar-fogo colapsaram completamente nos últimos dias, com ambos os lados culpando a outra parte pela falha diplomática. Fontes americanas indicam que os ataques iranianos contra Bahrain e Kuwait foram interceptados ou falharam, mas causaram danos consideráveis em infraestrutura regional. A escalada militar ameaça aumentar os preços do petróleo globalmente, afetando inflação e expectativas de juros. Analistas alertam que novos ataques podem desencadear uma guerra regional maior, impactando o comércio no Golfo Pérsico e criando choques de oferta em energia. O mercado já reage com volatilidade aumentada em commodities e ativos de risco. BBC News / NYT" data-title="EUA e Irã lançam novos ataques enquanto negociações de cessar-fogo fracassam" data-share-url="https://www.bbc.com/news/articles/c5yx135yg53o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:40 / 02:01</span>
+          <span class="news-source">BBC News / NYT</span>
+        </div>
+        <div class="news-title">EUA e Irã lançam novos ataques enquanto negociações de cessar-fogo fracassam</div>
+        <div class="news-summary">Os EUA lançaram novos ataques contra o Irã e um petroleiro no Golfo Pérsico, enquanto Teerã afirma ter atacado bases americanas na região. A escalada ocorre após meses de tensões incrementais que incluem ataques com drones, operações aéreas e ataques a instalações petrolíferas no Golfo. As negociações de cessar-fogo colapsaram completamente nos últimos dias, com ambos os lados culpando a outra parte pela falha diplomática. Fontes americanas indicam que os ataques iranianos contra Bahrain e Kuwait foram interceptados ou falharam, mas causaram danos consideráveis em infraestrutura regional. A escalada militar ameaça aumentar os preços do petróleo globalmente, afetando inflação e expectativas de juros. Analistas alertam que novos ataques podem desencadear uma guerra regional maior, impactando o comércio no Golfo Pérsico e criando choques de oferta em energia. O mercado já reage com volatilidade aumentada em commodities e ativos de risco.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c5yx135yg53o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Morte investigada no Reino Unido alimenta indignação quanto a conduta policial Autoridades britânicas investigam policiais acusados de algemar um estudante, Henry Nowak, enquanto ele estava morrendo após ser apunhalado. O caso levantou questões urgentes sobre protocolo policial, desproporcionalidade no uso de força e responsabilização de agentes de segurança. Vídeos do incidente mostram falta de resposta apropriada à emergência médica enquanto a vítima estava sob custódia policial. O caso ganhou cobertura massiva de mídia e gerou protestos organizados contra brutalidade policial. Investigações preliminares sugerem possível negligência criminal e violações de direitos humanos. Este incidente reacende debate no Reino Unido sobre reforma policial, treinamento em primeiros socorros e accountability institucional. Embora não seja diretamente relevante para mercados, representa pressão social crescente e potencial para mudanças regulatórias e de política pública que possam impactar governança corporativa e ESG nas próximas votações. NYT" data-title="Morte investigada no Reino Unido alimenta indignação quanto a conduta policial" data-share-url="https://www.nytimes.com/2026/06/02/world/europe/henry-nowak-murder-uk-stabbing.html">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:13</span>
+          <span class="news-source">NYT</span>
+        </div>
+        <div class="news-title">Morte investigada no Reino Unido alimenta indignação quanto a conduta policial</div>
+        <div class="news-summary">Autoridades britânicas investigam policiais acusados de algemar um estudante, Henry Nowak, enquanto ele estava morrendo após ser apunhalado. O caso levantou questões urgentes sobre protocolo policial, desproporcionalidade no uso de força e responsabilização de agentes de segurança. Vídeos do incidente mostram falta de resposta apropriada à emergência médica enquanto a vítima estava sob custódia policial. O caso ganhou cobertura massiva de mídia e gerou protestos organizados contra brutalidade policial. Investigações preliminares sugerem possível negligência criminal e violações de direitos humanos. Este incidente reacende debate no Reino Unido sobre reforma policial, treinamento em primeiros socorros e accountability institucional. Embora não seja diretamente relevante para mercados, representa pressão social crescente e potencial para mudanças regulatórias e de política pública que possam impactar governança corporativa e ESG nas próximas votações.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/02/world/europe/henry-nowak-murder-uk-stabbing.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#84CC16;box-shadow:0 0 10px #84CC1680;"></div>
+      <div class="section-title" style="color:#84CC16;">💰 Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Pelley acusa CBS News de pedir injunção de preconceito em reportagens Em mensagem divulgada após ser despedido, Scott Pelley afirma categoricamente que foi solicitado a injetar falsidades em histórias editoriais, uma acusação grave contra padrões jornalísticos da emissora. A afirmação ocorre na esteira de reorganização editorial que Weiss implementou desde sua chegada à chefia. Pelley, que passou décadas construindo carreira baseada em integridade investigativa, vê sua demissão como represália após questionar essas práticas. A narrativa de Pelley encontra apoio entre funcionários da redação que expressam preocupações similares. O incidente escalona crise de credibilidade interna na CBS News com potencial impacto em audiência, publicidade e confiança pública. Organizações jornalísticas dependem fundamentalmente de reputação de imparcialidade para competir no mercado de notícias contemporâneo. Este episódio pode servir como precedente negativo para contratações editoriais futuras e atitude do público com relação a veracidade de reportagens originária da rede. Forbes" data-title="Pelley acusa CBS News de pedir injunção de preconceito em reportagens" data-share-url="https://www.forbes.com/sites/rickellis/2026/06/02/scott-pelley-fired-by-cbs-after-confrontation-with-new-60-minutes-ep/">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">23:31</span>
+          <span class="news-source">Forbes</span>
+        </div>
+        <div class="news-title">Pelley acusa CBS News de pedir injunção de preconceito em reportagens</div>
+        <div class="news-summary">Em mensagem divulgada após ser despedido, Scott Pelley afirma categoricamente que foi solicitado a injetar falsidades em histórias editoriais, uma acusação grave contra padrões jornalísticos da emissora. A afirmação ocorre na esteira de reorganização editorial que Weiss implementou desde sua chegada à chefia. Pelley, que passou décadas construindo carreira baseada em integridade investigativa, vê sua demissão como represália após questionar essas práticas. A narrativa de Pelley encontra apoio entre funcionários da redação que expressam preocupações similares. O incidente escalona crise de credibilidade interna na CBS News com potencial impacto em audiência, publicidade e confiança pública. Organizações jornalísticas dependem fundamentalmente de reputação de imparcialidade para competir no mercado de notícias contemporâneo. Este episódio pode servir como precedente negativo para contratações editoriais futuras e atitude do público com relação a veracidade de reportagens originária da rede.</div>
+        <div class="news-link"><a href="https://www.forbes.com/sites/rickellis/2026/06/02/scott-pelley-fired-by-cbs-after-confrontation-with-new-60-minutes-ep/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="IndyCar na FOX mostra aumento consistente de audiência em 2026 Cobertura de automobilismo IndyCar na rede FOX continua apresentando crescimento de audiência em 2026, com o Chevrolet Detroit Grand Prix registrando aumento de 10 por cento comparado ao ano anterior. Este padrão positivo representa validação do investimento de FOX em esportes automotores em contexto geral de fragmentação de audiência de televisão. O crescimento de IndyCar contrasta com declínio em outros segmentos de esportes tradicionais, sugerindo apelo específico do automobilismo em particular demográfico. Para FOX, o sucesso de IndyCar justifica investimento continuado em direitos de transmissão e produção de conteúdo esportivo. A estratégia de FOX de aumentar cobertura de esportes minoritários como IndyCar pode indicar ajustes às mudanças de preferência de consumidores por conteúdo em tempo real. O crescimento sustentado de uma franquia esportiva como IndyCar pode impactar valuation de direitos esportivos e atrair novos anunciantes a mercado de automobilismo. Forbes" data-title="IndyCar na FOX mostra aumento consistente de audiência em 2026" data-share-url="https://www.forbes.com/sites/brucemartin/2026/06/02/indycar-at-chevrolet-detroit-grand-prix-shows-racing-increase-for-fox/">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">23:03</span>
+          <span class="news-source">Forbes</span>
+        </div>
+        <div class="news-title">IndyCar na FOX mostra aumento consistente de audiência em 2026</div>
+        <div class="news-summary">Cobertura de automobilismo IndyCar na rede FOX continua apresentando crescimento de audiência em 2026, com o Chevrolet Detroit Grand Prix registrando aumento de 10 por cento comparado ao ano anterior. Este padrão positivo representa validação do investimento de FOX em esportes automotores em contexto geral de fragmentação de audiência de televisão. O crescimento de IndyCar contrasta com declínio em outros segmentos de esportes tradicionais, sugerindo apelo específico do automobilismo em particular demográfico. Para FOX, o sucesso de IndyCar justifica investimento continuado em direitos de transmissão e produção de conteúdo esportivo. A estratégia de FOX de aumentar cobertura de esportes minoritários como IndyCar pode indicar ajustes às mudanças de preferência de consumidores por conteúdo em tempo real. O crescimento sustentado de uma franquia esportiva como IndyCar pode impactar valuation de direitos esportivos e atrair novos anunciantes a mercado de automobilismo.</div>
+        <div class="news-link"><a href="https://www.forbes.com/sites/brucemartin/2026/06/02/indycar-at-chevrolet-detroit-grand-prix-shows-racing-increase-for-fox/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Juiz bloqueia rebranding de outlet de notícias NOTUS em disputa por marca Um juiz bloqueou temporariamente os planos de rebranding do NOTUS, site de notícias políticas de Washington, em decisão que favorece The Washington Star em disputa por direitos de marca registrada. O NOTUS pretendia adotar o nome 'The Star' mas enfrenta litígio de organização concorrente que já detém direitos sobre a marca. A decisão judicial refreia planos comerciais do outlet e levanta questões sobre leis de propriedade intelectual em mídia digital. O caso ilustra competição acirrada no mercado de notícias políticas e a importância de proteção de marca registrada. Para o setor de mídia, o precedente pode impactar consolidação editorial e aquisições futuras. A disputa reflete dinâmica maior do mercado de notícias que enfrenta pressão de receita, consolidação e competição por audiência e reconhecimento de marca. NYT" data-title="Juiz bloqueia rebranding de outlet de notícias NOTUS em disputa por marca" data-share-url="https://www.nytimes.com/2026/06/02/business/media/notus-washington-star-trademark-dispute.html">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">22:22</span>
+          <span class="news-source">NYT</span>
+        </div>
+        <div class="news-title">Juiz bloqueia rebranding de outlet de notícias NOTUS em disputa por marca</div>
+        <div class="news-summary">Um juiz bloqueou temporariamente os planos de rebranding do NOTUS, site de notícias políticas de Washington, em decisão que favorece The Washington Star em disputa por direitos de marca registrada. O NOTUS pretendia adotar o nome 'The Star' mas enfrenta litígio de organização concorrente que já detém direitos sobre a marca. A decisão judicial refreia planos comerciais do outlet e levanta questões sobre leis de propriedade intelectual em mídia digital. O caso ilustra competição acirrada no mercado de notícias políticas e a importância de proteção de marca registrada. Para o setor de mídia, o precedente pode impactar consolidação editorial e aquisições futuras. A disputa reflete dinâmica maior do mercado de notícias que enfrenta pressão de receita, consolidação e competição por audiência e reconhecimento de marca.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/02/business/media/notus-washington-star-trademark-dispute.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="CBS News demite Scott Pelley, correspondente da 60 Minutes Scott Pelley, renomado âncora e correspondente veterano da CBS News e do programa 60 Minutes, foi despedido após meses de tensões crescentes com a cúpula editorial. A demissão ocorre meses após a contratação de Bari Weiss como editora-chefe, gerando desacordos fundamentais sobre direção editorial e padrões jornalísticos. Pelley alega em sua mensagem de saída que foi pressionado a injetar viés e informações falsas em reportagens, acusação que questiona a integridade editorial da emissora. A demissão é parte de uma série de controvérsias que atingem a CBS News desde a chegada de Weiss à posição de liderança. Funcionários da redação expressam preocupações sobre pressão editorial política. A saída de uma figura importante como Pelley representa risco reputacional significativo para a rede em contexto de credibilidade jornalística já fragilizada. Este incidente ilustra tensões mais amplas no setor de mídia americana entre pressões comerciais, controle editorial e padrões de veracidade informativa. NYT / Forbes" data-title="CBS News demite Scott Pelley, correspondente da 60 Minutes" data-share-url="https://www.nytimes.com/2026/06/02/business/media/scott-pelley-cbs-bari-weiss.html">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:02 / 00:36</span>
+          <span class="news-source">NYT / Forbes</span>
+        </div>
+        <div class="news-title">CBS News demite Scott Pelley, correspondente da 60 Minutes</div>
+        <div class="news-summary">Scott Pelley, renomado âncora e correspondente veterano da CBS News e do programa 60 Minutes, foi despedido após meses de tensões crescentes com a cúpula editorial. A demissão ocorre meses após a contratação de Bari Weiss como editora-chefe, gerando desacordos fundamentais sobre direção editorial e padrões jornalísticos. Pelley alega em sua mensagem de saída que foi pressionado a injetar viés e informações falsas em reportagens, acusação que questiona a integridade editorial da emissora. A demissão é parte de uma série de controvérsias que atingem a CBS News desde a chegada de Weiss à posição de liderança. Funcionários da redação expressam preocupações sobre pressão editorial política. A saída de uma figura importante como Pelley representa risco reputacional significativo para a rede em contexto de credibilidade jornalística já fragilizada. Este incidente ilustra tensões mais amplas no setor de mídia americana entre pressões comerciais, controle editorial e padrões de veracidade informativa.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/02/business/media/scott-pelley-cbs-bari-weiss.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#84CC16;" data-searchable="Pac-12 reconstruído pode conquistar lugar na mesa de playoffs com Boise State A Pac-12 reconstruída pode potencialmente conquistar representação no novo sistema de playoffs de futebol universitário americano com entrada de Boise State, marcando possível reversão de declínio da conferência. Boise State, programa com histórico de sucesso competitivo, seria adição significativa ao destaque competitivo da conferência reconstruída. O técnico Spencer Danielson enfatiza importância de consistência ofensiva, particularmente na posição de quarterback com Maddux Madsen. Entrada de Boise State em Pac-12 reconstruída representa esforço de reconsolidação após décadas de dominância antes de fragmentação competitiva. Sucesso esportivo pode impactar receita de mídia, patrocínios e investimentos universitários em infraestrutura atlética. Para o mercado de direitos esportivos, ressurgimento de Pac-12 como conferência competitivamente relevante pode alterar dinâmicas de negociação de transmissão. O resultado pode afetar valuations de programas de futebol universitário e receitas para instituições participantes. Forbes" data-title="Pac-12 reconstruído pode conquistar lugar na mesa de playoffs com Boise State" data-share-url="https://www.forbes.com/sites/tomlayberger/2026/06/02/rebuilt-pac-12-could-have-seat-at-playoff-table-with-boise-state/">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:00</span>
+          <span class="news-source">Forbes</span>
+        </div>
+        <div class="news-title">Pac-12 reconstruído pode conquistar lugar na mesa de playoffs com Boise State</div>
+        <div class="news-summary">A Pac-12 reconstruída pode potencialmente conquistar representação no novo sistema de playoffs de futebol universitário americano com entrada de Boise State, marcando possível reversão de declínio da conferência. Boise State, programa com histórico de sucesso competitivo, seria adição significativa ao destaque competitivo da conferência reconstruída. O técnico Spencer Danielson enfatiza importância de consistência ofensiva, particularmente na posição de quarterback com Maddux Madsen. Entrada de Boise State em Pac-12 reconstruída representa esforço de reconsolidação após décadas de dominância antes de fragmentação competitiva. Sucesso esportivo pode impactar receita de mídia, patrocínios e investimentos universitários em infraestrutura atlética. Para o mercado de direitos esportivos, ressurgimento de Pac-12 como conferência competitivamente relevante pode alterar dinâmicas de negociação de transmissão. O resultado pode afetar valuations de programas de futebol universitário e receitas para instituições participantes.</div>
+        <div class="news-link"><a href="https://www.forbes.com/sites/tomlayberger/2026/06/02/rebuilt-pac-12-could-have-seat-at-playoff-table-with-boise-state/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="COO da Bizlink discute estratégia comercial e impacto do boom de IA Florian Hettich, COO (Chief Operating Officer) da Bizlink, elaborou sobre estratégia comercial da empresa em contexto de boom de IA que impulsiona demanda por componentes de infraestrutura. Bizlink, fornecedor de componentes para infraestrutura de tecnologia, beneficia-se de demanda crescente por servidores, cooling systems e infraestrutura de data centers necessária para treinar e rodar modelos de IA em escala. A empresa aumentou capacidade de produção e está explorando parcerias estratégicas com grandes provedores de nuvem e fabricantes de chips. Hettich enfatizou importância de manter qualidade e confiabilidade conforme demanda cresce exponencialmente. Para fornecedores de componentes como Bizlink, o ciclo superciclo de IA representa oportunidade de crescimento raro e potencial revalorização significativa. A estratégia de Bizlink de expandir capacidade e parcerias alinha-se com projeções de crescimento contínuo de demanda de infraestrutura de IA. Sucesso de players como Bizlink em cadeia de suprimento de IA pode validar múltiplos de valuation premium para fornecedores especializados. Bloomberg Technology" data-title="COO da Bizlink discute estratégia comercial e impacto do boom de IA" data-share-url="https://www.bloomberg.com/news/videos/2026-06-03/bizlink-coo-on-business-strategy-ai-boom-video">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">23:43</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">COO da Bizlink discute estratégia comercial e impacto do boom de IA</div>
+        <div class="news-summary">Florian Hettich, COO (Chief Operating Officer) da Bizlink, elaborou sobre estratégia comercial da empresa em contexto de boom de IA que impulsiona demanda por componentes de infraestrutura. Bizlink, fornecedor de componentes para infraestrutura de tecnologia, beneficia-se de demanda crescente por servidores, cooling systems e infraestrutura de data centers necessária para treinar e rodar modelos de IA em escala. A empresa aumentou capacidade de produção e está explorando parcerias estratégicas com grandes provedores de nuvem e fabricantes de chips. Hettich enfatizou importância de manter qualidade e confiabilidade conforme demanda cresce exponencialmente. Para fornecedores de componentes como Bizlink, o ciclo superciclo de IA representa oportunidade de crescimento raro e potencial revalorização significativa. A estratégia de Bizlink de expandir capacidade e parcerias alinha-se com projeções de crescimento contínuo de demanda de infraestrutura de IA. Sucesso de players como Bizlink em cadeia de suprimento de IA pode validar múltiplos de valuation premium para fornecedores especializados.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/videos/2026-06-03/bizlink-coo-on-business-strategy-ai-boom-video" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Megaport arrecada 594 milhões de dólares em fundos de expansão de IA Megaport Ltd., empresa australiana de infraestrutura de data center, está buscando arrecadar A$ 827,3 milhões (594 milhões de dólares) para financiar criação de nuvem de inferência de inteligência artificial especializada. O capital será destinado à construção de infraestrutura dedicada para servir demanda crescente de processamento de IA generativa em escala comercial. Megaport reconheceu oportunidade de posicionar-se como player-chave em mercado de infraestrutura de IA em Ásia-Pacífico, região de crescimento rápido para adoção de IA. A oportunidade de financiamento demonstra confiança de investidores em modelos de negócio de infraestrutura de IA e retorno potencial em longo prazo. Para Megaport, o capital permite expansão de capacidade e diferenciação competitiva em mercado cada vez mais competitivo de data centers. A arrecadação de capital em escala de centenas de milhões sinaliza magnitude de investimento necessário em infraestrutura de IA para competir globalmente. Sucesso de Megaport em levantar capital poderia servir como indicador de saúde de investimento em infraestrutura de tecnologia em regiões não americanas. Bloomberg Technology" data-title="Megaport arrecada 594 milhões de dólares em fundos de expansão de IA" data-share-url="https://www.bloomberg.com/news/articles/2026-06-03/megaport-to-raise-594-million-in-australia-to-fund-ai-expansion">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">23:02</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Megaport arrecada 594 milhões de dólares em fundos de expansão de IA</div>
+        <div class="news-summary">Megaport Ltd., empresa australiana de infraestrutura de data center, está buscando arrecadar A$ 827,3 milhões (594 milhões de dólares) para financiar criação de nuvem de inferência de inteligência artificial especializada. O capital será destinado à construção de infraestrutura dedicada para servir demanda crescente de processamento de IA generativa em escala comercial. Megaport reconheceu oportunidade de posicionar-se como player-chave em mercado de infraestrutura de IA em Ásia-Pacífico, região de crescimento rápido para adoção de IA. A oportunidade de financiamento demonstra confiança de investidores em modelos de negócio de infraestrutura de IA e retorno potencial em longo prazo. Para Megaport, o capital permite expansão de capacidade e diferenciação competitiva em mercado cada vez mais competitivo de data centers. A arrecadação de capital em escala de centenas de milhões sinaliza magnitude de investimento necessário em infraestrutura de IA para competir globalmente. Sucesso de Megaport em levantar capital poderia servir como indicador de saúde de investimento em infraestrutura de tecnologia em regiões não americanas.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-03/megaport-to-raise-594-million-in-australia-to-fund-ai-expansion" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Kioxia brevemente ultrapassa Toyota como segunda empresa mais valiosa do Japão Kioxia Holdings Corporation brevemente superou Toyota Motor Corporation em capitalização de mercado, posicionando-se como segunda empresa mais valiosa do Japão enquanto o boom global de inteligência artificial alimenta demanda por semicondutores e chips de memória. Esta mudança histórica reflete realocação significativa de valor de mercado de setores tradicionais para tecnologia de IA e infraestrutura de computação. Kioxia, fabricante de memória flash crítica para data centers de IA, se beneficia de ciclo de superciclo de demanda por capacidade de armazenamento. O deslocamento de Toyota, icônico símbolo da manufatura japonesa, por um fabricante de semicondutores sinaliza transformação estrutural na economia global. Para investidores, a mudança ilustra importância de exposição a cadeias de suprimento de IA e beneficiários indiretos do boom. O evento pode impactar índices compostos japoneses e políticas de investimento estrangeiro focados em players de tecnologia. Mercados de semicondutores e infraestrutura de IA devem continuar atraindo capital significativo nos próximos anos. Bloomberg Technology" data-title="Kioxia brevemente ultrapassa Toyota como segunda empresa mais valiosa do Japão" data-share-url="https://www.bloomberg.com/news/articles/2026-06-03/kioxia-edges-nearer-toyota-s-market-cap-in-shakeup-to-japan-inc">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">01:53</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Kioxia brevemente ultrapassa Toyota como segunda empresa mais valiosa do Japão</div>
+        <div class="news-summary">Kioxia Holdings Corporation brevemente superou Toyota Motor Corporation em capitalização de mercado, posicionando-se como segunda empresa mais valiosa do Japão enquanto o boom global de inteligência artificial alimenta demanda por semicondutores e chips de memória. Esta mudança histórica reflete realocação significativa de valor de mercado de setores tradicionais para tecnologia de IA e infraestrutura de computação. Kioxia, fabricante de memória flash crítica para data centers de IA, se beneficia de ciclo de superciclo de demanda por capacidade de armazenamento. O deslocamento de Toyota, icônico símbolo da manufatura japonesa, por um fabricante de semicondutores sinaliza transformação estrutural na economia global. Para investidores, a mudança ilustra importância de exposição a cadeias de suprimento de IA e beneficiários indiretos do boom. O evento pode impactar índices compostos japoneses e políticas de investimento estrangeiro focados em players de tecnologia. Mercados de semicondutores e infraestrutura de IA devem continuar atraindo capital significativo nos próximos anos.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-03/kioxia-edges-nearer-toyota-s-market-cap-in-shakeup-to-japan-inc" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Empresa de robótica PaXini respaldada por BYD explora IPO em Hong Kong PaXini Tech, fabricante especializado em mãos robóticas dextras e robôs humanoides, está considerando abertura de capital em Hong Kong para financiar expansão e pesquisa e desenvolvimento. A empresa, que conta com respaldo de BYD, gigante chinesa de baterias e veículos elétricos, aproveitaria-se de interesse de investidores em tecnologia de robótica avançada. A possível oferta pública inicial (IPO) reflete confiança em mercado de robótica industrial e de serviços em contexto de automação acelerada por IA. Hong Kong continua plataforma importante para IPOs de empresas de tecnologia asiáticas, apesar de pressões regulatórias e geopolíticas. Sucesso de PaXini em mercado público poderia validar modelos de negócio de fabricantes de robótica humanoides, influenciando alocação de capital para o setor. Para investidores chineses e globais, PaXini representa exposição ao tema de robótica que ganha destaque conforme IA se democratiza. O IPO potencial de PaXini poderia revelar múltiplos de valuation esperados para empresas em estágio similar de maturidade. Bloomberg Technology" data-title="Empresa de robótica PaXini respaldada por BYD explora IPO em Hong Kong" data-share-url="https://www.bloomberg.com/news/articles/2026-06-03/byd-backed-robotics-firm-paxini-is-said-to-explore-hong-kong-ipo">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:43</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Empresa de robótica PaXini respaldada por BYD explora IPO em Hong Kong</div>
+        <div class="news-summary">PaXini Tech, fabricante especializado em mãos robóticas dextras e robôs humanoides, está considerando abertura de capital em Hong Kong para financiar expansão e pesquisa e desenvolvimento. A empresa, que conta com respaldo de BYD, gigante chinesa de baterias e veículos elétricos, aproveitaria-se de interesse de investidores em tecnologia de robótica avançada. A possível oferta pública inicial (IPO) reflete confiança em mercado de robótica industrial e de serviços em contexto de automação acelerada por IA. Hong Kong continua plataforma importante para IPOs de empresas de tecnologia asiáticas, apesar de pressões regulatórias e geopolíticas. Sucesso de PaXini em mercado público poderia validar modelos de negócio de fabricantes de robótica humanoides, influenciando alocação de capital para o setor. Para investidores chineses e globais, PaXini representa exposição ao tema de robótica que ganha destaque conforme IA se democratiza. O IPO potencial de PaXini poderia revelar múltiplos de valuation esperados para empresas em estágio similar de maturidade.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-03/byd-backed-robotics-firm-paxini-is-said-to-explore-hong-kong-ipo" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Baidu CFO detalha receitas de IA e estratégia de robo-táxis Haijian He, diretor financeiro da Baidu, afirmou que receitas relacionadas a IA atingiram marca de 50 por cento da receita total da empresa, demonstrando transformação fundamental do negócio em direção a tecnologias de inteligência artificial. He elaborou sobre beneficiários de investimentos em robo-táxis, serviço autônomo que Baidu desenvolveu e que opera em múltiplas cidades chinesas. A revelação de receita de IA em 50 por cento ilustra velocidade de monetização de modelos de IA generativa e serviços baseados em IA na China. Baidu, maior mecanismo de busca chinês, aproveitou-se de sua posição dominante para expandir oferta de serviços de IA, incluindo modelos de linguagem próprios. A diversificação bem-sucedida de Baidu em direção a IA fornece blueprint para empresas de tecnologia tradicionais em transição para negócios de IA. Para investidores, a métrica de receita de IA em 50 por cento estabelece benchmark de sucesso de transformação digital em empresas maduras. Estratégia de robo-táxis de Baidu continua evoluindo e pode gerar receita em escala significativa nos próximos anos. Bloomberg Technology" data-title="Baidu CFO detalha receitas de IA e estratégia de robo-táxis" data-share-url="https://www.bloomberg.com/news/videos/2026-06-03/baidu-cfo-haijian-he-on-ai-revenue-robotaxis-video">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:31</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Baidu CFO detalha receitas de IA e estratégia de robo-táxis</div>
+        <div class="news-summary">Haijian He, diretor financeiro da Baidu, afirmou que receitas relacionadas a IA atingiram marca de 50 por cento da receita total da empresa, demonstrando transformação fundamental do negócio em direção a tecnologias de inteligência artificial. He elaborou sobre beneficiários de investimentos em robo-táxis, serviço autônomo que Baidu desenvolveu e que opera em múltiplas cidades chinesas. A revelação de receita de IA em 50 por cento ilustra velocidade de monetização de modelos de IA generativa e serviços baseados em IA na China. Baidu, maior mecanismo de busca chinês, aproveitou-se de sua posição dominante para expandir oferta de serviços de IA, incluindo modelos de linguagem próprios. A diversificação bem-sucedida de Baidu em direção a IA fornece blueprint para empresas de tecnologia tradicionais em transição para negócios de IA. Para investidores, a métrica de receita de IA em 50 por cento estabelece benchmark de sucesso de transformação digital em empresas maduras. Estratégia de robo-táxis de Baidu continua evoluindo e pode gerar receita em escala significativa nos próximos anos.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/videos/2026-06-03/baidu-cfo-haijian-he-on-ai-revenue-robotaxis-video" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Plataforma de bilionário Ambani aposta em série completamente gerada por IA Jiostar, plataforma de streaming do bilionário indiano Mukesh Ambani, está se preparando para abraçar plenamente conteúdo gerado por IA após primeiro experimento bem-sucedido de série produzida por máquinas. A decisão marca inflexão significativa em produção de conteúdo de streaming com potencial de reduzir custos de produção dramaticamente enquanto mantém velocidade de lançamento. Ambani, mediante suas empresas Jio, já dominou mercado de telecomunicações indiano e agora estende alcance para entretenimento digital. Adoção de conteúdo gerado por IA em plataforma de escala significativa valida tecnologia de geração de vídeo e narrativa e estabelece precedente para indústria. Para criadores de conteúdo e sindicatos, a notícia levanta questões sobre emprego e deslocamento de talento em indústria criativa. Mercado pode reinterpretar valuations de plataformas de streaming se modelos de IA permitirem produção com custos muito mais baixos. Sucesso de Jiostar neste modelo pode inspirar competidores globais a explorar estratégias similares, acelerando disrupção do modelo tradicional de produção televisiva. Bloomberg Technology" data-title="Plataforma de bilionário Ambani aposta em série completamente gerada por IA" data-share-url="https://www.bloomberg.com/news/articles/2026-06-03/billionaire-ambani-s-jiostar-platform-bets-big-on-all-ai-series">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:18</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Plataforma de bilionário Ambani aposta em série completamente gerada por IA</div>
+        <div class="news-summary">Jiostar, plataforma de streaming do bilionário indiano Mukesh Ambani, está se preparando para abraçar plenamente conteúdo gerado por IA após primeiro experimento bem-sucedido de série produzida por máquinas. A decisão marca inflexão significativa em produção de conteúdo de streaming com potencial de reduzir custos de produção dramaticamente enquanto mantém velocidade de lançamento. Ambani, mediante suas empresas Jio, já dominou mercado de telecomunicações indiano e agora estende alcance para entretenimento digital. Adoção de conteúdo gerado por IA em plataforma de escala significativa valida tecnologia de geração de vídeo e narrativa e estabelece precedente para indústria. Para criadores de conteúdo e sindicatos, a notícia levanta questões sobre emprego e deslocamento de talento em indústria criativa. Mercado pode reinterpretar valuations de plataformas de streaming se modelos de IA permitirem produção com custos muito mais baixos. Sucesso de Jiostar neste modelo pode inspirar competidores globais a explorar estratégias similares, acelerando disrupção do modelo tradicional de produção televisiva.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-03/billionaire-ambani-s-jiostar-platform-bets-big-on-all-ai-series" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="web3">
+    <div class="section-header">
+      <div class="section-dot" style="background:#3B82F6;box-shadow:0 0 10px #3B82F680;"></div>
+      <div class="section-title" style="color:#3B82F6;">🌐 Web3</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Iniciando jornada com Monster em MegaETH Monster em MegaETH representa plataforma desenvolvida para permitir tokenização de cartas Pokémon com interface simplificada e intuitiva para usuários de blockchain. A plataforma utiliza tecnologia de escala de layer 2 (MegaETH) construída sobre Ethereum para reduzir custos de transação e acelerar tempo de liquidação. Tokenização de itens colecionáveis como cartões de Pokémon representa caso de uso concreto de blockchain para bens digitais com valor intrínseco. MegaETH, solução de escalabilidade, demonstra utilidade prática em suporte de aplicações que requerem velocidade e eficiência de custo. Para colecionadores de Pokémon, plataforma oferece novo modo de autenticação digital, transferência e negociação de cartões sem intermediários. A integração de ativos físicos de grande valor em blockchain via tokenização abre mercado potencial significativo de ativos herdados em escala digital. Sucesso de Monster em MegaETH poderia validar modelo de aplicações de blockchain direcionadas a nichos de usuários específicos com casos de uso bem definidos. Bankless" data-title="Iniciando jornada com Monster em MegaETH" data-share-url="https://www.bankless.com/read/getting-started-with-monster-on-megaeth">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">22:25</span>
+          <span class="news-source">Bankless</span>
+        </div>
+        <div class="news-title">Iniciando jornada com Monster em MegaETH</div>
+        <div class="news-summary">Monster em MegaETH representa plataforma desenvolvida para permitir tokenização de cartas Pokémon com interface simplificada e intuitiva para usuários de blockchain. A plataforma utiliza tecnologia de escala de layer 2 (MegaETH) construída sobre Ethereum para reduzir custos de transação e acelerar tempo de liquidação. Tokenização de itens colecionáveis como cartões de Pokémon representa caso de uso concreto de blockchain para bens digitais com valor intrínseco. MegaETH, solução de escalabilidade, demonstra utilidade prática em suporte de aplicações que requerem velocidade e eficiência de custo. Para colecionadores de Pokémon, plataforma oferece novo modo de autenticação digital, transferência e negociação de cartões sem intermediários. A integração de ativos físicos de grande valor em blockchain via tokenização abre mercado potencial significativo de ativos herdados em escala digital. Sucesso de Monster em MegaETH poderia validar modelo de aplicações de blockchain direcionadas a nichos de usuários específicos com casos de uso bem definidos.</div>
+        <div class="news-link"><a href="https://www.bankless.com/read/getting-started-with-monster-on-megaeth" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Bitcoin cai brevemente abaixo de $66 mil com saídas de ETF e temores geopolíticos Bitcoin registrou queda breve abaixo da marca de $66 mil como resultado combinado de saídas de ETFs de Bitcoin spot e incerteza geopolítica crescente derivada de escalada militar no Oriente Médio. Analistas apontam que mercado continua a avaliar impacto de venda recente de Bitcoin pela empresa estratégica, que alienou quantidade significativa de posição. A queda representa quebra de momentum de subida que persistira em semanas anteriores e marca retorno de volatilidade após período relativo de calma. Temores de expansão de conflito no Golfo Pérsico alimentam aversão a risco e realocação de capital para ativos de segurança como dólar e Treasuries americanos. Para proprietários de Bitcoin, a queda testa níveis técnicos importantes e psicológicos de suporte. ETF fluxos negativos sugerem institucionalização parcial de liquidação, potencialmente indicando fraqueza de convicção de longo prazo. A volatilidade continuada em Bitcoin pode perseverar até que clareza geopolítica melhore e ciclo de política monetária dos bancos centrais se estabilize. The Block" data-title="Bitcoin cai brevemente abaixo de $66 mil com saídas de ETF e temores geopolíticos" data-share-url="https://www.theblock.co/post/403454/bitcoin-dips-below-66000?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">03:04</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Bitcoin cai brevemente abaixo de $66 mil com saídas de ETF e temores geopolíticos</div>
+        <div class="news-summary">Bitcoin registrou queda breve abaixo da marca de $66 mil como resultado combinado de saídas de ETFs de Bitcoin spot e incerteza geopolítica crescente derivada de escalada militar no Oriente Médio. Analistas apontam que mercado continua a avaliar impacto de venda recente de Bitcoin pela empresa estratégica, que alienou quantidade significativa de posição. A queda representa quebra de momentum de subida que persistira em semanas anteriores e marca retorno de volatilidade após período relativo de calma. Temores de expansão de conflito no Golfo Pérsico alimentam aversão a risco e realocação de capital para ativos de segurança como dólar e Treasuries americanos. Para proprietários de Bitcoin, a queda testa níveis técnicos importantes e psicológicos de suporte. ETF fluxos negativos sugerem institucionalização parcial de liquidação, potencialmente indicando fraqueza de convicção de longo prazo. A volatilidade continuada em Bitcoin pode perseverar até que clareza geopolítica melhore e ciclo de política monetária dos bancos centrais se estabilize.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/403454/bitcoin-dips-below-66000?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Blockchain Association exorta Senado a aprovar Clarity Act com carta de 160 ex-oficiais de segurança A Blockchain Association enviou carta ao Senado americano assinada por 160 ex-oficiais de segurança nacional pedindo aprovação rápida da Clarity Act, legislação que buscaria fornecer estrutura regulatória para criptomoedas e tecnologia blockchain. A participação de ex-oficiais de segurança confere peso institucional ao argumento de que clareza regulatória beneficia segurança nacional americano ao estabelecer padrões para vigilância e compliance. A Clarity Act é vista pela indústria blockchain como avanço significativo em direção à regulação previsível que permitiria inovação sob parâmetros claros. A Blockchain Association também organiza sessão virtual de town hall em quinta-feira para educar legisladores sobre benefícios potenciais de legislação clara para criptomoedas. Para mercado de cripto, aprovação da Clarity Act poderia representar inflexão positiva institucional e redução de incerteza regulatória que atualmente pesa sobre preços de ativos. O envolvimento de ex-oficiais de segurança ilustra evolução de narrativa em torno de cripto de questão de segurança para questão de inovação econômica. The Block" data-title="Blockchain Association exorta Senado a aprovar Clarity Act com carta de 160 ex-oficiais de segurança" data-share-url="https://www.theblock.co/post/403450/blockchain-association-letter-senate?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">00:42</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Blockchain Association exorta Senado a aprovar Clarity Act com carta de 160 ex-oficiais de segurança</div>
+        <div class="news-summary">A Blockchain Association enviou carta ao Senado americano assinada por 160 ex-oficiais de segurança nacional pedindo aprovação rápida da Clarity Act, legislação que buscaria fornecer estrutura regulatória para criptomoedas e tecnologia blockchain. A participação de ex-oficiais de segurança confere peso institucional ao argumento de que clareza regulatória beneficia segurança nacional americano ao estabelecer padrões para vigilância e compliance. A Clarity Act é vista pela indústria blockchain como avanço significativo em direção à regulação previsível que permitiria inovação sob parâmetros claros. A Blockchain Association também organiza sessão virtual de town hall em quinta-feira para educar legisladores sobre benefícios potenciais de legislação clara para criptomoedas. Para mercado de cripto, aprovação da Clarity Act poderia representar inflexão positiva institucional e redução de incerteza regulatória que atualmente pesa sobre preços de ativos. O envolvimento de ex-oficiais de segurança ilustra evolução de narrativa em torno de cripto de questão de segurança para questão de inovação econômica.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/403450/blockchain-association-letter-senate?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Queda de Bitcoin para $66 mil acelera migração para dólares digitais A queda contínua do Bitcoin rumo a $66 mil está catalisando fuga de capital para stablecoins atrelados ao dólar americano conforme investidores buscam refúgio de volatilidade em ativos com valor estável atrelado a moeda fiduciária. Dados on-chain revelam influxos significativos para stablecoins como USDT, USDC e outras durante período de queda de Bitcoin, sugerindo realocação defensiva. O padrão de fuga para dólares digitais ocorre apesar da relativa calma nos índices de ações globais e dólar, indicando dinâmica específica do mercado cripto. Para desenvolvedores de stablecoins, influxo de liquidez representa validação de proposta de valor em contextos de volatilidade de mercado. A aceleração de adoção de stablecoins durante períodos de volatilidade pode estabelecer uso recorrente em base de usuários cripto educados. Para bancos centrais e reguladores, aumento de uso de stablecoins levanta questões sobre supervisão e reservas subjacentes garantindo estabilidade. A dinâmica de fuga para dólares digitais pode eventualmente beneficiar players de stablecoin que demonstram reservas robustas e conformidade regulatória. CoinDesk" data-title="Queda de Bitcoin para $66 mil acelera migração para dólares digitais" data-share-url="https://www.coindesk.com/markets/2026/06/03/bitcoin-s-slide-to-usd67-000-is-accelerating-a-shift-into-digital-dollars">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">23:44</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Queda de Bitcoin para $66 mil acelera migração para dólares digitais</div>
+        <div class="news-summary">A queda contínua do Bitcoin rumo a $66 mil está catalisando fuga de capital para stablecoins atrelados ao dólar americano conforme investidores buscam refúgio de volatilidade em ativos com valor estável atrelado a moeda fiduciária. Dados on-chain revelam influxos significativos para stablecoins como USDT, USDC e outras durante período de queda de Bitcoin, sugerindo realocação defensiva. O padrão de fuga para dólares digitais ocorre apesar da relativa calma nos índices de ações globais e dólar, indicando dinâmica específica do mercado cripto. Para desenvolvedores de stablecoins, influxo de liquidez representa validação de proposta de valor em contextos de volatilidade de mercado. A aceleração de adoção de stablecoins durante períodos de volatilidade pode estabelecer uso recorrente em base de usuários cripto educados. Para bancos centrais e reguladores, aumento de uso de stablecoins levanta questões sobre supervisão e reservas subjacentes garantindo estabilidade. A dinâmica de fuga para dólares digitais pode eventualmente beneficiar players de stablecoin que demonstram reservas robustas e conformidade regulatória.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/03/bitcoin-s-slide-to-usd67-000-is-accelerating-a-shift-into-digital-dollars" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Índice de medo de Bitcoin sobe 20%, maior salto desde queda de 5 de fevereiro O índice de medo e ganância de Bitcoin registrou aumento de quase 20 por cento, marcando seu maior salto diário desde o crash de 5 de fevereiro que precipitou queda significativa de preços globais de criptomoedas. O aumento no índice de medo sinaliza retorno de sentimento negativo após dois meses de relativa calma e confiança no mercado. O índice, que rastreia métricas de volatilidade, volume e momentum de Bitcoin, serve como barômetro psicológico de sentimento de mercado. O aumento está correlacionado com escalada geopolítica no Oriente Médio e liquidações de posições longas em criptomoedas. Para traders, aumento de medo pode representar oportunidade de compra em mercados deprimidos ou sinal de mais queda a vir, dependendo de contexto técnico. O índice de medo em 20 por cento de aumento sugere realocação rápida de capital para ativos de segurança. A volatilidade de sentimento em magnitude desta reforça desafio de construir confiança institucional em Bitcoin como ativo de longo prazo. CoinDesk" data-title="Índice de medo de Bitcoin sobe 20%, maior salto desde queda de 5 de fevereiro" data-share-url="https://www.coindesk.com/markets/2026/06/03/bitcoin-s-fear-gauge-surges-nearly-20-its-biggest-jump-since-feb-5-crash">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">02:51</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Índice de medo de Bitcoin sobe 20%, maior salto desde queda de 5 de fevereiro</div>
+        <div class="news-summary">O índice de medo e ganância de Bitcoin registrou aumento de quase 20 por cento, marcando seu maior salto diário desde o crash de 5 de fevereiro que precipitou queda significativa de preços globais de criptomoedas. O aumento no índice de medo sinaliza retorno de sentimento negativo após dois meses de relativa calma e confiança no mercado. O índice, que rastreia métricas de volatilidade, volume e momentum de Bitcoin, serve como barômetro psicológico de sentimento de mercado. O aumento está correlacionado com escalada geopolítica no Oriente Médio e liquidações de posições longas em criptomoedas. Para traders, aumento de medo pode representar oportunidade de compra em mercados deprimidos ou sinal de mais queda a vir, dependendo de contexto técnico. O índice de medo em 20 por cento de aumento sugere realocação rápida de capital para ativos de segurança. A volatilidade de sentimento em magnitude desta reforça desafio de construir confiança institucional em Bitcoin como ativo de longo prazo.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/03/bitcoin-s-fear-gauge-surges-nearly-20-its-biggest-jump-since-feb-5-crash" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Sinais bullish de XRP se acumulam, mas preço continua caindo Análise técnica de XRP mostra acúmulo de sinais bullish incluindo formações de gráfico e padrões de volume que historicamente precedem reversões de alta, porém preço continua em trajetória descendente com queda para mínimo de 15 semanas. XRP perdeu suporte técnico significativo após vendas pesadas, deixando traders focados em defesa do nível de $1,20 como próximo piso crítico. O divórcio entre sinais técnicos positivos e ação de preço real sugere conflito entre sentimento fundamental e pressão de venda imediata. A moeda de Ripple Labs sofreu durante período de incerteza regulatória aumentada e volatilidade macroeconômica de criptomoedas. Para XRP holders, acúmulo de sinais bullish pode indicar oportunidade de compra antes de possível reversão, ou pode representar armadilha de dados técnicos falsos em contexto de liquidação. Resiliência ou queda abaixo de $1,20 determinará se sinais bullish traduzem-se em recuperação de preço ou continuação de declínio. A dinâmica de XRP reflete desafio geral do mercado de cripto entre narrativas técnicas otimistas e realidades de pressão de liquidação. CoinDesk" data-title="Sinais bullish de XRP se acumulam, mas preço continua caindo" data-share-url="https://www.coindesk.com/markets/2026/06/03/bullish-xrp-signals-are-piling-up-the-price-keeps-falling">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">02:15</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Sinais bullish de XRP se acumulam, mas preço continua caindo</div>
+        <div class="news-summary">Análise técnica de XRP mostra acúmulo de sinais bullish incluindo formações de gráfico e padrões de volume que historicamente precedem reversões de alta, porém preço continua em trajetória descendente com queda para mínimo de 15 semanas. XRP perdeu suporte técnico significativo após vendas pesadas, deixando traders focados em defesa do nível de $1,20 como próximo piso crítico. O divórcio entre sinais técnicos positivos e ação de preço real sugere conflito entre sentimento fundamental e pressão de venda imediata. A moeda de Ripple Labs sofreu durante período de incerteza regulatória aumentada e volatilidade macroeconômica de criptomoedas. Para XRP holders, acúmulo de sinais bullish pode indicar oportunidade de compra antes de possível reversão, ou pode representar armadilha de dados técnicos falsos em contexto de liquidação. Resiliência ou queda abaixo de $1,20 determinará se sinais bullish traduzem-se em recuperação de preço ou continuação de declínio. A dinâmica de XRP reflete desafio geral do mercado de cripto entre narrativas técnicas otimistas e realidades de pressão de liquidação.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/03/bullish-xrp-signals-are-piling-up-the-price-keeps-falling" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Apostas cripto bullish perdem 1,6 bilhão de dólares com quedas em ETH, SOL, DOGE de 9% Posições cripto bullish foram liquidadas em escala massiva com perdas totalizando $1,6 bilhão enquanto Ethereum (ETH), Solana (SOL) e Dogecoin (DOGE) caíram 9 por cento em 24 horas em reação a temores geopolíticos e volatilidade de mercado. O maior unwinding individual foi posição de BTC-USDT longa de $59,67 milhões em exchange HTX, indicando liquidação de alavancadas significativas. A cascata de liquidações sugere que muitos traders haviam posicionado-se bullishly com alavancagem, deixando exposição a movimentos contra rápidos. Os altcoins como SOL e DOGE, mais voláteis que Bitcoin, sofreram quedas percentualmente maiores durante liquidação. As liquidações em cadeia reforçam comportamento de mercado procíclico onde venda induz mais venda conforme ordens de parada (stop-loss) são acionadas. Para residual de mercado cripto, liquidações desta magnitude indicam que confiança de traders em subida contínua era parcial e facilmente desfeita por notícias negativas. Reconstrução de confiança pode levar semanas ou meses dependendo de resolução de incertezas geopolíticas. CoinDesk" data-title="Apostas cripto bullish perdem 1,6 bilhão de dólares com quedas em ETH, SOL, DOGE de 9%" data-share-url="https://www.coindesk.com/markets/2026/06/03/bullish-crypto-bets-lose-usd1-6-billion-as-eth-sol-doge-drop-9">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">02:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Apostas cripto bullish perdem 1,6 bilhão de dólares com quedas em ETH, SOL, DOGE de 9%</div>
+        <div class="news-summary">Posições cripto bullish foram liquidadas em escala massiva com perdas totalizando $1,6 bilhão enquanto Ethereum (ETH), Solana (SOL) e Dogecoin (DOGE) caíram 9 por cento em 24 horas em reação a temores geopolíticos e volatilidade de mercado. O maior unwinding individual foi posição de BTC-USDT longa de $59,67 milhões em exchange HTX, indicando liquidação de alavancadas significativas. A cascata de liquidações sugere que muitos traders haviam posicionado-se bullishly com alavancagem, deixando exposição a movimentos contra rápidos. Os altcoins como SOL e DOGE, mais voláteis que Bitcoin, sofreram quedas percentualmente maiores durante liquidação. As liquidações em cadeia reforçam comportamento de mercado procíclico onde venda induz mais venda conforme ordens de parada (stop-loss) são acionadas. Para residual de mercado cripto, liquidações desta magnitude indicam que confiança de traders em subida contínua era parcial e facilmente desfeita por notícias negativas. Reconstrução de confiança pode levar semanas ou meses dependendo de resolução de incertezas geopolíticas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/03/bullish-crypto-bets-lose-usd1-6-billion-as-eth-sol-doge-drop-9" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin despenca abaixo de $66 mil enquanto ações globais atingem recordes em novos patamares Bitcoin caiu abaixo de $66 mil, registrando queda de 6,4 por cento até mínimo de 24 horas em $65,708 enquanto Ethereum caiu abaixo de $1,900 em negociação asiática, contrastando nitidamente com nova alta do índice MSCI All Country World de ações globais. A divergência entre recuperação de mercados de ações tradicionais e queda de criptomoedas sugere realocação de capital onde investidores reduzem risco em ativos digitais mais especulativos em favor de ações. O padrão divergente reflete estrutura de risco diferente entre mercados tradicionais suportados por fundamentos corporativos e criptomoedas que dependem de sentimento e narrativa de tecnologia. Para traders, a divergência pode indicar que influxo de risco capital em ações contrasta com efluxo de cripto em busca de segurança. A queda acontece poucas horas após novo recorde do índice de ações global, sugerindo instabilidade de rotação de capital entre classes de ativos. Persistência de divergência poderia sinalizar revalorização de estrutura de risco em mercados financeiros globais conforme geopolítica deteriora. CoinDesk" data-title="Bitcoin despenca abaixo de $66 mil enquanto ações globais atingem recordes em novos patamares" data-share-url="https://www.coindesk.com/markets/2026/06/03/bitcoin-plunges-below-usd66-000-even-as-global-stocks-hit-fresh-records">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">01:28</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin despenca abaixo de $66 mil enquanto ações globais atingem recordes em novos patamares</div>
+        <div class="news-summary">Bitcoin caiu abaixo de $66 mil, registrando queda de 6,4 por cento até mínimo de 24 horas em $65,708 enquanto Ethereum caiu abaixo de $1,900 em negociação asiática, contrastando nitidamente com nova alta do índice MSCI All Country World de ações globais. A divergência entre recuperação de mercados de ações tradicionais e queda de criptomoedas sugere realocação de capital onde investidores reduzem risco em ativos digitais mais especulativos em favor de ações. O padrão divergente reflete estrutura de risco diferente entre mercados tradicionais suportados por fundamentos corporativos e criptomoedas que dependem de sentimento e narrativa de tecnologia. Para traders, a divergência pode indicar que influxo de risco capital em ações contrasta com efluxo de cripto em busca de segurança. A queda acontece poucas horas após novo recorde do índice de ações global, sugerindo instabilidade de rotação de capital entre classes de ativos. Persistência de divergência poderia sinalizar revalorização de estrutura de risco em mercados financeiros globais conforme geopolítica deteriora.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/03/bitcoin-plunges-below-usd66-000-even-as-global-stocks-hit-fresh-records" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mastercard expande liquidação on-chain em aposta em stablecoins e finanças sempre ativas Mastercard ampliou seu programa de liquidação on-chain para expandir capacidade de settlamento com criptomoedas, em particular com stablecoins, visando oferecer liquidação nos finais de semana e feriados quando sistemas financeiros tradicionais fecham. A iniciativa reflete crescente demanda institucional por movimentação de fundos contínua em 24/7 em vez de estar confinada a horários de negócio tradicionais. Mastercard, processador de pagamentos tradicional, está posicionando-se como ponte entre sistemas financeiros convencionais e infraestrutura blockchain. A expansão on-chain de Mastercard valida proposição de valor de stablecoins para transferências de valor de baixo custo e alta velocidade. Para ecossistema cripto, endosso de Mastercard confere legitimidade institucional a stablecoins como instrumento financeiro de utilidade real. A iniciativa de Mastercard pode acelerar adoção de stablecoins como veículo padrão para liquidação entre instituições financeiras maiores. Sucesso desta estratégia poderia criar novo caso de uso para criptomoedas em infraestrutura financeira estabelecida. CoinDesk" data-title="Mastercard expande liquidação on-chain em aposta em stablecoins e finanças sempre ativas" data-share-url="https://www.coindesk.com/markets/2026/06/03/mastercard-expands-on-chain-settlement-in-bet-on-stablecoins-and-always-on-finance">
+        <div class="news-meta">
+          <span class="news-date">03 jun 2026</span>
+          <span class="news-time">01:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mastercard expande liquidação on-chain em aposta em stablecoins e finanças sempre ativas</div>
+        <div class="news-summary">Mastercard ampliou seu programa de liquidação on-chain para expandir capacidade de settlamento com criptomoedas, em particular com stablecoins, visando oferecer liquidação nos finais de semana e feriados quando sistemas financeiros tradicionais fecham. A iniciativa reflete crescente demanda institucional por movimentação de fundos contínua em 24/7 em vez de estar confinada a horários de negócio tradicionais. Mastercard, processador de pagamentos tradicional, está posicionando-se como ponte entre sistemas financeiros convencionais e infraestrutura blockchain. A expansão on-chain de Mastercard valida proposição de valor de stablecoins para transferências de valor de baixo custo e alta velocidade. Para ecossistema cripto, endosso de Mastercard confere legitimidade institucional a stablecoins como instrumento financeiro de utilidade real. A iniciativa de Mastercard pode acelerar adoção de stablecoins como veículo padrão para liquidação entre instituições financeiras maiores. Sucesso desta estratégia poderia criar novo caso de uso para criptomoedas em infraestrutura financeira estabelecida.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/03/mastercard-expands-on-chain-settlement-in-bet-on-stablecoins-and-always-on-finance" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
