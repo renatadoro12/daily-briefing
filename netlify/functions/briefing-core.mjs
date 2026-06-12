@@ -180,7 +180,7 @@ export async function selectAndSummarize(articles, apiKey) {
   const today = nowBR();
   const datePT = `${today.getUTCDate()} de ${MONTHS_PT[today.getUTCMonth()]} de ${today.getUTCFullYear()}`;
 
-  const TOPIC_LIMITS = { ia: 6, geopolitica: 6, economia: 6, web3: 6, crypto: 6 };
+  const TOPIC_LIMITS = { ia: 8, geopolitica: 4, economia: 4, web3: 5, crypto: 9 };
   const byTopic = {};
   for (const a of articles) {
     if (!byTopic[a.topic]) byTopic[a.topic] = [];
@@ -203,13 +203,15 @@ export async function selectAndSummarize(articles, apiKey) {
 
   const prompt = `Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é ${datePT}.
 
-Selecione exatamente 6 notícias por tema: geopolítica, economia, IA, web3 e crypto. Total: 30 notícias. Não repita notícias sobre o mesmo evento.
+Selecione exatamente: 4 notícias de geopolítica, 4 de economia, 8 de IA, 5 de web3 e 9 de crypto. Total: 30 notícias. Não repita notícias sobre o mesmo evento.
 
 REGRAS GERAIS — válidas para todos os temas:
 1. BREAKING NEWS e eventos de alto impacto têm prioridade ABSOLUTA.
 2. Prefira sempre notícias das últimas horas — quanto mais fresca, melhor.
 3. Evite duplicatas do mesmo evento — escolha apenas a melhor cobertura.
-4. EXCLUIR: análises muito técnicas, notícias de projetos pequenos e irrelevantes, opiniões sem fato concreto.
+4. EXCLUIR: notícias de projetos pequenos e irrelevantes, opiniões sem fato concreto.
+5. EXCLUIR notícias "frias" — factuais sem impacto real, sem tendência, sem repercussão. Priorize sempre o que está gerando buzz, debate ou consequência prática agora.
+6. EXCLUIR notícias isoladas, genéricas ou de baixo impacto — sejam internacionais (ex: crimes locais, casos pontuais sem repercussão global) ou nacionais (Brasil) sem conexão clara com tendências maiores.
 
 REGRAS POR TEMA:
 
@@ -255,7 +257,8 @@ CRIPTOMOEDAS — priorizar:
 - Movimentos de grandes carteiras (baleias)
 - Stablecoins — descolamentos, regulação, novos lançamentos
 - Bitcoin como reserva estratégica de países e empresas
-- ETFs de cripto
+- ETFs de cripto (mencionar pouco, só se houver fato muito relevante)
+- Projetos e tokens ganhando tração/atenção no momento (ex: Hyperliquid, novas L2s, memecoins relevantes, narrativas virais)
 
 WEB3 — priorizar:
 - Lançamentos e atualizações relevantes de protocolos
@@ -263,6 +266,7 @@ WEB3 — priorizar:
 - Adoção institucional de Web3
 - Hacks e exploits em protocolos
 - Parcerias relevantes no ecossistema
+- Projetos e narrativas em alta gerando buzz na comunidade (ex: Hyperliquid, novas L2s, memecoins relevantes)
 
 Para cada notícia: escreva um resumo em português brasileiro com 10 a 14 linhas, explicando o contexto, o que aconteceu, quem está envolvido, o impacto e as possíveis consequências. Traduza os títulos para português. Inclua o link original da notícia.
 
