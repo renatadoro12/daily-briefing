@@ -112,7 +112,44 @@ const MONTHS_PT = [
 // ─── HELPERS ───────────────────────────────────────────────────────────────
 
 function nowBR() {
+  const override = process.env.BRIEFING_DATE;
+  if (override) {
+    const [y, m, d] = override.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+  }
   return new Date(Date.now() - 3 * 60 * 60 * 1000);
+}
+
+function repairJson(text) {
+  let result = '';
+  let inString = false;
+  let i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (!inString) {
+      result += ch;
+      if (ch === '"') inString = true;
+    } else {
+      if (ch === '\\') {
+        result += ch + (text[i + 1] || '');
+        i++;
+      } else if (ch === '"') {
+        let j = i + 1;
+        while (j < text.length && ' \t\n\r'.includes(text[j])) j++;
+        const next = text[j] || '';
+        if (',:]}'.includes(next) || next === '') {
+          inString = false;
+          result += ch;
+        } else {
+          result += '\\"';
+        }
+      } else {
+        result += ch;
+      }
+    }
+    i++;
+  }
+  return result;
 }
 
 function dateSlug(d) {
@@ -306,11 +343,16 @@ ${articlesText}`;
   let data;
   try {
     data = JSON.parse(text);
-  } catch (e) {
-    console.warn(`JSON inválido, tentando recuperar: ${e.message}`);
-    // Remove vírgulas antes de } ou ] (trailing commas que Claude às vezes gera)
-    const cleaned = text.replace(/,(\s*[}\]])/g, '$1');
-    data = JSON.parse(cleaned);
+  } catch (e1) {
+    console.warn(`JSON inválido, tentando recuperar: ${e1.message}`);
+    try {
+      const cleaned = text.replace(/,(\s*[}\]])/g, '$1');
+      data = JSON.parse(cleaned);
+    } catch (e2) {
+      console.warn(`Recuperação 1 falhou, tentando repair de aspas: ${e2.message}`);
+      const repaired = repairJson(text.replace(/,(\s*[}\]])/g, '$1'));
+      data = JSON.parse(repaired);
+    }
   }
   const threadOfDay = data.thread_of_day || '';
 

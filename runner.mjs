@@ -10,7 +10,14 @@ import { writeFileSync, readFileSync, mkdirSync, existsSync, readdirSync } from 
 const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) { console.error('ANTHROPIC_API_KEY não definida'); process.exit(1); }
 
-function nowBR() { return new Date(Date.now() - 3 * 60 * 60 * 1000); }
+function nowBR() {
+  const override = process.env.BRIEFING_DATE;
+  if (override) {
+    const [y, m, d] = override.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+  }
+  return new Date(Date.now() - 3 * 60 * 60 * 1000);
+}
 function dateSlug(d) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
 }
