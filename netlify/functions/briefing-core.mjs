@@ -6,103 +6,68 @@ import Parser from 'rss-parser';
 
 const FEEDS = {
   geopolitica: [
-    'https://feeds.apnews.com/apnews/world-news',
-    'https://feeds.apnews.com/apnews/us-news',
-    'https://feeds.reuters.com/reuters/worldNews',
-    'http://feeds.bbci.co.uk/news/world/rss.xml',
     'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
     'https://www.theguardian.com/world/rss',
-    'https://www.aljazeera.com/xml/rss/all.xml',
-    'https://rss.dw.com/rdf/rss-en-world',
-    'https://feeds.skynews.com/feeds/rss/world.xml',
-    'https://www.npr.org/rss/rss.php?id=1004',
-    'https://g1.globo.com/rss/g1/mundo/feed.xml',
-    'https://rss.politico.com/politics-news.xml',
+    'http://feeds.bbci.co.uk/news/world/rss.xml',
+    'https://www.gzeromedia.com/feeds/feed.rss',
   ],
   economia: [
-    'https://feeds.apnews.com/apnews/business',
-    'https://feeds.reuters.com/reuters/businessNews',
     'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
+    'https://www.theguardian.com/business/rss',
     'http://feeds.bbci.co.uk/news/business/rss.xml',
-    'https://www.cnbc.com/id/10001147/device/rss/rss.html',
-    'https://www.forbes.com/business/feed/',
     'https://feeds.a.dj.com/rss/RSSWorldNews.xml',
     'https://feeds.bloomberg.com/economics/news.rss',
     'https://www.infomoney.com.br/feed/',
-    'https://valor.globo.com/rss/',
+    'https://www.project-syndicate.org/rss',
+    'https://www.forbes.com/business/feed/',
     'https://api.axios.com/feed/',
-    'https://thehill.com/feed/',
-    'https://qz.com/feed/',
-    'https://www.investopedia.com/feedbuilder/feed/getfeed/?feedType=rss',
   ],
   ia: [
     'https://www.technologyreview.com/feed/',
-    'https://feeds.bloomberg.com/technology/news.rss',
     'https://www.theverge.com/rss/index.xml',
-    'https://techcrunch.com/feed/',
-    'https://techcrunch.com/category/artificial-intelligence/feed/',
     'https://venturebeat.com/category/ai/feed/',
-    'https://www.wired.com/feed/tag/artificial-intelligence/rss',
-    'https://feeds.arstechnica.com/arstechnica/index',
-    'https://openai.com/blog/rss.xml',
-    'https://blog.google/technology/ai/rss/',
-    'https://www.zdnet.com/topic/artificial-intelligence/rss.xml',
-    'https://gizmodo.com/feed/rss',
-    'https://spectrum.ieee.org/feeds/feed.rss',
-    'https://www.analyticsvidhya.com/feed/',
-    'https://towardsdatascience.com/feed',
-    'https://www.artificialintelligence-news.com/feed/',
-    'https://rss.tecmundo.com.br/feed',
-    'https://olhardigital.com.br/feed/',
-    'https://canaltech.com.br/rss/',
-    'https://startups.com.br/feed/',
-    'https://feeds.folha.uol.com.br/tec/rss091.xml',
-  ],
-  web3: [
-    'https://www.theblock.co/rss.xml',
-    'https://beincrypto.com/category/web3/feed/',
-    'https://thedefiant.io/feed',
-    'https://www.bankless.com/feed',
-    'https://messari.io/rss/news.xml',
+    'https://api.axios.com/feed/',
+    'https://cointelegraph.com/rss/tag/ai',
+    'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',
+    'https://tldr.tech/api/rss/ai',
+    'https://feeds.bloomberg.com/technology/news.rss',
+    'https://techcrunch.com/category/artificial-intelligence/feed/',
+    'https://www.semafor.com/rss.xml',
   ],
   crypto: [
     'https://www.coindesk.com/arc/outboundfeeds/rss/',
     'https://cointelegraph.com/rss',
-    'https://cryptoslate.com/feed/',
-    'https://bitcoinmagazine.com/.rss/full/',
     'https://decrypt.co/feed',
-    'https://br.cointelegraph.com/rss',
-    'https://livecoins.com.br/feed/',
-    'https://portaldobitcoin.uol.com.br/feed/',
-    'https://cointimes.com.br/feed/',
+    'https://bitcoinmagazine.com/.rss/full/',
+    'https://www.theblock.co/rss.xml',
+    'https://cryptobriefing.com/feed/',
+    'https://ambcrypto.com/feed/',
+    'https://unchainedcrypto.com/feed/',
+    'https://thedefiant.io/api/feed',
+    'https://www.bankless.com/rss/feed',
+    'https://coinjournal.net/feed/',
   ],
 };
 
 const ACCENT_COLORS = {
-  geopolitica: '#7C3AED',
-  economia: '#84CC16',
+  geopolitica_economia: '#7C3AED',
   ia: '#00C4B4',
-  web3: '#3B82F6',
   crypto: '#F59E0B',
 };
 
 const TOPIC_NAMES = {
-  geopolitica: 'Geopolítica',
-  economia: 'Economia',
+  geopolitica_economia: 'Geopolítica & Economia',
   ia: 'Inteligência Artificial',
-  web3: 'Web3',
   crypto: 'Criptomoedas',
 };
 
 const TOPIC_ICONS = {
-  geopolitica: '🌍',
-  economia: '💰',
+  geopolitica_economia: '🌍',
   ia: '🤖',
-  web3: '🌐',
   crypto: '₿',
 };
 
-const TOPIC_ORDER = ['geopolitica', 'economia', 'ia', 'web3', 'crypto'];
+const TOPIC_ORDER = ['geopolitica_economia', 'ia', 'crypto'];
 
 const MONTHS_PT = [
   'janeiro','fevereiro','março','abril','maio','junho',
@@ -164,6 +129,27 @@ function escapeHTML(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+const TOPIC_ALIASES = {
+  geopolitica: 'geopolitica',
+  'geopolítica': 'geopolitica',
+  economia: 'economia',
+  'economía': 'economia',
+  ia: 'ia',
+  ai: 'ia',
+  inteligencia_artificial: 'ia',
+  'inteligência_artificial': 'ia',
+  'inteligencia artificial': 'ia',
+  'inteligência artificial': 'ia',
+  crypto: 'crypto',
+  cripto: 'crypto',
+  criptomoedas: 'crypto',
+};
+
+function normalizeTopic(t) {
+  const key = String(t || '').toLowerCase().trim();
+  return TOPIC_ALIASES[key] || key;
+}
+
 // ─── RSS FETCH ─────────────────────────────────────────────────────────────
 
 export async function fetchArticles() {
@@ -217,14 +203,14 @@ export async function selectAndSummarize(articles, apiKey) {
   const today = nowBR();
   const datePT = `${today.getUTCDate()} de ${MONTHS_PT[today.getUTCMonth()]} de ${today.getUTCFullYear()}`;
 
-  const TOPIC_LIMITS = { ia: 8, geopolitica: 4, economia: 4, web3: 5, crypto: 9 };
+  const TOPIC_LIMITS = { geopolitica: 8, economia: 16, ia: 20, crypto: 20 };
   const byTopic = {};
   for (const a of articles) {
     if (!byTopic[a.topic]) byTopic[a.topic] = [];
     const limit = TOPIC_LIMITS[a.topic] || 6;
     if (byTopic[a.topic].length < limit) byTopic[a.topic].push(a);
   }
-  const balanced = Object.values(byTopic).flat().slice(0, 30);
+  const balanced = Object.values(byTopic).flat().slice(0, 64);
 
   let articlesText = '';
   balanced.forEach((a, i) => {
@@ -240,12 +226,18 @@ export async function selectAndSummarize(articles, apiKey) {
 
   const prompt = `Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é ${datePT}.
 
-Selecione exatamente: 4 notícias de geopolítica, 4 de economia, 8 de IA, 5 de web3 e 9 de crypto. Total: 30 notícias. Não repita notícias sobre o mesmo evento.
+A resposta deve ter 4 arrays separados, um por tema, cada um com a quantidade EXATA de itens abaixo — preencha cada array até atingir esse número, mesmo que precise relaxar um pouco o critério de "buzz"/repercussão para completar (mas nunca invente notícia, use sempre artigos reais da lista):
+- "geopolitica": exatamente 2 itens
+- "economia": exatamente 6 itens
+- "ia": exatamente 12 itens
+- "crypto": exatamente 12 itens
+
+Antes de finalizar, conte os itens de cada array. Se "ia" ou "crypto" tiverem menos que o exigido, volte à lista de artigos e complete com as melhores opções restantes daquele tema até bater o número exato.
 
 REGRAS GERAIS — válidas para todos os temas:
 1. BREAKING NEWS e eventos de alto impacto têm prioridade ABSOLUTA.
 2. Prefira sempre notícias das últimas horas — quanto mais fresca, melhor.
-3. Evite duplicatas do mesmo evento — escolha apenas a melhor cobertura.
+3. PROIBIDO repetir a mesma notícia ou o mesmo evento em mais de uma entrada — mesmo que apareça em fontes diferentes, mesmo que pareça se encaixar em mais de um tema (ex: uma notícia sobre IA aplicada a criptomoedas deve aparecer em APENAS UM dos temas, nunca nos dois; uma notícia que envolva geopolítica E economia ao mesmo tempo conta como uma única entrada). Escolha sempre o tema mais adequado e a melhor cobertura, e use cada evento só uma vez.
 4. EXCLUIR: notícias de projetos pequenos e irrelevantes, opiniões sem fato concreto.
 5. EXCLUIR notícias "frias" — factuais sem impacto real, sem tendência, sem repercussão. Priorize sempre o que está gerando buzz, debate ou consequência prática agora.
 6. EXCLUIR notícias isoladas, genéricas ou de baixo impacto — sejam internacionais (ex: crimes locais, casos pontuais sem repercussão global) ou nacionais (Brasil) sem conexão clara com tendências maiores.
@@ -270,7 +262,7 @@ ECONOMIA — priorizar:
 - Tarifas, sanções e guerras comerciais
 - Crises econômicas em países relevantes
 - Economia brasileira
-- Reflexo de crises geopolíticas nos mercados e inflação
+- Reflexo de crises geopolíticas nos mercados e na inflação
 
 INTELIGÊNCIA ARTIFICIAL — priorizar:
 - Lançamentos de modelos novos (OpenAI, Google, Anthropic, Meta e outros)
@@ -297,31 +289,19 @@ CRIPTOMOEDAS — priorizar:
 - ETFs de cripto (mencionar pouco, só se houver fato muito relevante)
 - Projetos e tokens ganhando tração/atenção no momento (ex: Hyperliquid, novas L2s, memecoins relevantes, narrativas virais)
 
-WEB3 — priorizar:
-- Lançamentos e atualizações relevantes de protocolos
-- Regulação de DeFi e NFTs
-- Adoção institucional de Web3
-- Hacks e exploits em protocolos
-- Parcerias relevantes no ecossistema
-- Projetos e narrativas em alta gerando buzz na comunidade (ex: Hyperliquid, novas L2s, memecoins relevantes)
-
 Para cada notícia: escreva um resumo em português brasileiro com 10 a 14 linhas, explicando o contexto, o que aconteceu, quem está envolvido, o impacto e as possíveis consequências. Traduza os títulos para português. Inclua o link original da notícia.
 
 Além das notícias, gere um "fio condutor do dia" (campo thread_of_day): um parágrafo editorial de 3 a 4 frases conectando os principais temas do dia, explicando o que une as notícias mais importantes desta edição.
 
-Retorne APENAS JSON válido, sem texto antes ou depois. IMPORTANTE: nos campos de texto (summary, title, thread_of_day), nunca use aspas duplas — use aspas simples ou reescreva a frase para evitá-las:
+Retorne APENAS JSON válido, sem texto antes ou depois, seguindo EXATAMENTE esta estrutura com 4 arrays separados (não use um array único "news"). IMPORTANTE: nos campos de texto (summary, title, thread_of_day), nunca use aspas duplas — use aspas simples ou reescreva a frase para evitá-las:
 {
   "thread_of_day": "Parágrafo editorial de 3 a 4 frases conectando os principais temas do dia.",
-  "news": [
-    {
-      "topic": "geopolitica",
-      "title": "Título em português",
-      "summary": "Resumo detalhado com 12 a 16 linhas.",
-      "source": "Fonte",
-      "published_time": "HH:MM",
-      "link": "https://..."
-    }
-  ]
+  "geopolitica": [
+    { "title": "Título em português", "summary": "Resumo detalhado com 12 a 16 linhas.", "source": "Fonte", "published_time": "HH:MM", "link": "https://..." }
+  ],
+  "economia": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
+  "ia": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
+  "crypto": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ]
 }
 
 ARTIGOS:
@@ -329,7 +309,7 @@ ${articlesText}`;
 
   const msg = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 16000,
+    max_tokens: 20000,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -357,17 +337,45 @@ ${articlesText}`;
   const threadOfDay = data.thread_of_day || '';
 
   const grouped = {};
-  for (const item of data.news) {
-    if (!item.published_time) item.published_time = '--:--';
-    if (!grouped[item.topic]) grouped[item.topic] = [];
-    grouped[item.topic].push(item);
+  if (Array.isArray(data.news)) {
+    // Fallback para o formato antigo (array único "news"), caso o modelo responda assim
+    for (const item of data.news) {
+      if (!item.published_time) item.published_time = '--:--';
+      const topic = normalizeTopic(item.topic);
+      if (!grouped[topic]) grouped[topic] = [];
+      grouped[topic].push(item);
+    }
+  } else {
+    for (const [key, value] of Object.entries(data)) {
+      if (key === 'thread_of_day' || !Array.isArray(value)) continue;
+      const topic = normalizeTopic(key);
+      if (!grouped[topic]) grouped[topic] = [];
+      for (const item of value) {
+        if (!item.published_time) item.published_time = '--:--';
+        grouped[topic].push(item);
+      }
+    }
   }
 
+  // Garante a cota exata por tema, mesmo que o modelo retorne mais ou menos itens.
+  // Mantém os mais recentes quando há excesso.
+  const QUOTAS = { geopolitica: 2, economia: 6, ia: 12, crypto: 12 };
   for (const topic of Object.keys(grouped)) {
     grouped[topic].sort((a, b) => b.published_time.localeCompare(a.published_time));
+    if (QUOTAS[topic]) grouped[topic] = grouped[topic].slice(0, QUOTAS[topic]);
   }
 
-  console.log(`Claude selecionou ${data.news.length} notícias`);
+  // Geopolítica e Economia são selecionadas como categorias separadas (mais confiável
+  // para o modelo cumprir as cotas), mas exibidas juntas numa única aba.
+  if (grouped.geopolitica || grouped.economia) {
+    grouped.geopolitica_economia = [...(grouped.geopolitica || []), ...(grouped.economia || [])]
+      .sort((a, b) => b.published_time.localeCompare(a.published_time));
+    delete grouped.geopolitica;
+    delete grouped.economia;
+  }
+
+  const totalSelecionado = Object.values(grouped).reduce((sum, items) => sum + items.length, 0);
+  console.log(`Claude selecionou ${totalSelecionado} notícias`);
   return { grouped, threadOfDay };
 }
 

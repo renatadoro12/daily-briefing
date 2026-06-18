@@ -7,22 +7,18 @@ const MONTHS_PT = [
 ];
 
 const TOPIC_NAMES = {
-  geopolitica: 'Geopolítica',
-  economia: 'Economia',
+  geopolitica_economia: 'Geopolítica & Economia',
   ia: 'Inteligência Artificial',
-  web3: 'Web3',
   crypto: 'Criptomoedas',
 };
 
 const TOPIC_ICONS = {
-  geopolitica: '🌍',
-  economia: '💰',
+  geopolitica_economia: '🌍',
   ia: '🤖',
-  web3: '🌐',
   crypto: '₿',
 };
 
-const TOPIC_ORDER = ['geopolitica', 'economia', 'ia', 'web3', 'crypto'];
+const TOPIC_ORDER = ['geopolitica_economia', 'ia', 'crypto'];
 
 function nowBR() { return new Date(Date.now() - 3 * 60 * 60 * 1000); }
 function dateSlug(d) {
