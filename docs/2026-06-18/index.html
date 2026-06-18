@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">18 DE JUNHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">A escalada diplomática no Oriente Médio com o acordo EUA-Irã começa a aliviar pressões inflacionárias globais, enquanto o novo presidente do Fed, Kevin Warsh, adota postura hawkish que pressiona ativos de risco como criptomoedas e ações de tecnologia. O mercado se reposiciona: capital flui de mega-capitalizações para semicondutores e infraestrutura de IA, enquanto Bitcoin cai para $64k e a incerteza geopolítica persiste apesar do alívio no petróleo.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-06-17/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18" selected>2026-06-18</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Ucrânia realiza ataque massivo com drones contra refinaria de Moscou e aeroportos A Ucrânia lançou um dos maiores ataques com drones contra Moscou desde o início da guerra, visando uma grande refinaria na capital russa e forçando o fechamento temporário dos aeroportos da cidade por várias horas. O ataque demonstra a capacidade crescente da Ucrânia de atingir infraestrutura crítica russa a centenas de quilômetros de distância, escalando significativamente a campanha de drones ofensivos. A refinaria é uma das maiores da Rússia e sua destruição teria implicações significativas para a capacidade de refino de petróleo russo e economia geral. O incidente marca uma intensificação da guerra de atrito contra infraestrutura, com ambos os lados aumentando a sofisticação de suas operações de drones. A magnitude do ataque levanta questões sobre a eficácia das defesas aéreas russas e a capacidade de resiliência da infraestrutura russa. Isso ocorre em paralelo com o acordo EUA-Irã, que pode levar a uma redução na escala geral de conflito no Oriente Médio, mas não afeta diretamente a guerra na Ucrânia que continua em escalada. NYT World News" data-title="Ucrânia realiza ataque massivo com drones contra refinaria de Moscou e aeroportos" data-share-url="https://www.nytimes.com/2026/06/18/world/europe/moscow-ukraine-drone-attack-fire.html">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">10:50</span>
+          <span class="news-source">NYT World News</span>
+        </div>
+        <div class="news-title">Ucrânia realiza ataque massivo com drones contra refinaria de Moscou e aeroportos</div>
+        <div class="news-summary">A Ucrânia lançou um dos maiores ataques com drones contra Moscou desde o início da guerra, visando uma grande refinaria na capital russa e forçando o fechamento temporário dos aeroportos da cidade por várias horas. O ataque demonstra a capacidade crescente da Ucrânia de atingir infraestrutura crítica russa a centenas de quilômetros de distância, escalando significativamente a campanha de drones ofensivos. A refinaria é uma das maiores da Rússia e sua destruição teria implicações significativas para a capacidade de refino de petróleo russo e economia geral. O incidente marca uma intensificação da guerra de atrito contra infraestrutura, com ambos os lados aumentando a sofisticação de suas operações de drones. A magnitude do ataque levanta questões sobre a eficácia das defesas aéreas russas e a capacidade de resiliência da infraestrutura russa. Isso ocorre em paralelo com o acordo EUA-Irã, que pode levar a uma redução na escala geral de conflito no Oriente Médio, mas não afeta diretamente a guerra na Ucrânia que continua em escalada.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/18/world/europe/moscow-ukraine-drone-attack-fire.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Banco da Inglaterra mantém taxas inalteradas, adverte sobre inflação persistente apesar do acordo EUA-Irã O Banco da Inglaterra manteve as taxas de juros inalteradas em sua reunião de política, citando incerteza contínua causada pela guerra no Oriente Médio e seus impactos nos preços de energia como razão principal. Apesar do acordo EUA-Irã que ofereceu esperança de alívio nos preços do petróleo, os responsáveis pela política monetária britânica alertam que os efeitos completos levarão tempo para se materializar na economia real. O banco reduziu sua previsão de inflação para o trimestre final do ano, mas mantém vigilância sobre pressões de custos que ainda refletem o período de conflito de alto custo. A decisão de manter taxas inalteradas contrasta com a possibilidade anterior de cortes adicionais após o primeiro corte em dezembro de 2025. A incerteza macroeconômica global resultante tanto da geopolítica quanto da nova postura hawkish do Fed americano está levando bancos centrais globais a adotar um tom mais cauteloso. O relatório de emprego britânico também mostra que o número de vagas de emprego atingiu uma mínima de cinco anos, sugerindo desaceleração no mercado de trabalho conforme empresas se tornam mais cautelosas com contratações. BBC News / NYT Business" data-title="Banco da Inglaterra mantém taxas inalteradas, adverte sobre inflação persistente apesar do acordo EUA-Irã" data-share-url="https://www.bbc.com/news/articles/c33yzm5mdjpo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">09:50</span>
+          <span class="news-source">BBC News / NYT Business</span>
+        </div>
+        <div class="news-title">Banco da Inglaterra mantém taxas inalteradas, adverte sobre inflação persistente apesar do acordo EUA-Irã</div>
+        <div class="news-summary">O Banco da Inglaterra manteve as taxas de juros inalteradas em sua reunião de política, citando incerteza contínua causada pela guerra no Oriente Médio e seus impactos nos preços de energia como razão principal. Apesar do acordo EUA-Irã que ofereceu esperança de alívio nos preços do petróleo, os responsáveis pela política monetária britânica alertam que os efeitos completos levarão tempo para se materializar na economia real. O banco reduziu sua previsão de inflação para o trimestre final do ano, mas mantém vigilância sobre pressões de custos que ainda refletem o período de conflito de alto custo. A decisão de manter taxas inalteradas contrasta com a possibilidade anterior de cortes adicionais após o primeiro corte em dezembro de 2025. A incerteza macroeconômica global resultante tanto da geopolítica quanto da nova postura hawkish do Fed americano está levando bancos centrais globais a adotar um tom mais cauteloso. O relatório de emprego britânico também mostra que o número de vagas de emprego atingiu uma mínima de cinco anos, sugerindo desaceleração no mercado de trabalho conforme empresas se tornam mais cautelosas com contratações.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/c33yzm5mdjpo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Novo presidente do Fed Warsh mantém postura hawkish e reduz sinais de política monetária Kevin Warsh, novo presidente do Federal Reserve, adotou uma postura significativamente mais agressiva em relação à inflação em sua primeira coletiva de imprensa pós-FOMC, escolhendo não fornecer orientações futuras sobre política monetária. A decisão gerou volatilidade nos mercados, com investidores aumentando expressivamente as apostas em aumentos de taxa de juros para o resto de 2026, contrariando expectativas anteriores de cortes. O mercado de futuros agora precifica pelo menos um aumento na taxa de juros este ano, marcando uma reversão completa em relação à administração anterior. A abordagem de Warsh reflete preocupação renovada com pressões inflacionárias que não desapareceram apesar do acordo EUA-Irã que ofereceu algum alívio nos preços de energia. O Fed manteve as taxas de juros inalteradas na reunião de ontem, mas o tom hawkish de Warsh sinalizou que future cuts não são garantidos e que aumentos são agora uma possibilidade real no horizonte. Essa mudança de postura tem implicações profundas para ativos de risco, incluindo criptomoedas, ações de tecnologia e mercados emergentes que dependem de taxas baixas. NYT Business" data-title="Novo presidente do Fed Warsh mantém postura hawkish e reduz sinais de política monetária" data-share-url="https://www.nytimes.com/2026/06/18/business/dealbook/warsh-fed-rates.html">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">09:01</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Novo presidente do Fed Warsh mantém postura hawkish e reduz sinais de política monetária</div>
+        <div class="news-summary">Kevin Warsh, novo presidente do Federal Reserve, adotou uma postura significativamente mais agressiva em relação à inflação em sua primeira coletiva de imprensa pós-FOMC, escolhendo não fornecer orientações futuras sobre política monetária. A decisão gerou volatilidade nos mercados, com investidores aumentando expressivamente as apostas em aumentos de taxa de juros para o resto de 2026, contrariando expectativas anteriores de cortes. O mercado de futuros agora precifica pelo menos um aumento na taxa de juros este ano, marcando uma reversão completa em relação à administração anterior. A abordagem de Warsh reflete preocupação renovada com pressões inflacionárias que não desapareceram apesar do acordo EUA-Irã que ofereceu algum alívio nos preços de energia. O Fed manteve as taxas de juros inalteradas na reunião de ontem, mas o tom hawkish de Warsh sinalizou que future cuts não são garantidos e que aumentos são agora uma possibilidade real no horizonte. Essa mudança de postura tem implicações profundas para ativos de risco, incluindo criptomoedas, ações de tecnologia e mercados emergentes que dependem de taxas baixas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/18/business/dealbook/warsh-fed-rates.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Número de vagas de emprego no Reino Unido atinge mínima de cinco anos enquanto empresas se tornam cautelosas Os últimos dados do mercado de trabalho britânico revelam que o número de vagas de emprego atingiu uma mínima em cinco anos, sugerindo que as empresas estão se tornando significativamente mais cautelosas sobre contratação conforme enfrentam incerteza econômica contínua. A redução nas vagas de emprego é particularmente preocupante dado o contexto de possível desaceleração econômica, com a guerra no Oriente Médio e a postura hawkish do Fed criando ventos contrários globais. O mercado de trabalho britânico, que foi uma força positiva na economia durante os últimos anos, agora mostra sinais de deterioração que podem levar a maior desemprego se a tendência continuar. A redução nas vagas de emprego também reflete o impacto potencial da inteligência artificial na contratação, com empresas esperando poder fazer mais com menos funcionários através de automação. Os dados são particularmente significativos em um contexto político volátil no Reino Unido, onde uma eleição secundária em Makerfield pode resultar na queda do Primeiro-Ministro Keir Starmer se os resultados forem desfavoráveis. A combinação de incerteza política, desaceleração econômica e redução nas vagas de emprego cria um ambiente macroeconômico desafiador para o Reino Unido nos próximos trimestres. BBC News" data-title="Número de vagas de emprego no Reino Unido atinge mínima de cinco anos enquanto empresas se tornam cautelosas" data-share-url="https://www.bbc.com/news/articles/cm203nn7lzro?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:25</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Número de vagas de emprego no Reino Unido atinge mínima de cinco anos enquanto empresas se tornam cautelosas</div>
+        <div class="news-summary">Os últimos dados do mercado de trabalho britânico revelam que o número de vagas de emprego atingiu uma mínima em cinco anos, sugerindo que as empresas estão se tornando significativamente mais cautelosas sobre contratação conforme enfrentam incerteza econômica contínua. A redução nas vagas de emprego é particularmente preocupante dado o contexto de possível desaceleração econômica, com a guerra no Oriente Médio e a postura hawkish do Fed criando ventos contrários globais. O mercado de trabalho britânico, que foi uma força positiva na economia durante os últimos anos, agora mostra sinais de deterioração que podem levar a maior desemprego se a tendência continuar. A redução nas vagas de emprego também reflete o impacto potencial da inteligência artificial na contratação, com empresas esperando poder fazer mais com menos funcionários através de automação. Os dados são particularmente significativos em um contexto político volátil no Reino Unido, onde uma eleição secundária em Makerfield pode resultar na queda do Primeiro-Ministro Keir Starmer se os resultados forem desfavoráveis. A combinação de incerteza política, desaceleração econômica e redução nas vagas de emprego cria um ambiente macroeconômico desafiador para o Reino Unido nos próximos trimestres.</div>
+        <div class="news-link"><a href="https://www.bbc.com/news/articles/cm203nn7lzro?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Acordo EUA-Irã oferece alívio econômico ao Irã com mínimas concessões iniciais Os EUA e Irã assinaram um acordo inicial histórico que reabre o Estreito de Ormuz para o fluxo de petróleo, oferecendo ao Irã importantes benefícios econômicos imediatos enquanto adia as negociações mais complexas para etapas posteriores. O acordo representa uma mudança dramática na política externa de Trump em relação ao Irã, contrastando com sua abordagem anterior de pressão máxima. O petróleo global começou a cair imediatamente, com preços reduzindo significativamente após o anúncio, oferecendo alívio à inflação global que foi pressionada pela guerra. No entanto, analistas alertam que o impacto completo na economia global levará meses para se materializar, especialmente nos preços do combustível de aviação. Israel expressou profunda preocupação com o acordo, argumentando que ele não atinge nenhum dos seus objetivos de guerra e deixa o país em posição mais fraca. O acordo também desencadeou críticas do secretário de Defesa dos EUA Pete Hegseth aos aliados da OTAN por sua resposta considerada inadequada ao envolvimento americano na guerra. A escalada diplomática reduz significativamente os riscos de escalação militar no Oriente Médio no curto prazo, apesar das tensões persistentes com Israel. NYT World News" data-title="Acordo EUA-Irã oferece alívio econômico ao Irã com mínimas concessões iniciais" data-share-url="https://www.nytimes.com/2026/06/18/world/middleeast/iran-deal-oil-strait-of-hormuz-nuclear.html">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">07:14</span>
+          <span class="news-source">NYT World News</span>
+        </div>
+        <div class="news-title">Acordo EUA-Irã oferece alívio econômico ao Irã com mínimas concessões iniciais</div>
+        <div class="news-summary">Os EUA e Irã assinaram um acordo inicial histórico que reabre o Estreito de Ormuz para o fluxo de petróleo, oferecendo ao Irã importantes benefícios econômicos imediatos enquanto adia as negociações mais complexas para etapas posteriores. O acordo representa uma mudança dramática na política externa de Trump em relação ao Irã, contrastando com sua abordagem anterior de pressão máxima. O petróleo global começou a cair imediatamente, com preços reduzindo significativamente após o anúncio, oferecendo alívio à inflação global que foi pressionada pela guerra. No entanto, analistas alertam que o impacto completo na economia global levará meses para se materializar, especialmente nos preços do combustível de aviação. Israel expressou profunda preocupação com o acordo, argumentando que ele não atinge nenhum dos seus objetivos de guerra e deixa o país em posição mais fraca. O acordo também desencadeou críticas do secretário de Defesa dos EUA Pete Hegseth aos aliados da OTAN por sua resposta considerada inadequada ao envolvimento americano na guerra. A escalada diplomática reduz significativamente os riscos de escalação militar no Oriente Médio no curto prazo, apesar das tensões persistentes com Israel.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/18/world/middleeast/iran-deal-oil-strait-of-hormuz-nuclear.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Preço médio da gasolina nos EUA cai abaixo de $4 após acordo EUA-Irã A média nacional de preço da gasolina nos EUA caiu abaixo da marca psicológica de $4 por galão pela primeira vez em meses, oferecendo alívio significativo aos consumidores americanos após um período prolongado de pressão inflacionária nos postos de combustível. A queda é diretamente atribuída ao acordo EUA-Irã que reabriu o Estreito de Ormuz e permitirá maior fluxo de petróleo global, reduzindo pressões de oferta que elevaram preços durante o conflito. A AAA confirmou que a média nacional agora se situa abaixo de $4, representando uma vitória política para a administração Trump e potencial alívio para a inflação geral de bens e serviços. No entanto, analistas alertam que os preços do combustível de aviação podem permanecer elevados por meses, não necessariamente caindo apesar do alívio nos preços do petróleo bruto, já que as companhias aéreas conhecem a disposição dos passageiros de pagar mais. O alívio nos preços de gasolina é particularmente importante para o consumidor médio americano, que é extremamente sensível aos preços dos combustíveis e cuja disposição de gastar em outras áreas pode ser influenciada pelos custos de transporte. NYT Business / Axios" data-title="Preço médio da gasolina nos EUA cai abaixo de $4 após acordo EUA-Irã" data-share-url="https://www.nytimes.com/2026/06/18/business/energy-environment/iran-war-gasoline-prices.html">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">06:12</span>
+          <span class="news-source">NYT Business / Axios</span>
+        </div>
+        <div class="news-title">Preço médio da gasolina nos EUA cai abaixo de $4 após acordo EUA-Irã</div>
+        <div class="news-summary">A média nacional de preço da gasolina nos EUA caiu abaixo da marca psicológica de $4 por galão pela primeira vez em meses, oferecendo alívio significativo aos consumidores americanos após um período prolongado de pressão inflacionária nos postos de combustível. A queda é diretamente atribuída ao acordo EUA-Irã que reabriu o Estreito de Ormuz e permitirá maior fluxo de petróleo global, reduzindo pressões de oferta que elevaram preços durante o conflito. A AAA confirmou que a média nacional agora se situa abaixo de $4, representando uma vitória política para a administração Trump e potencial alívio para a inflação geral de bens e serviços. No entanto, analistas alertam que os preços do combustível de aviação podem permanecer elevados por meses, não necessariamente caindo apesar do alívio nos preços do petróleo bruto, já que as companhias aéreas conhecem a disposição dos passageiros de pagar mais. O alívio nos preços de gasolina é particularmente importante para o consumidor médio americano, que é extremamente sensível aos preços dos combustíveis e cuja disposição de gastar em outras áreas pode ser influenciada pelos custos de transporte.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/18/business/energy-environment/iran-war-gasoline-prices.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="SpaceX marca estreia em bolsa com salto de 49%, mas ações caem no segundo dia As ações da SpaceX experimentaram um lançamento de mercado espetacular em sua estreia pública, com salto inicial de 49% refletindo otimismo massivo de investidores de varejo em relação à empresa de foguetes de Elon Musk e seu posicionamento no boom de infraestrutura de IA e energia. No entanto, a trajetória de alta foi revertida no segundo dia de negociação, com as ações fechando em queda e sugerindo potencial saturação da demanda inicial de varejo. O IPO de SpaceX é visto como transformador para o mercado de ações americano, com investidores individuais tendo um papel importante na criação de demanda por ações que antes estavam inacessíveis. Analistas de investimentos agora alertam para os riscos de investir em ações individuais altamente voláteis como SpaceX, sugerindo que diversificação é mais apropriada para investidores convencionais. O desempenho inicial explosivo reflete o entusiasmo no mercado por empresas de tecnologia e infraestrutura ligadas à era de IA, mesmo conforme a nova postura hawkish do Fed começa a pressionar avaliações. A volatilidade pós-IPO ressalta a importância da seleção cuidadosa de pontos de entrada para investidores iniciantes atraídos pela energia de um grande lançamento corporativo. Bloomberg Technology / NYT Business" data-title="SpaceX marca estreia em bolsa com salto de 49%, mas ações caem no segundo dia" data-share-url="https://www.bloomberg.com/news/articles/2026-06-18/spacex-shares-waver-after-posting-first-decline-since-ipo">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">05:36</span>
+          <span class="news-source">Bloomberg Technology / NYT Business</span>
+        </div>
+        <div class="news-title">SpaceX marca estreia em bolsa com salto de 49%, mas ações caem no segundo dia</div>
+        <div class="news-summary">As ações da SpaceX experimentaram um lançamento de mercado espetacular em sua estreia pública, com salto inicial de 49% refletindo otimismo massivo de investidores de varejo em relação à empresa de foguetes de Elon Musk e seu posicionamento no boom de infraestrutura de IA e energia. No entanto, a trajetória de alta foi revertida no segundo dia de negociação, com as ações fechando em queda e sugerindo potencial saturação da demanda inicial de varejo. O IPO de SpaceX é visto como transformador para o mercado de ações americano, com investidores individuais tendo um papel importante na criação de demanda por ações que antes estavam inacessíveis. Analistas de investimentos agora alertam para os riscos de investir em ações individuais altamente voláteis como SpaceX, sugerindo que diversificação é mais apropriada para investidores convencionais. O desempenho inicial explosivo reflete o entusiasmo no mercado por empresas de tecnologia e infraestrutura ligadas à era de IA, mesmo conforme a nova postura hawkish do Fed começa a pressionar avaliações. A volatilidade pós-IPO ressalta a importância da seleção cuidadosa de pontos de entrada para investidores iniciantes atraídos pela energia de um grande lançamento corporativo.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-18/spacex-shares-waver-after-posting-first-decline-since-ipo" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="IA e automação ameaçam transformar economia de gig em novo modelo de exploração em massa Conforme as empresas integram inteligência artificial e contratam menos funcionários em tempo integral, há crescentes temores de que uma transição em larga escala para uma economia de gig de formato explorador se materialize, expandindo condições já precárias de trabalhadores de plataformas como Uber e Delivery. A empresa de compre-agora-pague-depois Klarna anunciou em 2024 que substituiria chatbots de IA por 90% de seus serviços ao cliente, sinalizando um modelo que outras empresas podem replicate em escala. Os trabalhadores de gig já enfrentam pressões extremas de salários baixos, sem benefícios, e sem segurança de emprego, e uma expansão dessa modelo para profissões anteriormente bem remuneradas apresenta risco existencial para a classe média. A Accenture, uma das maiores consultorias mundiais, acaba de reduzir suas previsões de receita, citando explicitamente a perturbação causada pela IA em sua base de clientes como razão primária. O padrão sugere que a IA não está simplesmente aumentando a produtividade dos trabalhadores existentes, mas substituindo-os completamente e criando demanda por um novo tipo de força de trabalho terceirizada e de baixo custo. Essa transição tem implicações sociais, políticas e econômicas profundas conforme o mercado de trabalho se reestrutura fundamentalmente. The Guardian / NYT Business" data-title="IA e automação ameaçam transformar economia de gig em novo modelo de exploração em massa" data-share-url="https://www.theguardian.com/technology/2026/jun/18/ai-threatens-gig-work-rise">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">The Guardian / NYT Business</span>
+        </div>
+        <div class="news-title">IA e automação ameaçam transformar economia de gig em novo modelo de exploração em massa</div>
+        <div class="news-summary">Conforme as empresas integram inteligência artificial e contratam menos funcionários em tempo integral, há crescentes temores de que uma transição em larga escala para uma economia de gig de formato explorador se materialize, expandindo condições já precárias de trabalhadores de plataformas como Uber e Delivery. A empresa de compre-agora-pague-depois Klarna anunciou em 2024 que substituiria chatbots de IA por 90% de seus serviços ao cliente, sinalizando um modelo que outras empresas podem replicate em escala. Os trabalhadores de gig já enfrentam pressões extremas de salários baixos, sem benefícios, e sem segurança de emprego, e uma expansão dessa modelo para profissões anteriormente bem remuneradas apresenta risco existencial para a classe média. A Accenture, uma das maiores consultorias mundiais, acaba de reduzir suas previsões de receita, citando explicitamente a perturbação causada pela IA em sua base de clientes como razão primária. O padrão sugere que a IA não está simplesmente aumentando a produtividade dos trabalhadores existentes, mas substituindo-os completamente e criando demanda por um novo tipo de força de trabalho terceirizada e de baixo custo. Essa transição tem implicações sociais, políticas e econômicas profundas conforme o mercado de trabalho se reestrutura fundamentalmente.</div>
+        <div class="news-link"><a href="https://www.theguardian.com/technology/2026/jun/18/ai-threatens-gig-work-rise" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Anthropic delineia visão para fortalecer segurança de modelos de IA em discussões com administração Trump Anthropic, uma das principais empresas de IA de segurança, delineou uma visão abrangente para como fortalecer as proteções de segurança de modelos de IA, com seu co-fundador Jack Clark indicando que a empresa está em discussões diárias com a administração Trump para resolver preocupações de segurança. A iniciativa reflete crescente atenção regulatória em relação aos riscos potenciais dos sistemas de IA avançados, especialmente conforme modelos se tornam mais poderosos e mais amplamente implantados. Anthropic tem se posicionado como líder em IA segura e responsável, diferenciando-se de competidores como OpenAI através de foco em interpretabilidade e controle humano sobre sistemas de IA. A participação ativa em discussões com o governo sugere que o regulação de IA está evoluindo de manera mais proativa, com empresas privadas e agências governamentais colaborando na definição de padrões de segurança. O timing dessa anúncio coincide com pressão crescente do Fed e outras agências sobre o impacto econômico da IA, bem como preocupações geopolíticas sobre competição EUA-China em capacidades de IA. A abordagem de Anthropic de engajamento governamental proativo pode se tornar modelo para outras empresas de IA conforme o ambiente regulatório se torna mais estruturado. Bloomberg Technology" data-title="Anthropic delineia visão para fortalecer segurança de modelos de IA em discussões com administração Trump" data-share-url="https://www.bloomberg.com/news/articles/2026-06-18/anthropic-lays-out-vision-for-how-to-bolster-ai-models-safety">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">10:41</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Anthropic delineia visão para fortalecer segurança de modelos de IA em discussões com administração Trump</div>
+        <div class="news-summary">Anthropic, uma das principais empresas de IA de segurança, delineou uma visão abrangente para como fortalecer as proteções de segurança de modelos de IA, com seu co-fundador Jack Clark indicando que a empresa está em discussões diárias com a administração Trump para resolver preocupações de segurança. A iniciativa reflete crescente atenção regulatória em relação aos riscos potenciais dos sistemas de IA avançados, especialmente conforme modelos se tornam mais poderosos e mais amplamente implantados. Anthropic tem se posicionado como líder em IA segura e responsável, diferenciando-se de competidores como OpenAI através de foco em interpretabilidade e controle humano sobre sistemas de IA. A participação ativa em discussões com o governo sugere que o regulação de IA está evoluindo de manera mais proativa, com empresas privadas e agências governamentais colaborando na definição de padrões de segurança. O timing dessa anúncio coincide com pressão crescente do Fed e outras agências sobre o impacto econômico da IA, bem como preocupações geopolíticas sobre competição EUA-China em capacidades de IA. A abordagem de Anthropic de engajamento governamental proativo pode se tornar modelo para outras empresas de IA conforme o ambiente regulatório se torna mais estruturado.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-18/anthropic-lays-out-vision-for-how-to-bolster-ai-models-safety" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Adobe integra assistentes de IA conversacionais no Photoshop, Premiere e Illustrator Adobe anunciou que está expandindo seus recursos de IA criativa com a introdução de novos assistentes conversacionais em vários aplicativos da Creative Cloud, permitindo que usuários editem conteúdo através de comandos em linguagem natural. O Photoshop, Illustrator e Premiere agora possuem capacidades de edição baseadas em IA que entendem contexto visual e podem realizar edições complexas com prompts simples. A integração representa um aumento significativo na acessibilidade de ferramentas de edição profissional, permitindo que usuários menos experientes criem conteúdo de qualidade profissional com mínimo de treinamento. Adobe também redesenhou seu AI Studio para incluir um novo recurso que permite aos usuários nomear personagens, objetos e fundos específicos para fácil replicação em projetos subsequentes sem alterar o design. Essa funcionalidade de memória de IA é particularmente valiosa para criadores que trabalham em séries de projetos onde consistência visual é crítica. A expansão dos recursos de IA do Adobe reflete a estratégia da empresa de integrar IA profundamente em seu portfólio de aplicativos, competindo diretamente com ferramentas de IA generativa especializadas como Midjourney e Runway. O timing dessa expansão coincide com crescente interesse em ferramentas de IA criativa e preocupações de reguladores sobre impactos na indústria criativa. The Verge" data-title="Adobe integra assistentes de IA conversacionais no Photoshop, Premiere e Illustrator" data-share-url="https://www.theverge.com/tech/952104/adobe-firefly-ai-agent-elements-projects-update">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Adobe integra assistentes de IA conversacionais no Photoshop, Premiere e Illustrator</div>
+        <div class="news-summary">Adobe anunciou que está expandindo seus recursos de IA criativa com a introdução de novos assistentes conversacionais em vários aplicativos da Creative Cloud, permitindo que usuários editem conteúdo através de comandos em linguagem natural. O Photoshop, Illustrator e Premiere agora possuem capacidades de edição baseadas em IA que entendem contexto visual e podem realizar edições complexas com prompts simples. A integração representa um aumento significativo na acessibilidade de ferramentas de edição profissional, permitindo que usuários menos experientes criem conteúdo de qualidade profissional com mínimo de treinamento. Adobe também redesenhou seu AI Studio para incluir um novo recurso que permite aos usuários nomear personagens, objetos e fundos específicos para fácil replicação em projetos subsequentes sem alterar o design. Essa funcionalidade de memória de IA é particularmente valiosa para criadores que trabalham em séries de projetos onde consistência visual é crítica. A expansão dos recursos de IA do Adobe reflete a estratégia da empresa de integrar IA profundamente em seu portfólio de aplicativos, competindo diretamente com ferramentas de IA generativa especializadas como Midjourney e Runway. O timing dessa expansão coincide com crescente interesse em ferramentas de IA criativa e preocupações de reguladores sobre impactos na indústria criativa.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/952104/adobe-firefly-ai-agent-elements-projects-update" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Accenture reduz previsão de receita citando perturbação de IA e guerra no Oriente Médio Accenture, uma das maiores empresas de consultoria global, reduziu suas previsões de receita para os próximos meses, citando explicitamente perturbação causada por inteligência artificial em seu modelo de negócios como razão primária, junto com impacto macroeconômico da guerra no Oriente Médio. A redução nas previsões é particularmente significativa porque Accenture é uma das primeiras grandes instituições corporativas a admitir publicamente que a IA está tendo impacto negativo em sua receita, ao invés de positivo. Historicamente, consultorias como Accenture prosperaram mediante empregar grandes equipes de consultores e analistas que realizam trabalho repetitivo e padronizado que pode ser feito por sistemas de IA com uma fração do custo. O modelo de negócio de Accenture de arquiteturas propriedárias e trabalho consultivo de alto custo está sendo ameaçado pelo surgimento de plataformas de IA que permitem aos clientes realizar internamente tarefas que anteriormente terceirizariam. A redução nas previsões de receita reflete preocupação de que a IA não é simplesmente uma ferramenta que aumenta a produtividade dos consultores existentes, mas uma tecnologia de deslocamento que elimina a necessidade pela maior parte do trabalho consultivo de baixo nível. O anúncio de Accenture oferece evidência concreta de que a disrupção da IA está começando a aparecer nos resultados financeiros de grandes empresas. Bloomberg Technology" data-title="Accenture reduz previsão de receita citando perturbação de IA e guerra no Oriente Médio" data-share-url="https://www.bloomberg.com/news/articles/2026-06-18/accenture-s-outlook-disappoints-in-uncertain-consultancy-market">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:50</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Accenture reduz previsão de receita citando perturbação de IA e guerra no Oriente Médio</div>
+        <div class="news-summary">Accenture, uma das maiores empresas de consultoria global, reduziu suas previsões de receita para os próximos meses, citando explicitamente perturbação causada por inteligência artificial em seu modelo de negócios como razão primária, junto com impacto macroeconômico da guerra no Oriente Médio. A redução nas previsões é particularmente significativa porque Accenture é uma das primeiras grandes instituições corporativas a admitir publicamente que a IA está tendo impacto negativo em sua receita, ao invés de positivo. Historicamente, consultorias como Accenture prosperaram mediante empregar grandes equipes de consultores e analistas que realizam trabalho repetitivo e padronizado que pode ser feito por sistemas de IA com uma fração do custo. O modelo de negócio de Accenture de arquiteturas propriedárias e trabalho consultivo de alto custo está sendo ameaçado pelo surgimento de plataformas de IA que permitem aos clientes realizar internamente tarefas que anteriormente terceirizariam. A redução nas previsões de receita reflete preocupação de que a IA não é simplesmente uma ferramenta que aumenta a produtividade dos consultores existentes, mas uma tecnologia de deslocamento que elimina a necessidade pela maior parte do trabalho consultivo de baixo nível. O anúncio de Accenture oferece evidência concreta de que a disrupção da IA está começando a aparecer nos resultados financeiros de grandes empresas.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-18/accenture-s-outlook-disappoints-in-uncertain-consultancy-market" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Intel lidera rally de semicondutores após acordo com administração Trump por investimento doméstico Intel Corp disparou em negociação conforme o Presidente Trump anunciou que a empresa chegou a acordo sobre investimento doméstico significativo em fabricação de chips, posicionando a empresa como ganhadora de estratégia de reshoring de semicondutores da administração. O rally em Intel levou todo o setor de semicondutores para cima, conforme investidores antecipam que múltiplas fabricantes de chips se beneficiarão de políticas de apoio governamental e demanda doméstica. O acordo com Intel reflete prioridade de Trump em trazer manufatura de semicondutores críticos de volta aos EUA, citando preocupações de segurança nacional sobre dependência de Taiwan e outros fornecedores estrangeiros. A força do rally em Intel e outros stocks de semicondutores contrasta com queda em Bitcoin e criptomoedas após postura hawkish do Fed, sugerindo rotação de capital para infraestrutura de tecnologia hard em detrimento de ativos digitais. O compromisso de investimento de Intel também reflete reconhecimento de que data centers de IA e infraestrutura de computação de alto desempenho representam fonte de crescimento duradoura para fabricantes de chips. A estratégia de Trump de suporte direto a Intel através de acordos de investimento representa mais uma intervenção de governo em mercados do que a abordagem de hands-off prometida, refletindo pragmatismo sobre importância estratégica de semiconductores. Bloomberg Technology" data-title="Intel lidera rally de semicondutores após acordo com administração Trump por investimento doméstico" data-share-url="https://www.bloomberg.com/news/articles/2026-06-18/us-stock-futures-rise-with-intel-leading-semiconductor-rally">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:43</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Intel lidera rally de semicondutores após acordo com administração Trump por investimento doméstico</div>
+        <div class="news-summary">Intel Corp disparou em negociação conforme o Presidente Trump anunciou que a empresa chegou a acordo sobre investimento doméstico significativo em fabricação de chips, posicionando a empresa como ganhadora de estratégia de reshoring de semicondutores da administração. O rally em Intel levou todo o setor de semicondutores para cima, conforme investidores antecipam que múltiplas fabricantes de chips se beneficiarão de políticas de apoio governamental e demanda doméstica. O acordo com Intel reflete prioridade de Trump em trazer manufatura de semicondutores críticos de volta aos EUA, citando preocupações de segurança nacional sobre dependência de Taiwan e outros fornecedores estrangeiros. A força do rally em Intel e outros stocks de semicondutores contrasta com queda em Bitcoin e criptomoedas após postura hawkish do Fed, sugerindo rotação de capital para infraestrutura de tecnologia hard em detrimento de ativos digitais. O compromisso de investimento de Intel também reflete reconhecimento de que data centers de IA e infraestrutura de computação de alto desempenho representam fonte de crescimento duradoura para fabricantes de chips. A estratégia de Trump de suporte direto a Intel através de acordos de investimento representa mais uma intervenção de governo em mercados do que a abordagem de hands-off prometida, refletindo pragmatismo sobre importância estratégica de semiconductores.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-18/us-stock-futures-rise-with-intel-leading-semiconductor-rally" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ensaios clínicos de medicina de longevidade chegam a momento crítico com primeiro teste de rejevenescimento celular O primeiro ensaio clínico humano de um fármaco potencial para reverter o envelhecimento celular está sendo conduzido, representando um momento de verdade crítico para o campo de medicina de longevidade que tem sido objeto de especulação significativa e investimento. O teste avaliará se um fármaco pode realmente fazer com que as células de uma pessoa se tornem biologicamente mais jovens, um objetivo que tem sido perseguido há décadas com resultado limitado. O sucesso do ensaio teria implicações revolucionárias não apenas para medicina, mas para economia global, setor de cuidados de saúde e até dinâmica demográfica dos países desenvolvidos. O teste também reflete crescente interesse de investidores na intersecção de IA, biologia computacional e medicina, com algoritmos de IA acelerando descoberta de compostos potenciais para anti-envelhecimento. Se bem sucedido, o teste de longevidade poderia justificar centenas de bilhões de dólares em investimento de capital de risco e capital de private equity que foram apostados no setor de medicina de longevidade. No entanto, muitos analistas permanece céticos de que uma abordagem farmacêutica simples pode reverter o envelhecimento, argumentando que intervalo envolveria mudanças muito mais complexas e multifatorial ao corpo humano. Axios" data-title="Ensaios clínicos de medicina de longevidade chegam a momento crítico com primeiro teste de rejevenescimento celular" data-share-url="https://www.axios.com/2026/06/18/longevity-medicine-critical-moment">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:30</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Ensaios clínicos de medicina de longevidade chegam a momento crítico com primeiro teste de rejevenescimento celular</div>
+        <div class="news-summary">O primeiro ensaio clínico humano de um fármaco potencial para reverter o envelhecimento celular está sendo conduzido, representando um momento de verdade crítico para o campo de medicina de longevidade que tem sido objeto de especulação significativa e investimento. O teste avaliará se um fármaco pode realmente fazer com que as células de uma pessoa se tornem biologicamente mais jovens, um objetivo que tem sido perseguido há décadas com resultado limitado. O sucesso do ensaio teria implicações revolucionárias não apenas para medicina, mas para economia global, setor de cuidados de saúde e até dinâmica demográfica dos países desenvolvidos. O teste também reflete crescente interesse de investidores na intersecção de IA, biologia computacional e medicina, com algoritmos de IA acelerando descoberta de compostos potenciais para anti-envelhecimento. Se bem sucedido, o teste de longevidade poderia justificar centenas de bilhões de dólares em investimento de capital de risco e capital de private equity que foram apostados no setor de medicina de longevidade. No entanto, muitos analistas permanece céticos de que uma abordagem farmacêutica simples pode reverter o envelhecimento, argumentando que intervalo envolveria mudanças muito mais complexas e multifatorial ao corpo humano.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/06/18/longevity-medicine-critical-moment" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="NextEra Energy lidera mercado de títulos híbridos enquanto boom de energia de IA catapulta demanda por infraestrutura NextEra Energy emergiu como o maior emissor de títulos híbridos globalmente, capitalizando no boom de energia gerado pela crescente demanda de data centers de IA que requerem quantidades massivas de eletricidade confiável. A empresa de energia está em posição privilegiada para capitalizar na transição energética impulsionada pela IA, com data centers representando uma fonte de receita em rápido crescimento que justifica grandes investimentos em capacidade geração. Os títulos híbridos de NextEra receberam forte demanda de investidores, refletindo confiança de que a empresa está bem posicionada para capturar crescimento do mercado de energia de IA durante a próxima década. A expansão do mercado de títulos híbridos de utilities é particularmente significativa porque históricament, utilities têm sido vistos como investimentos defensivos e estáveis de baixo crescimento. Agora, eles se tornaram ativos de crescimento, impulsionados pela necessidade de trilhões de dólares em novos investimentos em infraestrutura energética para suportar a proliferação de data centers de IA. A ascensão de NextEra como grande emissor de títulos híbridos reflete una reposicionamento fundamental do setor de energia dentro da economia global, com IA sendo o driver primário de crescimento. Bloomberg Technology" data-title="NextEra Energy lidera mercado de títulos híbridos enquanto boom de energia de IA catapulta demanda por infraestrutura" data-share-url="https://www.bloomberg.com/news/articles/2026-06-18/ai-power-boom-catapults-nextera-to-top-of-hybrid-debt-market">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:29</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">NextEra Energy lidera mercado de títulos híbridos enquanto boom de energia de IA catapulta demanda por infraestrutura</div>
+        <div class="news-summary">NextEra Energy emergiu como o maior emissor de títulos híbridos globalmente, capitalizando no boom de energia gerado pela crescente demanda de data centers de IA que requerem quantidades massivas de eletricidade confiável. A empresa de energia está em posição privilegiada para capitalizar na transição energética impulsionada pela IA, com data centers representando uma fonte de receita em rápido crescimento que justifica grandes investimentos em capacidade geração. Os títulos híbridos de NextEra receberam forte demanda de investidores, refletindo confiança de que a empresa está bem posicionada para capturar crescimento do mercado de energia de IA durante a próxima década. A expansão do mercado de títulos híbridos de utilities é particularmente significativa porque históricament, utilities têm sido vistos como investimentos defensivos e estáveis de baixo crescimento. Agora, eles se tornaram ativos de crescimento, impulsionados pela necessidade de trilhões de dólares em novos investimentos em infraestrutura energética para suportar a proliferação de data centers de IA. A ascensão de NextEra como grande emissor de títulos híbridos reflete una reposicionamento fundamental do setor de energia dentro da economia global, com IA sendo o driver primário de crescimento.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-18/ai-power-boom-catapults-nextera-to-top-of-hybrid-debt-market" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Regulador financeiro de Malta explora mecanismos para trazer partes de DeFi sob regulação MiCA A autoridade reguladora financeira de Malta está buscando feedback de stakeholders sobre como trazer componentes de finanças descentralizadas sob o âmbito da regulação europeia de criptoativos MiCA, explorando se descentralização deveria ser avaliada como um espectro contínuo ao invés de conceito binário. A iniciativa de Malta representa esforço europeu mais amplo de trazer atividades cripto anteriormente não reguladas sob supervisão regulatória à medida que a indústria cresce em escala e importância. Malta tem se posicionado como centro financeiro cripto-amigável dentro da Europa, mas agora está reconhecendo que certos componentes de DeFi apresentam riscos de lavagem de dinheiro, fraude e manipulação de mercado que justificam regulação. A questão de como regular DeFi é particularmente desafiadora porque muitos protocolos DeFi são verdadeiramente descentralizados, com nenhuma entidade legal clara que possa ser responsabilizada por violação regulatória. A exploração de Malta sobre um espectro de descentralização reflete pragmatismo de que poucos protocolos são completamente descentralizados, e que a maioria tem componentes centralizados que poderíam ser regulados. O resultado dessa consulta em Malta pode servir como modelo para outras jurisdições europeias e globais sobre como abordar a regulação de DeFi. CoinDesk Policy" data-title="Regulador financeiro de Malta explora mecanismos para trazer partes de DeFi sob regulação MiCA" data-share-url="https://www.coindesk.com/policy/2026/06/18/malta-s-financial-regulator-explores-bringing-parts-of-defi-under-mica-s-orbit">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">07:43</span>
+          <span class="news-source">CoinDesk Policy</span>
+        </div>
+        <div class="news-title">Regulador financeiro de Malta explora mecanismos para trazer partes de DeFi sob regulação MiCA</div>
+        <div class="news-summary">A autoridade reguladora financeira de Malta está buscando feedback de stakeholders sobre como trazer componentes de finanças descentralizadas sob o âmbito da regulação europeia de criptoativos MiCA, explorando se descentralização deveria ser avaliada como um espectro contínuo ao invés de conceito binário. A iniciativa de Malta representa esforço europeu mais amplo de trazer atividades cripto anteriormente não reguladas sob supervisão regulatória à medida que a indústria cresce em escala e importância. Malta tem se posicionado como centro financeiro cripto-amigável dentro da Europa, mas agora está reconhecendo que certos componentes de DeFi apresentam riscos de lavagem de dinheiro, fraude e manipulação de mercado que justificam regulação. A questão de como regular DeFi é particularmente desafiadora porque muitos protocolos DeFi são verdadeiramente descentralizados, com nenhuma entidade legal clara que possa ser responsabilizada por violação regulatória. A exploração de Malta sobre um espectro de descentralização reflete pragmatismo de que poucos protocolos são completamente descentralizados, e que a maioria tem componentes centralizados que poderíam ser regulados. O resultado dessa consulta em Malta pode servir como modelo para outras jurisdições europeias e globais sobre como abordar a regulação de DeFi.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/06/18/malta-s-financial-regulator-explores-bringing-parts-of-defi-under-mica-s-orbit" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="India bane Telegram temporariamente enquanto múltiplos países restringem aplicativo de mensagens A Índia implementou uma proibição temporária do Telegram, o aplicativo de mensagens criptografado, como parte de esforços amplos de aplicação da lei contra atividades criminosas, respondendo a crescentes preocupações sobre o papel da plataforma na facilitação de crimes e atividades extremistas. A ação da Índia se junta a várias outras nações que restringiram acesso ao Telegram ao longo dos anos, incluindo Rússia, Irã e Paquistão, que citam semelhantes preocupações de segurança pública. Telegram tem sido simultaneamente celebrado como ferramenta de liberdade de expressão e de privacidade para dissidentes e ativistas em regimes autoritários, bem como criticado como plataforma valiosa para criminosos e extremistas que buscam contornar vigilância governamental. A ação da Índia reflete tensão fundamental entre direitos de privacidade e liberdade de expressão de um lado, e capacidades de aplicação da lei e segurança pública do outro. Múltiplas restrições a Telegram sugerem que governos ao redor do mundo estão se tornando mais agressivos em relação a tentativas de controlar comunicações criptografadas, com implicações potenciais para todos os aplicativos de mensagens de privacidade de ponta a ponta. A proibição também reflete crescente nacionalismo tecnológico conforme países buscam desenvolver alternativas domésticas às plataformas de tecnologia estrangeiras. NYT Technology" data-title="India bane Telegram temporariamente enquanto múltiplos países restringem aplicativo de mensagens" data-share-url="https://www.nytimes.com/2026/06/18/technology/telegram-ban-india.html">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">06:50</span>
+          <span class="news-source">NYT Technology</span>
+        </div>
+        <div class="news-title">India bane Telegram temporariamente enquanto múltiplos países restringem aplicativo de mensagens</div>
+        <div class="news-summary">A Índia implementou uma proibição temporária do Telegram, o aplicativo de mensagens criptografado, como parte de esforços amplos de aplicação da lei contra atividades criminosas, respondendo a crescentes preocupações sobre o papel da plataforma na facilitação de crimes e atividades extremistas. A ação da Índia se junta a várias outras nações que restringiram acesso ao Telegram ao longo dos anos, incluindo Rússia, Irã e Paquistão, que citam semelhantes preocupações de segurança pública. Telegram tem sido simultaneamente celebrado como ferramenta de liberdade de expressão e de privacidade para dissidentes e ativistas em regimes autoritários, bem como criticado como plataforma valiosa para criminosos e extremistas que buscam contornar vigilância governamental. A ação da Índia reflete tensão fundamental entre direitos de privacidade e liberdade de expressão de um lado, e capacidades de aplicação da lei e segurança pública do outro. Múltiplas restrições a Telegram sugerem que governos ao redor do mundo estão se tornando mais agressivos em relação a tentativas de controlar comunicações criptografadas, com implicações potenciais para todos os aplicativos de mensagens de privacidade de ponta a ponta. A proibição também reflete crescente nacionalismo tecnológico conforme países buscam desenvolver alternativas domésticas às plataformas de tecnologia estrangeiras.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/18/technology/telegram-ban-india.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Casa Branca estabelece centro de poder de IA enquanto administração define política no dia-a-dia A administração Trump está consolidando seus esforços de política de IA através da criação de um centro de poder designado dentro da Casa Branca, mas a estrutura organizacional e a estratégia de política permanecem em formação conforme a administração navega entre múltiplos interesses conflitantes. Partidas entre oficiais chave da Casa Branca sobre política de IA se combinam com falta de direção clara sobre como regular versus facilitar o desenvolvimento de IA, criando ambiente de volatilidade para empresas de IA. A administração entrou no cargo prometendo tirar o governo do caminho da indústria de IA, mas na prática tem sido mais intervencionista conforme enfrenta preocupações de segurança nacional e competição com China sobre IA. A criação de um centro de poder dedicado sugere que a administração reconhece a importância crítica de IA para política econômica e de segurança nacional, mas também que ainda não desenvolveu estratégia coerente. A estrutura em formação reflete broader uncertainty dentro da administração sobre como abordar IA dado múltiplos objetivos potencialmente conflitantes de crescimento de negócios, segurança nacional e regulação de riscos. O desenvolvimento de política de IA na Casa Branca tem implicações profundas para toda a indústria de tecnologia conforme empresas tentam antecipar mudanças regulatórias e ambientes de política. Axios" data-title="Casa Branca estabelece centro de poder de IA enquanto administração define política no dia-a-dia" data-share-url="https://www.axios.com/2026/06/18/inside-white-house-ai-power-center">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">06:20</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Casa Branca estabelece centro de poder de IA enquanto administração define política no dia-a-dia</div>
+        <div class="news-summary">A administração Trump está consolidando seus esforços de política de IA através da criação de um centro de poder designado dentro da Casa Branca, mas a estrutura organizacional e a estratégia de política permanecem em formação conforme a administração navega entre múltiplos interesses conflitantes. Partidas entre oficiais chave da Casa Branca sobre política de IA se combinam com falta de direção clara sobre como regular versus facilitar o desenvolvimento de IA, criando ambiente de volatilidade para empresas de IA. A administração entrou no cargo prometendo tirar o governo do caminho da indústria de IA, mas na prática tem sido mais intervencionista conforme enfrenta preocupações de segurança nacional e competição com China sobre IA. A criação de um centro de poder dedicado sugere que a administração reconhece a importância crítica de IA para política econômica e de segurança nacional, mas também que ainda não desenvolveu estratégia coerente. A estrutura em formação reflete broader uncertainty dentro da administração sobre como abordar IA dado múltiplos objetivos potencialmente conflitantes de crescimento de negócios, segurança nacional e regulação de riscos. O desenvolvimento de política de IA na Casa Branca tem implicações profundas para toda a indústria de tecnologia conforme empresas tentam antecipar mudanças regulatórias e ambientes de política.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/06/18/inside-white-house-ai-power-center" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Super PAC pro-regulação Guardrails Alliance levanta $5M para limitar influência de interesses pró-IA Uma nova organização política chamada Guardrails Alliance arrecadou $5 milhões com objetivo de posicionar-se como esforço populista para conter influência de interesses corporativos pró-IA que buscam bloquear regulação de IA. A organização representa uma resposta organizada ao crescente poder político de grandes empresas de tecnologia na modelagem de política de IA, com objetivo de mobilizar trabalhadores de tecnologia e outros grupos contra desregulação completa. A Guardrails Alliance pretende trabalhar com agências governamentais para estabelecer salvaguardas para trabalhadores e cidadãos contra impactos potencialmente negativos de proliferação de IA sem regulação. O surgimento dessa organização reflete divisão crescente dentro da indústria de tecnologia entre empresas que buscam desenvolvimento de IA sem restrições e aquelas que veem valor em regulação prudente. O financiamento de $5 milhões sugere apoio substancial entre constituintes que temem impactos de IA na força de trabalho, privacidade e democracia, criando contrapeso potencial ao lobby pró-IA corporativo. A batalha sobre política de IA está se tornando cada vez mais polarizada e politizada, refletindo importância fundamental das decisões de hoje para o futuro da economia digital. NYT Technology" data-title="Super PAC pro-regulação Guardrails Alliance levanta $5M para limitar influência de interesses pró-IA" data-share-url="https://www.nytimes.com/2026/06/18/technology/ai-super-pac-guardrails-alliance.html">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT Technology</span>
+        </div>
+        <div class="news-title">Super PAC pro-regulação Guardrails Alliance levanta $5M para limitar influência de interesses pró-IA</div>
+        <div class="news-summary">Uma nova organização política chamada Guardrails Alliance arrecadou $5 milhões com objetivo de posicionar-se como esforço populista para conter influência de interesses corporativos pró-IA que buscam bloquear regulação de IA. A organização representa uma resposta organizada ao crescente poder político de grandes empresas de tecnologia na modelagem de política de IA, com objetivo de mobilizar trabalhadores de tecnologia e outros grupos contra desregulação completa. A Guardrails Alliance pretende trabalhar com agências governamentais para estabelecer salvaguardas para trabalhadores e cidadãos contra impactos potencialmente negativos de proliferação de IA sem regulação. O surgimento dessa organização reflete divisão crescente dentro da indústria de tecnologia entre empresas que buscam desenvolvimento de IA sem restrições e aquelas que veem valor em regulação prudente. O financiamento de $5 milhões sugere apoio substancial entre constituintes que temem impactos de IA na força de trabalho, privacidade e democracia, criando contrapeso potencial ao lobby pró-IA corporativo. A batalha sobre política de IA está se tornando cada vez mais polarizada e politizada, refletindo importância fundamental das decisões de hoje para o futuro da economia digital.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/18/technology/ai-super-pac-guardrails-alliance.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Arizona emerge como caso de teste para crise de energia e água causada por infraestrutura de IA A região do Arizona se tornou um bellwether crítico para a nação conforme a indústria de tecnologia grapples com crescente demanda de energia para data centers de IA em uma región já sob pressão extrema de recursos hídricos e capacidade de geração elétrica. O setor de data centers do Arizona está em explosão conforme empresas de IA competem por espaço para construir instalações de computação de alto desempenho, mas isso cria conflitos crescentes com agendas ambientais e de sustentabilidade. A disponibilidade de terra barata, proximidade com o Vale do Silício e custos de energia historicamente baixos tornaram Arizona atraente para data centers, mas a escalada explosiva de demanda de IA está testando esses fatores. O estado já enfrenta pressão extrema em seus recursos de água conforme a população cresce e as condições de seca persistem, e a adição de data centers intensivos em água cria conflitos potenciais. Empresas de IA argumentam que precisam localizar data centers em locais com energia abundante e barata para manter competitividade, enquanto ambientalistas alertam sobre impactos insustentáveis. A situação no Arizona será provavelmente replicada em outros estados do Sudoeste, tornando-a um microcosmo para debates maiores sobre tradeoffs entre crescimento de IA e sustentabilidade ambiental. Axios" data-title="Arizona emerge como caso de teste para crise de energia e água causada por infraestrutura de IA" data-share-url="https://www.axios.com/2026/06/18/arizona-ai-data-center-water-power">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Arizona emerge como caso de teste para crise de energia e água causada por infraestrutura de IA</div>
+        <div class="news-summary">A região do Arizona se tornou um bellwether crítico para a nação conforme a indústria de tecnologia grapples com crescente demanda de energia para data centers de IA em uma región já sob pressão extrema de recursos hídricos e capacidade de geração elétrica. O setor de data centers do Arizona está em explosão conforme empresas de IA competem por espaço para construir instalações de computação de alto desempenho, mas isso cria conflitos crescentes com agendas ambientais e de sustentabilidade. A disponibilidade de terra barata, proximidade com o Vale do Silício e custos de energia historicamente baixos tornaram Arizona atraente para data centers, mas a escalada explosiva de demanda de IA está testando esses fatores. O estado já enfrenta pressão extrema em seus recursos de água conforme a população cresce e as condições de seca persistem, e a adição de data centers intensivos em água cria conflitos potenciais. Empresas de IA argumentam que precisam localizar data centers em locais com energia abundante e barata para manter competitividade, enquanto ambientalistas alertam sobre impactos insustentáveis. A situação no Arizona será provavelmente replicada em outros estados do Sudoeste, tornando-a um microcosmo para debates maiores sobre tradeoffs entre crescimento de IA e sustentabilidade ambiental.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/06/18/arizona-ai-data-center-water-power" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="CoinDesk 20: Stellar salta 10% enquanto índice cripto geral declina No índice CoinDesk 20 de 20 maiores criptoativos por capitalização de mercado, Stellar (XLM) experimentou salto notável de 10% enquanto o índice geral declinou, sugerindo rotação dentro do mercado cripto de ativos maiores para ativos mais especulativos. Internet Computer (ICP) caiu 4.1% e Sui (SUI) caiu 4%, liderando o índice para baixo conforme investidores reduziram exposição a altcoins mais arriscadas após discurso hawkish do Fed. A performance divergente dentro do índice CoinDesk 20 reflete volatilidade extrema de seleção de ativos cripto em ambiente macroeconômico incerto, com alguns ativos como XLM potencialmente se beneficiando de narrativas específicas de adoção enquanto outros sofrem do sentimento geral de risco ofensivo. O declínio geral do índice CoinDesk 20 acompanha queda maior em Bitcoin, refletindo realidade que aumento em risco macro leva a redução em alocações de cripto em geral. Stella salto de 10% em meio a declínio geral sugere que há demanda significativa em segmentos específicos do mercado cripto mesmo enquanto sentimento macro deteriora, oferecendo possibilidade de oportunidades de nicho em ativos cripto. CoinDesk" data-title="CoinDesk 20: Stellar salta 10% enquanto índice cripto geral declina" data-share-url="https://www.coindesk.com/coindesk-indices/2026/06/18/coindesk-20-performance-update-stellar-xlm-jumps-10-while-index-declines">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">10:13</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">CoinDesk 20: Stellar salta 10% enquanto índice cripto geral declina</div>
+        <div class="news-summary">No índice CoinDesk 20 de 20 maiores criptoativos por capitalização de mercado, Stellar (XLM) experimentou salto notável de 10% enquanto o índice geral declinou, sugerindo rotação dentro do mercado cripto de ativos maiores para ativos mais especulativos. Internet Computer (ICP) caiu 4.1% e Sui (SUI) caiu 4%, liderando o índice para baixo conforme investidores reduziram exposição a altcoins mais arriscadas após discurso hawkish do Fed. A performance divergente dentro do índice CoinDesk 20 reflete volatilidade extrema de seleção de ativos cripto em ambiente macroeconômico incerto, com alguns ativos como XLM potencialmente se beneficiando de narrativas específicas de adoção enquanto outros sofrem do sentimento geral de risco ofensivo. O declínio geral do índice CoinDesk 20 acompanha queda maior em Bitcoin, refletindo realidade que aumento em risco macro leva a redução em alocações de cripto em geral. Stella salto de 10% em meio a declínio geral sugere que há demanda significativa em segmentos específicos do mercado cripto mesmo enquanto sentimento macro deteriora, oferecendo possibilidade de oportunidades de nicho em ativos cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/coindesk-indices/2026/06/18/coindesk-20-performance-update-stellar-xlm-jumps-10-while-index-declines" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Alchemy revela cartão de pagamento virtual Visa para agentes de IA com suporte a cripto Alchemy apresentou AgentCard, cartão de pagamento virtual alimentado por Visa que permite agentes de IA criados em modelos de qualquer provedor, incluindo OpenAI ou Anthropic, fazer compras e transações de pagamento de forma autônoma. A integração com rede de inteligência comercial Visa permite a AgentCard suportar tanto pagamentos de moeda fiduciária quanto cripto e protocolos de pagamento nativos de agentes quando disponíveis. O lançamento de AgentCard representa passo significativo em direção a economia de agentes de IA completamente autônomos que podem atuar como entidades comerciais independentes capazes de negociar, comprar e vender sem intermediação humana. O suporte para cripto e protocolos de pagamento nativos de agentes também posiciona Alchemy como ponte entre economia de IA emergente e infraestrutura blockchain, criando ponte potencial entre finanças tradicionais e cripto. A capacidade para agentes de IA fazer compras de forma autônoma tem implicações económicas significativas, pois pode resultar em novo modelo de comércio onde máquinas interagem umas com outras em mercados de pico bidirecional. A integração com Visa também fornece legitimidade tradicional de finança para iniciativa de IA-nativa de pagamento, sugerindo que a empresa está levando visão de agentes de IA economicamente independentes muito seriamente. CoinDesk / The Block" data-title="Alchemy revela cartão de pagamento virtual Visa para agentes de IA com suporte a cripto" data-share-url="https://www.coindesk.com/business/2026/06/18/alchemy-s-ai-driven-identity-and-payment-service-gains-access-to-visa-network">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">CoinDesk / The Block</span>
+        </div>
+        <div class="news-title">Alchemy revela cartão de pagamento virtual Visa para agentes de IA com suporte a cripto</div>
+        <div class="news-summary">Alchemy apresentou AgentCard, cartão de pagamento virtual alimentado por Visa que permite agentes de IA criados em modelos de qualquer provedor, incluindo OpenAI ou Anthropic, fazer compras e transações de pagamento de forma autônoma. A integração com rede de inteligência comercial Visa permite a AgentCard suportar tanto pagamentos de moeda fiduciária quanto cripto e protocolos de pagamento nativos de agentes quando disponíveis. O lançamento de AgentCard representa passo significativo em direção a economia de agentes de IA completamente autônomos que podem atuar como entidades comerciais independentes capazes de negociar, comprar e vender sem intermediação humana. O suporte para cripto e protocolos de pagamento nativos de agentes também posiciona Alchemy como ponte entre economia de IA emergente e infraestrutura blockchain, criando ponte potencial entre finanças tradicionais e cripto. A capacidade para agentes de IA fazer compras de forma autônoma tem implicações económicas significativas, pois pode resultar em novo modelo de comércio onde máquinas interagem umas com outras em mercados de pico bidirecional. A integração com Visa também fornece legitimidade tradicional de finança para iniciativa de IA-nativa de pagamento, sugerindo que a empresa está levando visão de agentes de IA economicamente independentes muito seriamente.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/06/18/alchemy-s-ai-driven-identity-and-payment-service-gains-access-to-visa-network" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Capital B obtém aprovação de acionistas para até $120B em capacidade de financiamento para estratégia Bitcoin Acionistas da Capital B aprovaram até $120 bilhões em capacidade de financiamento, incluindo instrumentos de patrimônio e crédito, para suportar estratégia agressiva de acumulação de Bitcoin como reserva estratégica corporativa. A aprovação massiva de $120 bilhões em capacidade de financiamento posiciona Capital B como potencial comprador majestade de Bitcoin nos próximos anos, com implicações significativas para dinâmica de oferta e demanda de Bitcoin. A aprovação também reflete crescente adoção institucional de Bitcoin como ativo estratégico de reserva, com precedente definido por MicroStrategy e outras corporações que acumularam quantidades significativas. A Capital B se junta a número crescente de entidades corporativas que veem Bitcoin não como investimento especulativo, mas como hedging contra desvalorização de moedas fiduciárias e inflação monetária. O compromisso de Capital B de até $120 bilhões pode resultar em inúmeras compras de Bitcoin nos próximos trimestres e anos, potencialmente criando floor de suporte de preço enquanto a empresa trabalha para executar sua estratégia. A disponibilidade de tanto capital para compra de Bitcoin também reflete mais larga realocação de capital corporativo para ativos alternativos conforme desconfiança em ativos fiduciários tradicionais cresce. Cointelegraph" data-title="Capital B obtém aprovação de acionistas para até $120B em capacidade de financiamento para estratégia Bitcoin" data-share-url="https://cointelegraph.com/news/capital-b-shareholders-approve-120b-capital?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">09:46</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Capital B obtém aprovação de acionistas para até $120B em capacidade de financiamento para estratégia Bitcoin</div>
+        <div class="news-summary">Acionistas da Capital B aprovaram até $120 bilhões em capacidade de financiamento, incluindo instrumentos de patrimônio e crédito, para suportar estratégia agressiva de acumulação de Bitcoin como reserva estratégica corporativa. A aprovação massiva de $120 bilhões em capacidade de financiamento posiciona Capital B como potencial comprador majestade de Bitcoin nos próximos anos, com implicações significativas para dinâmica de oferta e demanda de Bitcoin. A aprovação também reflete crescente adoção institucional de Bitcoin como ativo estratégico de reserva, com precedente definido por MicroStrategy e outras corporações que acumularam quantidades significativas. A Capital B se junta a número crescente de entidades corporativas que veem Bitcoin não como investimento especulativo, mas como hedging contra desvalorização de moedas fiduciárias e inflação monetária. O compromisso de Capital B de até $120 bilhões pode resultar em inúmeras compras de Bitcoin nos próximos trimestres e anos, potencialmente criando floor de suporte de preço enquanto a empresa trabalha para executar sua estratégia. A disponibilidade de tanto capital para compra de Bitcoin também reflete mais larga realocação de capital corporativo para ativos alternativos conforme desconfiança em ativos fiduciários tradicionais cresce.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/capital-b-shareholders-approve-120b-capital?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Irlanda aperta salvaguardas de cripto em novo plano de ação de crime financeiro nacional Irlanda lançou novo plano de ação nacional de crime financeiro de 30 pontos que nomeia abuso de ativos cripto entre as ameaças principais do país, implementando verificações mais apertadas em fundos cripto e regulação mais rigorosa de atividades cripto no jurisdição. O reconhecimento de Irlanda de risco significativo de cripto reflete realidade que ativos cripto têm se tornado ferramentas preferidas para lavagem de dinheiro, financiamento de terrorismo e atividades criminosas clandestinas devido à relativa pseudonimidade e baixa supervisão comparada a sistemas bancários tradicionais. O plano de 30 pontos também reflete esforço mais amplo europeu de trazer cripto sob supervisão regulatória à medida que setor cresce em escala e relevância econômica. As verificações mais apertadas em fundos cripto provavelmente aumentarão custos de conformidade para exchanges e plataformas operando em Irlanda, potencialmente resultando em saída de alguns operadores. O plano de Irlanda é particularmente significativo porque Irlanda é um hub financeiro global importante, com múltiplas instituições financeiras e cripto operando no país, tornando suas decisões de regulação influentes em alcance mais amplo. O aperto regulatório em Irlanda pode servir como precursor para ações similares em outras jurisdições europeias conforme pressão política para combater crime cripto cresce. Decrypt" data-title="Irlanda aperta salvaguardas de cripto em novo plano de ação de crime financeiro nacional" data-share-url="https://decrypt.co/371518/ireland-tightens-crypto-safeguards-in-new-financial-crime-action-plan">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">09:29</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Irlanda aperta salvaguardas de cripto em novo plano de ação de crime financeiro nacional</div>
+        <div class="news-summary">Irlanda lançou novo plano de ação nacional de crime financeiro de 30 pontos que nomeia abuso de ativos cripto entre as ameaças principais do país, implementando verificações mais apertadas em fundos cripto e regulação mais rigorosa de atividades cripto no jurisdição. O reconhecimento de Irlanda de risco significativo de cripto reflete realidade que ativos cripto têm se tornado ferramentas preferidas para lavagem de dinheiro, financiamento de terrorismo e atividades criminosas clandestinas devido à relativa pseudonimidade e baixa supervisão comparada a sistemas bancários tradicionais. O plano de 30 pontos também reflete esforço mais amplo europeu de trazer cripto sob supervisão regulatória à medida que setor cresce em escala e relevância econômica. As verificações mais apertadas em fundos cripto provavelmente aumentarão custos de conformidade para exchanges e plataformas operando em Irlanda, potencialmente resultando em saída de alguns operadores. O plano de Irlanda é particularmente significativo porque Irlanda é um hub financeiro global importante, com múltiplas instituições financeiras e cripto operando no país, tornando suas decisões de regulação influentes em alcance mais amplo. O aperto regulatório em Irlanda pode servir como precursor para ações similares em outras jurisdições europeias conforme pressão política para combater crime cripto cresce.</div>
+        <div class="news-link"><a href="https://decrypt.co/371518/ireland-tightens-crypto-safeguards-in-new-financial-crime-action-plan" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="HIVE Blockchain assina contrato de GPU de IA de $220M com Bell Canada, prevê $70M em receita anual HIVE Blockchain finalizou contrato soberano de nuvem de $220 milhões com empresa de telecomunicações canadense Bell para implantar 2.304 unidades GPU NVIDIA Blackwell em toda o Canadá até início de 2027, representando pivot transformador da mineração Bitcoin para computação de alta performance de IA. O contrato de longo prazo com Bell projeta gerar $70 milhões em receita anual, criando fluxo de caixa previsível para HIVE e alinhando empresa com tendências macro de demanda de infraestrutura de IA. A transição de HIVE de mineração Bitcoin para computação de IA reflete reconhecimento que infraestrutura de GPU para IA é muito mais lucrativa e está em demanda crescente exponencial conforme empresas de tecnologia expandem data centers. O contrato Bell-HIVE também tem implicações geopolíticas significativas, representando esforço canadense para desenvolver capacidade soberana de IA dentro de país em vez de depender completamente de provedores americanos. A receita projetada de $70 milhões anuais para HIVE representa múltipla significativa sobre receita histórica da empresa de mineração Bitcoin, sugerindo transição criará valor acionário significativo. O movimento de HIVE reflete padrão mais amplo de empresas de cripto pivotarem para infraestrutura de IA, reconhecendo que mercado de IA oferece potencial de crescimento maior do que mineração de cripto. CoinDesk / The Block" data-title="HIVE Blockchain assina contrato de GPU de IA de $220M com Bell Canada, prevê $70M em receita anual" data-share-url="https://www.coindesk.com/markets/2026/06/18/hive-shares-jumps-10-on-usd220m-canada-sovereign-ai-infrastructure-deal">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:49</span>
+          <span class="news-source">CoinDesk / The Block</span>
+        </div>
+        <div class="news-title">HIVE Blockchain assina contrato de GPU de IA de $220M com Bell Canada, prevê $70M em receita anual</div>
+        <div class="news-summary">HIVE Blockchain finalizou contrato soberano de nuvem de $220 milhões com empresa de telecomunicações canadense Bell para implantar 2.304 unidades GPU NVIDIA Blackwell em toda o Canadá até início de 2027, representando pivot transformador da mineração Bitcoin para computação de alta performance de IA. O contrato de longo prazo com Bell projeta gerar $70 milhões em receita anual, criando fluxo de caixa previsível para HIVE e alinhando empresa com tendências macro de demanda de infraestrutura de IA. A transição de HIVE de mineração Bitcoin para computação de IA reflete reconhecimento que infraestrutura de GPU para IA é muito mais lucrativa e está em demanda crescente exponencial conforme empresas de tecnologia expandem data centers. O contrato Bell-HIVE também tem implicações geopolíticas significativas, representando esforço canadense para desenvolver capacidade soberana de IA dentro de país em vez de depender completamente de provedores americanos. A receita projetada de $70 milhões anuais para HIVE representa múltipla significativa sobre receita histórica da empresa de mineração Bitcoin, sugerindo transição criará valor acionário significativo. O movimento de HIVE reflete padrão mais amplo de empresas de cripto pivotarem para infraestrutura de IA, reconhecendo que mercado de IA oferece potencial de crescimento maior do que mineração de cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/18/hive-shares-jumps-10-on-usd220m-canada-sovereign-ai-infrastructure-deal" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Rotação grande: investidores abandonam Magnificent 7 e cripto para gargalos de IA Capital está fluindo rapidamente para fora de mega-capitalizações de tecnologia (Magnificent 7) e ativos cripto em direção a semicondutores, memória e oportunidades relacionadas a espaço conforme investidores se enfocam em gargalos de infraestrutura que poderiam limitar expansão de IA. A rotação reflete reconhecimento de que enquanto demanda por serviços de IA é enorme, capacidade de fornecer computação e armazenamento de dados é limitada por disponibilidade de chips de alta performance e energia. O abandono de ativos cripto em favor de gargalos de IA é particularmente acentuado após discurso hawkish de Warsh, que aumentou prêmio de risco em ativos alternativos enquanto melhorou perspectivas para ações de infraestrutura de tecnologia hard. A rotação de capital também reflete padrão mais amplo onde investidores se tornam seletivos em alocações a tecnologia, favorizando aqueles que fornecem infraestrutura crítica sobre aqueles que fornecem serviços de camada de aplicação. Intel, NVIDIA e outras fabricantes de semicondutores foram grandes ganhadores da rotação, com seus stocks disparando enquanto Bitcoin caiu enquanto traders se realocam para setores que se beneficiam direto de boom de IA. A rotação pode acelerar nos próximos meses se inflação persistir e Fed continuar em trilha hawkish, criando ambiente desafiador para ativos alternativos como cripto. CoinDesk" data-title="Rotação grande: investidores abandonam Magnificent 7 e cripto para gargalos de IA" data-share-url="https://www.coindesk.com/markets/2026/06/18/the-great-rotation-investors-desert-the-magnificent-7-crypto-for-ai-bottlenecks">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:37</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Rotação grande: investidores abandonam Magnificent 7 e cripto para gargalos de IA</div>
+        <div class="news-summary">Capital está fluindo rapidamente para fora de mega-capitalizações de tecnologia (Magnificent 7) e ativos cripto em direção a semicondutores, memória e oportunidades relacionadas a espaço conforme investidores se enfocam em gargalos de infraestrutura que poderiam limitar expansão de IA. A rotação reflete reconhecimento de que enquanto demanda por serviços de IA é enorme, capacidade de fornecer computação e armazenamento de dados é limitada por disponibilidade de chips de alta performance e energia. O abandono de ativos cripto em favor de gargalos de IA é particularmente acentuado após discurso hawkish de Warsh, que aumentou prêmio de risco em ativos alternativos enquanto melhorou perspectivas para ações de infraestrutura de tecnologia hard. A rotação de capital também reflete padrão mais amplo onde investidores se tornam seletivos em alocações a tecnologia, favorizando aqueles que fornecem infraestrutura crítica sobre aqueles que fornecem serviços de camada de aplicação. Intel, NVIDIA e outras fabricantes de semicondutores foram grandes ganhadores da rotação, com seus stocks disparando enquanto Bitcoin caiu enquanto traders se realocam para setores que se beneficiam direto de boom de IA. A rotação pode acelerar nos próximos meses se inflação persistir e Fed continuar em trilha hawkish, criando ambiente desafiador para ativos alternativos como cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/18/the-great-rotation-investors-desert-the-magnificent-7-crypto-for-ai-bottlenecks" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="G7 convida ação conjunta contra roubo de cripto de Coreia do Norte e cibercrime mais amplo Líderes do G7 ampliaram seu aviso sobre roubo de criptomoedas patrocinado por Coreia do Norte para incluir preocupações mais amplas sobre cibercrime, conforme pesquisadores ligam atores afiliados à DPRK a roubo de bilhões de dólares em criptoativos. A iniciativa do G7 representa reconhecimento de que atividades de cibercrime e roubo de cripto patrocinadas por estado representam ameaça significativa à segurança econômica e financeira das nações desenvolvidas. Pesquisadores de segurança têm documentado que grupos patrocinados por Coreia do Norte executaram alguns dos maiores hacks de plataformas de criptomoedas e bolsas da história, gerando receita significativa para regime de Kim Jong Un. O aviso do G7 também reflete preocupação com que Coreia do Norte possa estar usando renda cripto obtida através de roubo para financiar programa de armas nucleares, criando conexão entre segurança cibernética e segurança nacional. A iniciativa do G7 de ação conjunta sugere que governos estão levando cripto roubo seriamente como ameaça de segurança nacional, não meramente como problema técnico regulatório. O apelo a ação coordenada pode resultar em iniciativas para rastrear e congelar ativos cripto roubados, bem como sancionar indivíduos envolvidos em roubo patrocinado por estado. Cointelegraph" data-title="G7 convida ação conjunta contra roubo de cripto de Coreia do Norte e cibercrime mais amplo" data-share-url="https://cointelegraph.com/news/g7-north-korea-crypto-theft-cybercrime-warning?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:33</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">G7 convida ação conjunta contra roubo de cripto de Coreia do Norte e cibercrime mais amplo</div>
+        <div class="news-summary">Líderes do G7 ampliaram seu aviso sobre roubo de criptomoedas patrocinado por Coreia do Norte para incluir preocupações mais amplas sobre cibercrime, conforme pesquisadores ligam atores afiliados à DPRK a roubo de bilhões de dólares em criptoativos. A iniciativa do G7 representa reconhecimento de que atividades de cibercrime e roubo de cripto patrocinadas por estado representam ameaça significativa à segurança econômica e financeira das nações desenvolvidas. Pesquisadores de segurança têm documentado que grupos patrocinados por Coreia do Norte executaram alguns dos maiores hacks de plataformas de criptomoedas e bolsas da história, gerando receita significativa para regime de Kim Jong Un. O aviso do G7 também reflete preocupação com que Coreia do Norte possa estar usando renda cripto obtida através de roubo para financiar programa de armas nucleares, criando conexão entre segurança cibernética e segurança nacional. A iniciativa do G7 de ação conjunta sugere que governos estão levando cripto roubo seriamente como ameaça de segurança nacional, não meramente como problema técnico regulatório. O apelo a ação coordenada pode resultar em iniciativas para rastrear e congelar ativos cripto roubados, bem como sancionar indivíduos envolvidos em roubo patrocinado por estado.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/g7-north-korea-crypto-theft-cybercrime-warning?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="CME ameaça processar CFTC sobre aprovação de futuros perpétuos de Bitcoin Chief de CME Terry Duffy anunciou que câmara de compensação planeja processar CFTC sobre aprovação de futuros perpétuos de Bitcoin, argumentando que instrumentos perpétuos são tecnicamente swaps sob lei Dodd-Frank e não futuros tradicionais. A ação legal potencial de CME contra CFTC representa escalada significativa em disputa regulatória sobre como classificar e regular instrumentos cripto derivados, especialmente agora que um competidor (CBOT/CFTC) aprovou futuros perpétuos. A distinção técnica entre futuros e swaps tem implicações significativas para regulação, exigências de capital e quem tem autoridade para supervisionar esses instrumentos, tornando disputa de CME muito mais que semântica. Se CME tiver sucesso em seu desafio legal, poderia resultar em retração de aprovação CFTC de futuros perpétuos de Bitcoin, desacelerando inovação em instrumentos cripto derivados. Alternativamente, sucesso de CME poderia forçar CFTC a retroceder sua aprovação e estabelecer precedente de que certos instrumentos cripto simplesmente não podem ser ofertados como futuros sob lei Dodd-Frank atual. A disputa também reflete competição mais ampla entre câmaras de compensação por quotas de volume derivados de cripto, com múltiplas plataformas buscando lançar produtos para capturar demanda crescente de traders por exposição a Bitcoin com alavancagem. Decrypt" data-title="CME ameaça processar CFTC sobre aprovação de futuros perpétuos de Bitcoin" data-share-url="https://decrypt.co/371514/cme-to-sue-cftc-over-bitcoin-perpetual-futures-approval-ceo">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:20</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">CME ameaça processar CFTC sobre aprovação de futuros perpétuos de Bitcoin</div>
+        <div class="news-summary">Chief de CME Terry Duffy anunciou que câmara de compensação planeja processar CFTC sobre aprovação de futuros perpétuos de Bitcoin, argumentando que instrumentos perpétuos são tecnicamente swaps sob lei Dodd-Frank e não futuros tradicionais. A ação legal potencial de CME contra CFTC representa escalada significativa em disputa regulatória sobre como classificar e regular instrumentos cripto derivados, especialmente agora que um competidor (CBOT/CFTC) aprovou futuros perpétuos. A distinção técnica entre futuros e swaps tem implicações significativas para regulação, exigências de capital e quem tem autoridade para supervisionar esses instrumentos, tornando disputa de CME muito mais que semântica. Se CME tiver sucesso em seu desafio legal, poderia resultar em retração de aprovação CFTC de futuros perpétuos de Bitcoin, desacelerando inovação em instrumentos cripto derivados. Alternativamente, sucesso de CME poderia forçar CFTC a retroceder sua aprovação e estabelecer precedente de que certos instrumentos cripto simplesmente não podem ser ofertados como futuros sob lei Dodd-Frank atual. A disputa também reflete competição mais ampla entre câmaras de compensação por quotas de volume derivados de cripto, com múltiplas plataformas buscando lançar produtos para capturar demanda crescente de traders por exposição a Bitcoin com alavancagem.</div>
+        <div class="news-link"><a href="https://decrypt.co/371514/cme-to-sue-cftc-over-bitcoin-perpetual-futures-approval-ceo" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Índice de dólar, nemesis de Bitcoin, está à beira de rompimento major Análise técnica indica que o índice de dólar americano está próximo de um rompimento importante de preço que poderia ter implicações significativas para Bitcoin e outros ativos alternativos que sofrem quando dólar se fortalece. O índice de dólar tem sido historicamente negativo correlacionado com Bitcoin, com períodos de força do dólar coincidindo com ciclos de urso cripto e períodos de fraqueza do dólar coincidindo com rallies cripto. A iminente resolução do índice de dólar em direção alta ou baixa será crítica para entender trajetória de preço de Bitcoin nos próximos meses, pois rompimento deve levar a reposicionamento significativo de capital global. Um rompimento para cima em índice de dólar sugeriria continuação de força de moeda americana, provavelmente levando a pressão adicional para baixo em Bitcoin e ativos alternativos conforme investidores favorecem ativos denominados em dólares. Conversamente, um rompimento para baixo em índice de dólar poderia abrir porta para rali de ativos alternativos incluindo Bitcoin, pois enfraquecimento de dólar tipicamente resulta em alocação de capital para ativos não-dólar. O timing do rompimento potencial de índice de dólar coincide com posição hawkish do Fed de Warsh, criando possibilidade de dois cenários conflitantes para direção de preço. CoinDesk" data-title="Índice de dólar, nemesis de Bitcoin, está à beira de rompimento major" data-share-url="https://www.coindesk.com/daybook-us/2026/06/18/bitcoin-s-nemesis-the-dollar-index-is-on-the-verge-of-a-major-breakout">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:10</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Índice de dólar, nemesis de Bitcoin, está à beira de rompimento major</div>
+        <div class="news-summary">Análise técnica indica que o índice de dólar americano está próximo de um rompimento importante de preço que poderia ter implicações significativas para Bitcoin e outros ativos alternativos que sofrem quando dólar se fortalece. O índice de dólar tem sido historicamente negativo correlacionado com Bitcoin, com períodos de força do dólar coincidindo com ciclos de urso cripto e períodos de fraqueza do dólar coincidindo com rallies cripto. A iminente resolução do índice de dólar em direção alta ou baixa será crítica para entender trajetória de preço de Bitcoin nos próximos meses, pois rompimento deve levar a reposicionamento significativo de capital global. Um rompimento para cima em índice de dólar sugeriria continuação de força de moeda americana, provavelmente levando a pressão adicional para baixo em Bitcoin e ativos alternativos conforme investidores favorecem ativos denominados em dólares. Conversamente, um rompimento para baixo em índice de dólar poderia abrir porta para rali de ativos alternativos incluindo Bitcoin, pois enfraquecimento de dólar tipicamente resulta em alocação de capital para ativos não-dólar. O timing do rompimento potencial de índice de dólar coincide com posição hawkish do Fed de Warsh, criando possibilidade de dois cenários conflitantes para direção de preço.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/daybook-us/2026/06/18/bitcoin-s-nemesis-the-dollar-index-is-on-the-verge-of-a-major-breakout" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Aster salta mais de 10% em upgrade radical de 'buyback and burn', mas ganhos não sustentados Token de protocolo ASTER experimentou salto de mais de 10% após anúncio de upgrade radical de 'buyback and burn' que visa aumentar valor de token através de redução de suprimento em circulação, mas ganhos foram de curta duração conforme sentimento macroeconômico hawkish dominou. A volatilidade de two-way em ASTER reflete conflito entre catalistas específicos de protocolo que são positivos (upgrade de buyback and burn) e ambiente macroeconômico desafiador criado por postura hawkish do Fed. O mecanismo de 'buyback and burn' é tentativa de ASTER emular dinâmica de recompra de ações que existe em finanças tradicionais, onde empresa reduz shares em circulação para aumentar valor por share para acionistas restantes. A tentativa de ASTER de usar buyback and burn reflete maturação de comunidade cripto em direção a modelos de captura de valor semelhantes a negócios tradicionais em vez de meramente especulação de token. No entanto, o fato de ganhos de ASTER não foram sustentados apesar de notícia positiva de protocolo sugere que ambiente macroeconômico de aperto de Fed simplesmente sobrepõe quaisquer catalistas específicos de projeto. O padrão em ASTER é típico do mercado cripto em ambientes de aperto monetário, onde notícias positivas de projeto têm impacto de curta duração antes que vendedores técnicos re-emergem. CoinDesk" data-title="Aster salta mais de 10% em upgrade radical de 'buyback and burn', mas ganhos não sustentados" data-share-url="https://www.coindesk.com/markets/2026/06/18/aster-popped-over-10-on-radical-buyback-and-burn-upgrade-but-gains-were-short-lived">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">08:02</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Aster salta mais de 10% em upgrade radical de 'buyback and burn', mas ganhos não sustentados</div>
+        <div class="news-summary">Token de protocolo ASTER experimentou salto de mais de 10% após anúncio de upgrade radical de 'buyback and burn' que visa aumentar valor de token através de redução de suprimento em circulação, mas ganhos foram de curta duração conforme sentimento macroeconômico hawkish dominou. A volatilidade de two-way em ASTER reflete conflito entre catalistas específicos de protocolo que são positivos (upgrade de buyback and burn) e ambiente macroeconômico desafiador criado por postura hawkish do Fed. O mecanismo de 'buyback and burn' é tentativa de ASTER emular dinâmica de recompra de ações que existe em finanças tradicionais, onde empresa reduz shares em circulação para aumentar valor por share para acionistas restantes. A tentativa de ASTER de usar buyback and burn reflete maturação de comunidade cripto em direção a modelos de captura de valor semelhantes a negócios tradicionais em vez de meramente especulação de token. No entanto, o fato de ganhos de ASTER não foram sustentados apesar de notícia positiva de protocolo sugere que ambiente macroeconômico de aperto de Fed simplesmente sobrepõe quaisquer catalistas específicos de projeto. O padrão em ASTER é típico do mercado cripto em ambientes de aperto monetário, onde notícias positivas de projeto têm impacto de curta duração antes que vendedores técnicos re-emergem.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/18/aster-popped-over-10-on-radical-buyback-and-burn-upgrade-but-gains-were-short-lived" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercado de cripto em posicionamento defensivo e fino após discurso hawkish do Fed Analistas de Marex observam que o mercado de criptomoedas agora está em posicionamento defensivo e fino após o pronunciamento hawkish do novo presidente do Fed Kevin Warsh, com traders reduzindo exposição e liquidez diminuindo significativamente. O posicionamento defensivo fino, onde poucos participantes detêm posições, cria potencial para movimentos violentos de preço em qualquer direção quando o sentimento mudança ou notícias novas emerge. A coletiva de imprensa de Warsh fez explicitamente claro que o Fed está mais preocupado com inflação persistente do que com risco de recessão, eliminando esperança de ciclo de cortes de taxas que havia sustentado rally de criptomoedas anterior. O posicionamento defensivo também reflete incerteza contínua sobre impacto macroeconômico do acordo EUA-Irã, com traders relutantes em tomar grandes posições até que impacto completo nos preços de energia se materialize. A redução em liquidez é particularmente preocupante para ativos voláteis como criptomoedas, pois significa que pequenas quantidades de vendas podem resultar em grande declínio de preço, criando possibilidade de eventos de cascade liquidação. Análise de Marex sugere que mercado cripto pode estar perto de um ponto de inflexão onde ou emerge catalyst positivo, ou mercado continua deterioração em direção a níveis de preço mais baixos. CoinDesk" data-title="Mercado de cripto em posicionamento defensivo e fino após discurso hawkish do Fed" data-share-url="https://www.coindesk.com/markets/2026/06/18/crypto-market-positioning-is-defensive-and-thin-after-fed-marex-analysts-say">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">07:56</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mercado de cripto em posicionamento defensivo e fino após discurso hawkish do Fed</div>
+        <div class="news-summary">Analistas de Marex observam que o mercado de criptomoedas agora está em posicionamento defensivo e fino após o pronunciamento hawkish do novo presidente do Fed Kevin Warsh, com traders reduzindo exposição e liquidez diminuindo significativamente. O posicionamento defensivo fino, onde poucos participantes detêm posições, cria potencial para movimentos violentos de preço em qualquer direção quando o sentimento mudança ou notícias novas emerge. A coletiva de imprensa de Warsh fez explicitamente claro que o Fed está mais preocupado com inflação persistente do que com risco de recessão, eliminando esperança de ciclo de cortes de taxas que havia sustentado rally de criptomoedas anterior. O posicionamento defensivo também reflete incerteza contínua sobre impacto macroeconômico do acordo EUA-Irã, com traders relutantes em tomar grandes posições até que impacto completo nos preços de energia se materialize. A redução em liquidez é particularmente preocupante para ativos voláteis como criptomoedas, pois significa que pequenas quantidades de vendas podem resultar em grande declínio de preço, criando possibilidade de eventos de cascade liquidação. Análise de Marex sugere que mercado cripto pode estar perto de um ponto de inflexão onde ou emerge catalyst positivo, ou mercado continua deterioração em direção a níveis de preço mais baixos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/18/crypto-market-positioning-is-defensive-and-thin-after-fed-marex-analysts-say" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Aztec Protocol sofre segundo exploit de $2.1M em menos de uma semana O protocolo de privacidade Aztec foi vítima de segundo exploit de $2.1 milhões em menos de uma semana, levando pesquisadores de segurança a alertar que contratos inteligentes deprecated podem permanecer vulneráveis muito tempo após projetos pararem de mantê-los ativamente. O segundo hack de Aztec em rápida sucessão levanta sérias perguntas sobre robustez das práticas de segurança do protocolo e capacidade de equipe de responder a vulnerabilidades identificadas. O exploit também ressalta risco sistêmico em ecossistema DeFi onde múltiplos protocolos dependem de bibliotecas de código compartilhado e componentes que podem ter vulnerabilidades que afetam downstream projects. O aviso de SlowMist sobre risco de contratos inteligentes deprecated é particularmente preocupante porque muitos protocolos em blockchain deixam código legado em operação mesmo quando não está sendo mantido ativamente, deixando-o suscetível a exploração. A série de hacks contra Aztec tem potencial de danificar reputação do protocolo e levar a saída de usuários e liquidez em direção a alternativas mais seguras. O incidente realça importância de auditorias de segurança contínuas e testes para protocolos DeFi, especialmente aqueles que lidam com privacidade e funções sensíveis. Cointelegraph" data-title="Aztec Protocol sofre segundo exploit de $2.1M em menos de uma semana" data-share-url="https://cointelegraph.com/news/aztec-exploited-21-million-previous-hack-slowmist?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">18 jun 2026</span>
+          <span class="news-time">07:28</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Aztec Protocol sofre segundo exploit de $2.1M em menos de uma semana</div>
+        <div class="news-summary">O protocolo de privacidade Aztec foi vítima de segundo exploit de $2.1 milhões em menos de uma semana, levando pesquisadores de segurança a alertar que contratos inteligentes deprecated podem permanecer vulneráveis muito tempo após projetos pararem de mantê-los ativamente. O segundo hack de Aztec em rápida sucessão levanta sérias perguntas sobre robustez das práticas de segurança do protocolo e capacidade de equipe de responder a vulnerabilidades identificadas. O exploit também ressalta risco sistêmico em ecossistema DeFi onde múltiplos protocolos dependem de bibliotecas de código compartilhado e componentes que podem ter vulnerabilidades que afetam downstream projects. O aviso de SlowMist sobre risco de contratos inteligentes deprecated é particularmente preocupante porque muitos protocolos em blockchain deixam código legado em operação mesmo quando não está sendo mantido ativamente, deixando-o suscetível a exploração. A série de hacks contra Aztec tem potencial de danificar reputação do protocolo e levar a saída de usuários e liquidez em direção a alternativas mais seguras. O incidente realça importância de auditorias de segurança contínuas e testes para protocolos DeFi, especialmente aqueles que lidam com privacidade e funções sensíveis.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/aztec-exploited-21-million-previous-hack-slowmist?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
