@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">19 DE JUNHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">A geopolítica global segue tensa com escaladas na Ucrânia e Oriente Médio enquanto lideranças políticas sofrem pressão interna; simultaneamente, mercados reagem a sinais de flexibilização monetária do Banco Central Russo mas enfrentam incertezas nas negociações comerciais EUA-Canadá-México; a IA continua em foco com avanços em interfaces cérebro-máquina e pressões regulatórias da administração Trump, enquanto cripto oscila entre otimismo institucional (ETFs de dividendos em Bitcoin) e preocupações com liquidações alavancadas e crises de financiamento no Ethereum.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-06-18/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19" selected>2026-06-19</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Irã adia conversas diplomáticas após ataques aéreos israelenses no Líbano Israel e Hezbollah intensificaram trocas de ataques nos últimos dias, com o exército israelense reportando operações contra militantes após a morte de quatro soldados. Diplomatas informam que o Irã adiou negociações cruciais com os EUA em resposta aos ataques israelenses no Líbano, prejudicando esforços para estabilizar a região. O incidente marca um momento crítico no processo de paz mediado internacionalmente e levanta preocupações sobre uma possível escalada maior no Oriente Médio. A situação está particularmente delicada dado o contexto recente de negociações multilaterais envolvendo os EUA, Irã e aliados regionais. Analistas advertem que novos ataques podem derrotar completamente os esforços diplomáticos e levar a uma retomada aberta dos conflitos. O timing é particularmente sensível considerando as implicações econômicas para mercados de petróleo e estabilidade global. NYT &gt; World News" data-title="Irã adia conversas diplomáticas após ataques aéreos israelenses no Líbano" data-share-url="https://www.nytimes.com/live/2026/06/19/world/iran-trump-deal">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:55</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Irã adia conversas diplomáticas após ataques aéreos israelenses no Líbano</div>
+        <div class="news-summary">Israel e Hezbollah intensificaram trocas de ataques nos últimos dias, com o exército israelense reportando operações contra militantes após a morte de quatro soldados. Diplomatas informam que o Irã adiou negociações cruciais com os EUA em resposta aos ataques israelenses no Líbano, prejudicando esforços para estabilizar a região. O incidente marca um momento crítico no processo de paz mediado internacionalmente e levanta preocupações sobre uma possível escalada maior no Oriente Médio. A situação está particularmente delicada dado o contexto recente de negociações multilaterais envolvendo os EUA, Irã e aliados regionais. Analistas advertem que novos ataques podem derrotar completamente os esforços diplomáticos e levar a uma retomada aberta dos conflitos. O timing é particularmente sensível considerando as implicações econômicas para mercados de petróleo e estabilidade global.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/06/19/world/iran-trump-deal" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Ucrânia demonstra capacidade ao atacar Moscou com drones, sinalizando possível virada de jogo Ataques com drones ucranianos que criaram plumas de fumaça sobre Moscou intensificaram esperanças ucranianas de levar a guerra para território russo, marcando potencial ponto de virada no conflito. Especialistas militares destacam que estes ataques, apesar de impactantes simbolicamente, ainda carecem de mísseis balísticos para forçar Moscou a reconsiderar seus objetivos de guerra. A operação demonstra que as defesas aéreas russas não são impermeáveis e que a Ucrânia consegue projetar poder além das linhas de frente tradicionais. Observadores internacionais tratam a ação como um divisor de águas psicológico para o moral ucraniano e um sinal de que a estratégia de defesa está evoluindo. Porém, militares advertem que sem sistemas de longo alcance mais poderosos, os ataques aos drones permanecem limitados em escala e impacto geopolítico. O desenvolvimento reacende debates sobre fornecimento de armamento ocidental à Ucrânia. NYT &gt; World News" data-title="Ucrânia demonstra capacidade ao atacar Moscou com drones, sinalizando possível virada de jogo" data-share-url="https://www.nytimes.com/2026/06/19/world/europe/ukraine-drone-attack-moscow.html">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:45</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Ucrânia demonstra capacidade ao atacar Moscou com drones, sinalizando possível virada de jogo</div>
+        <div class="news-summary">Ataques com drones ucranianos que criaram plumas de fumaça sobre Moscou intensificaram esperanças ucranianas de levar a guerra para território russo, marcando potencial ponto de virada no conflito. Especialistas militares destacam que estes ataques, apesar de impactantes simbolicamente, ainda carecem de mísseis balísticos para forçar Moscou a reconsiderar seus objetivos de guerra. A operação demonstra que as defesas aéreas russas não são impermeáveis e que a Ucrânia consegue projetar poder além das linhas de frente tradicionais. Observadores internacionais tratam a ação como um divisor de águas psicológico para o moral ucraniano e um sinal de que a estratégia de defesa está evoluindo. Porém, militares advertem que sem sistemas de longo alcance mais poderosos, os ataques aos drones permanecem limitados em escala e impacto geopolítico. O desenvolvimento reacende debates sobre fornecimento de armamento ocidental à Ucrânia.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/19/world/europe/ukraine-drone-attack-moscow.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Irã pode retomar acesso a mercados globais à medida que sanções são levantadas Um acordo histórico entre EUA e Irã abre perspectivas sem precedentes para reintegração econômica iraniana aos mercados globais após décadas de sanções entre as mais severas do mundo. A suspensão de restrições comerciais e financeiras permitirá ao Irã acessar sistemas bancários internacionais, restaurar relações comerciais e expandir trocas bilaterais com múltiplos países. Corporações multinacionais já estudam oportunidades de reentrada no mercado iraniano, particularmente em setores de petróleo, gás natural e manufatura. Analistas estimam que o impacto positivo pode começar em semanas e durar anos, ajudando a reequilibrar economias regionais e globais. O acordo inclui acessos a câmaras de compensação internacionais e possibilidade de transações em dólares, essencial para comércio moderno. Estudos preliminares indicam que a economia iraniana poderia crescer entre 3-5% adicionais anualmente se as sanções forem totalmente levantadas. NYT &gt; Business" data-title="Irã pode retomar acesso a mercados globais à medida que sanções são levantadas" data-share-url="https://www.nytimes.com/2026/06/19/business/economy/iran-sanctions-oil.html">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:24</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Irã pode retomar acesso a mercados globais à medida que sanções são levantadas</div>
+        <div class="news-summary">Um acordo histórico entre EUA e Irã abre perspectivas sem precedentes para reintegração econômica iraniana aos mercados globais após décadas de sanções entre as mais severas do mundo. A suspensão de restrições comerciais e financeiras permitirá ao Irã acessar sistemas bancários internacionais, restaurar relações comerciais e expandir trocas bilaterais com múltiplos países. Corporações multinacionais já estudam oportunidades de reentrada no mercado iraniano, particularmente em setores de petróleo, gás natural e manufatura. Analistas estimam que o impacto positivo pode começar em semanas e durar anos, ajudando a reequilibrar economias regionais e globais. O acordo inclui acessos a câmaras de compensação internacionais e possibilidade de transações em dólares, essencial para comércio moderno. Estudos preliminares indicam que a economia iraniana poderia crescer entre 3-5% adicionais anualmente se as sanções forem totalmente levantadas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/19/business/economy/iran-sanctions-oil.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Índia vê oportunidade urgente de restaurar importações de petróleo iraniano Após meses de escassez e incerteza energética, Índia identifica na reaproximação com Irã oportunidade crítica de restaurar relacionamento comercial que foi fundamental para sua segurança energética. Antes das sanções, Irã era um dos principais fornecedores de petróleo indiano, com custos competitivos e localização geográfica favorável. O retorno à normalização comercial poderia reduzir custos de importação energética para a economia indiana em bilhões de dólares anuais. Negociadores indianos prepararam roadmaps para reativar portos de descarga e linhas de crédito comercial assim que implementação do acordo avançar. A Índia também busca renegociar contratos de longo prazo mais vantajosos dados os últimos anos de pressão. Analistas estimam que restauração plena de comércio energético Índia-Irã levaria 6-12 meses e liberaria capacidade produtiva indiana para outros setores. NYT &gt; Business" data-title="Índia vê oportunidade urgente de restaurar importações de petróleo iraniano" data-share-url="https://www.nytimes.com/2026/06/19/business/india-iran-oil-imports.html">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:17</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Índia vê oportunidade urgente de restaurar importações de petróleo iraniano</div>
+        <div class="news-summary">Após meses de escassez e incerteza energética, Índia identifica na reaproximação com Irã oportunidade crítica de restaurar relacionamento comercial que foi fundamental para sua segurança energética. Antes das sanções, Irã era um dos principais fornecedores de petróleo indiano, com custos competitivos e localização geográfica favorável. O retorno à normalização comercial poderia reduzir custos de importação energética para a economia indiana em bilhões de dólares anuais. Negociadores indianos prepararam roadmaps para reativar portos de descarga e linhas de crédito comercial assim que implementação do acordo avançar. A Índia também busca renegociar contratos de longo prazo mais vantajosos dados os últimos anos de pressão. Analistas estimam que restauração plena de comércio energético Índia-Irã levaria 6-12 meses e liberaria capacidade produtiva indiana para outros setores.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/19/business/india-iran-oil-imports.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Taxas de novos empréstimos estudantis americanos subirão em 1º de julho Novas taxas de juros entram em vigor a partir de 1º de julho para empréstimos estudantis do próximo ano letivo, acrescentando pressão sobre famílias já enfrentando custos universitários crescentes e inflação em outros setores. Os aumentos refletem ambiente de taxas de juros mais altas mantido pelo Federal Reserve para controlar inflação doméstica. Mutuários enfrentam perspectiva de décadas de reembolso com custos maiores, reduzindo poder de compra futuro e postergando decisões como compra de casa e família. Advocacy groups alertam sobre impacto desproporcional em famílias de renda baixa e estudantes de universidades menos prestigiosas. O timing coincide com momento de ansiedade econômica crescente entre população jovem americana. Analistas indicam que pressão sobre custos educacionais pode levar a menor demanda por educação superior ou maior dependência de endividamento para formação. NYT &gt; Business" data-title="Taxas de novos empréstimos estudantis americanos subirão em 1º de julho" data-share-url="https://www.nytimes.com/2026/06/19/your-money/student-loans-interest-rates-changes.html">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Taxas de novos empréstimos estudantis americanos subirão em 1º de julho</div>
+        <div class="news-summary">Novas taxas de juros entram em vigor a partir de 1º de julho para empréstimos estudantis do próximo ano letivo, acrescentando pressão sobre famílias já enfrentando custos universitários crescentes e inflação em outros setores. Os aumentos refletem ambiente de taxas de juros mais altas mantido pelo Federal Reserve para controlar inflação doméstica. Mutuários enfrentam perspectiva de décadas de reembolso com custos maiores, reduzindo poder de compra futuro e postergando decisões como compra de casa e família. Advocacy groups alertam sobre impacto desproporcional em famílias de renda baixa e estudantes de universidades menos prestigiosas. O timing coincide com momento de ansiedade econômica crescente entre população jovem americana. Analistas indicam que pressão sobre custos educacionais pode levar a menor demanda por educação superior ou maior dependência de endividamento para formação.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/19/your-money/student-loans-interest-rates-changes.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Preços do petróleo firmes enquanto acordo EUA-Irã enfrenta testes de implementação Petróleo mantém-se em trajetória para segunda queda semanal consecutiva, mas sinais de rachaduras no acordo diplomático para fim da guerra criaram incerteza nos mercados. Traders ajustam posições com base em riscos geopolíticos crescentes relacionados aos ataques Israel-Hezbollah e possíveis atrasos na implementação do acordo. Preços globais de energia refletem expectativa de maior oferta iraniana nos próximos meses, compensando parcialmente tensões no Oriente Médio. Analistas monitoram dados de consumo de combustível e fluxos de importação de petróleo bruto para calibrar previsões de preço. O nível atual (próximo a $75 por barril) representa equilíbrio precário entre oferta esperada e riscos geopolíticos residuais. Qualquer escalada significativa nos conflitos regionais poderia reverter ganhos de oferta rapidamente. NYT &gt; Business" data-title="Preços do petróleo firmes enquanto acordo EUA-Irã enfrenta testes de implementação" data-share-url="https://www.nytimes.com/2026/06/19/business/oil-gas-prices-iran.html">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">09:55</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Preços do petróleo firmes enquanto acordo EUA-Irã enfrenta testes de implementação</div>
+        <div class="news-summary">Petróleo mantém-se em trajetória para segunda queda semanal consecutiva, mas sinais de rachaduras no acordo diplomático para fim da guerra criaram incerteza nos mercados. Traders ajustam posições com base em riscos geopolíticos crescentes relacionados aos ataques Israel-Hezbollah e possíveis atrasos na implementação do acordo. Preços globais de energia refletem expectativa de maior oferta iraniana nos próximos meses, compensando parcialmente tensões no Oriente Médio. Analistas monitoram dados de consumo de combustível e fluxos de importação de petróleo bruto para calibrar previsões de preço. O nível atual (próximo a $75 por barril) representa equilíbrio precário entre oferta esperada e riscos geopolíticos residuais. Qualquer escalada significativa nos conflitos regionais poderia reverter ganhos de oferta rapidamente.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/19/business/oil-gas-prices-iran.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Banco Central da Rússia reduz taxa de juros mas avisa sobre espaço limitado para relaxamento O Banco Central Russo surpreendeu com um corte de taxa menor do que o esperado, sinalizando que pode pausar um ciclo de flexibilização que dura um ano inteiro. Apesar de inflação em queda, o banco cita incertezas fiscais e pressões no mercado de combustíveis como razões para cautela. A chefe da instituição, Elvira Nabiullina, reapareceu após desaparecer por duas semanas, o que havia gerado especulação sobre tensões políticas internas profundas no país. O movimento sinaliza que a atividade econômica russa segue em trajetória complexa, com conflitos entre pressões inflacionárias e ajustes de despesas governamentais. Investidores monitoram atentamente qualquer sinal de deterioração das finanças russas, que impactaria mercados globais. A postura restritiva do banco central contrasta com pressões políticas por estímulo fiscal mais agressivo. Bloomberg Economics" data-title="Banco Central da Rússia reduz taxa de juros mas avisa sobre espaço limitado para relaxamento" data-share-url="https://www.bloomberg.com/news/articles/2026-06-19/russia-surprises-with-smaller-rate-cut-even-as-inflation-eases">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">07:42</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Banco Central da Rússia reduz taxa de juros mas avisa sobre espaço limitado para relaxamento</div>
+        <div class="news-summary">O Banco Central Russo surpreendeu com um corte de taxa menor do que o esperado, sinalizando que pode pausar um ciclo de flexibilização que dura um ano inteiro. Apesar de inflação em queda, o banco cita incertezas fiscais e pressões no mercado de combustíveis como razões para cautela. A chefe da instituição, Elvira Nabiullina, reapareceu após desaparecer por duas semanas, o que havia gerado especulação sobre tensões políticas internas profundas no país. O movimento sinaliza que a atividade econômica russa segue em trajetória complexa, com conflitos entre pressões inflacionárias e ajustes de despesas governamentais. Investidores monitoram atentamente qualquer sinal de deterioração das finanças russas, que impactaria mercados globais. A postura restritiva do banco central contrasta com pressões políticas por estímulo fiscal mais agressivo.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-19/russia-surprises-with-smaller-rate-cut-even-as-inflation-eases" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Congresso americano ansioso enquanto negociações USMCA intensificam-se Com eleições intermediárias no horizonte e negociações comerciais EUA-Canadá-México ganhando intensidade, legisladores americanos expressam apreensão sobre direção das discussões. Mudanças propostas ao acordo comercial trilateral de 2020 (USMCA) afetarão indústrias em distritos eleitorais específicos, gerando pressão política heterogênea sobre negociadores. Alguns legisladores temem perda de preferências competitivas americanas em setores como manufatura e agricultura, enquanto outros buscam fortalecer cláusulas de trabalho e ambiental. O timing político sensível complica consenso doméstico sobre posições negociadoras. Observadores indicam que qualquer novo acordo precisa aprovação do Congresso, criando potencial para bloqueio político ou modificações significativas. As negociações trazem também questões de tarifas e regras de origem que afetam cadeias de suprimento continentais. NYT &gt; Business" data-title="Congresso americano ansioso enquanto negociações USMCA intensificam-se" data-share-url="https://www.nytimes.com/2026/06/19/business/usmca-trade-talks-us-canada-mexico.html">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Congresso americano ansioso enquanto negociações USMCA intensificam-se</div>
+        <div class="news-summary">Com eleições intermediárias no horizonte e negociações comerciais EUA-Canadá-México ganhando intensidade, legisladores americanos expressam apreensão sobre direção das discussões. Mudanças propostas ao acordo comercial trilateral de 2020 (USMCA) afetarão indústrias em distritos eleitorais específicos, gerando pressão política heterogênea sobre negociadores. Alguns legisladores temem perda de preferências competitivas americanas em setores como manufatura e agricultura, enquanto outros buscam fortalecer cláusulas de trabalho e ambiental. O timing político sensível complica consenso doméstico sobre posições negociadoras. Observadores indicam que qualquer novo acordo precisa aprovação do Congresso, criando potencial para bloqueio político ou modificações significativas. As negociações trazem também questões de tarifas e regras de origem que afetam cadeias de suprimento continentais.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/19/business/usmca-trade-talks-us-canada-mexico.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Débito de AutoForm destaca apetite revivido por software em mercados de crédito A reestruturação de dívida da AutoForm (empresa de software para manufatura) atraiu entrada massiva de investidores em obrigações de empréstimos colateralizados (CLOs) europeus, sinalizando retorno da demanda por ativos de software junk-rated. O acordo representa primeiro teste de demanda para emissores de dívida junk no setor de software desde período de incerteza econômica anterior. Investidores parecem renunciar a cautela prévia sobre lucratividade de software especializado com margens crescentes. O sucesso de AutoForm pode inspirar onda de refinanciamento em setor de software, liberando capital para investimento em IA. Analistas observam que mercado de crédito responde mais otimistamente a software que a hardware, refletindo expectativas de margens maiores. Bloomberg Technology" data-title="Débito de AutoForm destaca apetite revivido por software em mercados de crédito" data-share-url="https://www.bloomberg.com/news/articles/2026-06-19/autoform-s-debt-rejig-highlights-revived-appetite-for-software">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">09:08</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Débito de AutoForm destaca apetite revivido por software em mercados de crédito</div>
+        <div class="news-summary">A reestruturação de dívida da AutoForm (empresa de software para manufatura) atraiu entrada massiva de investidores em obrigações de empréstimos colateralizados (CLOs) europeus, sinalizando retorno da demanda por ativos de software junk-rated. O acordo representa primeiro teste de demanda para emissores de dívida junk no setor de software desde período de incerteza econômica anterior. Investidores parecem renunciar a cautela prévia sobre lucratividade de software especializado com margens crescentes. O sucesso de AutoForm pode inspirar onda de refinanciamento em setor de software, liberando capital para investimento em IA. Analistas observam que mercado de crédito responde mais otimistamente a software que a hardware, refletindo expectativas de margens maiores.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-19/autoform-s-debt-rejig-highlights-revived-appetite-for-software" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Funcionário do Trump busca controle sobre Anthropic via controles de exportação A administração Trump, através de ordem do Departamento de Comércio, está tentando exercer poder sem precedentes sobre a Anthropic através de controles de exportação de tecnologia de IA. O secretário de comércio Lutnick (com laços a Trump) afirma que a medida busca garantir que modelos de IA avançados não caiam em mãos adversárias, particularmente China. A estratégia levanta questões legais e éticas sobre extensão apropriada de poder regulatório governamental sobre empresas privadas de IA. A Anthropic, que recebeu investimento significativo de entidades estrangeiras, enfrenta potencial restrição de suas operações globais. Analistas de tecnologia alertam que regulação restritiva poderia impedir inovação americana e beneficiar competidores chineses. A ação marca crescente envolvimento do governo em decisões técnicas de empresas de IA. Bloomberg Technology" data-title="Funcionário do Trump busca controle sobre Anthropic via controles de exportação" data-share-url="https://www.bloomberg.com/news/articles/2026-06-19/lutnick-s-anthropic-crackdown-claims-new-power-over-ai-models">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Funcionário do Trump busca controle sobre Anthropic via controles de exportação</div>
+        <div class="news-summary">A administração Trump, através de ordem do Departamento de Comércio, está tentando exercer poder sem precedentes sobre a Anthropic através de controles de exportação de tecnologia de IA. O secretário de comércio Lutnick (com laços a Trump) afirma que a medida busca garantir que modelos de IA avançados não caiam em mãos adversárias, particularmente China. A estratégia levanta questões legais e éticas sobre extensão apropriada de poder regulatório governamental sobre empresas privadas de IA. A Anthropic, que recebeu investimento significativo de entidades estrangeiras, enfrenta potencial restrição de suas operações globais. Analistas de tecnologia alertam que regulação restritiva poderia impedir inovação americana e beneficiar competidores chineses. A ação marca crescente envolvimento do governo em decisões técnicas de empresas de IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-19/lutnick-s-anthropic-crackdown-claims-new-power-over-ai-models" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Funcionária de tecnologia da UE enfrenta desafios de soberania e competição com EUA em IA Henna Virkkunen, principal autoridade de tecnologia da União Europeia, discutiu em VivaTech em Paris as prioridades estratégicas da UE em inteligência artificial, soberania digital e relações com os EUA. A executive enfatiza necessidade europeia de desenvolver capacidades de IA independentes para reduzir dependência tecnológica americana. Regulação MiCA e AI Act europeus refletem abordagem mais conservadora comparada à flexibilidade americana, criando tensões regulatórias transoceânicas. Empresas de IA europeias reclamam que regulação pesada as coloca em desvantagem competitiva global. Virkkunen defende que proteção de dados e direitos humanos justificam maior rigor regulatório europeu. As conversas ocorrem enquanto China acelera investimento em IA, criando urgência tríade entre regulação europeia, competitividade americana e avanço chinês. Bloomberg Technology" data-title="Funcionária de tecnologia da UE enfrenta desafios de soberania e competição com EUA em IA" data-share-url="https://www.bloomberg.com/news/videos/2026-06-19/eu-tech-chief-virkkunen-on-ai-sovereignty-us-video">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">08:53</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Funcionária de tecnologia da UE enfrenta desafios de soberania e competição com EUA em IA</div>
+        <div class="news-summary">Henna Virkkunen, principal autoridade de tecnologia da União Europeia, discutiu em VivaTech em Paris as prioridades estratégicas da UE em inteligência artificial, soberania digital e relações com os EUA. A executive enfatiza necessidade europeia de desenvolver capacidades de IA independentes para reduzir dependência tecnológica americana. Regulação MiCA e AI Act europeus refletem abordagem mais conservadora comparada à flexibilidade americana, criando tensões regulatórias transoceânicas. Empresas de IA europeias reclamam que regulação pesada as coloca em desvantagem competitiva global. Virkkunen defende que proteção de dados e direitos humanos justificam maior rigor regulatório europeu. As conversas ocorrem enquanto China acelera investimento em IA, criando urgência tríade entre regulação europeia, competitividade americana e avanço chinês.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/videos/2026-06-19/eu-tech-chief-virkkunen-on-ai-sovereignty-us-video" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Projeto solar egípcio da Scatec pode economizar USD 400 milhões em LNG anualmente O projeto de energia solar e armazenamento de bateria Obelisk da Scatec ASA no Egito pode economizar ao país até USD 400 milhões anuais em importações de gás natural liquefeito (LNG). A iniciativa combina geração solar de grande escala com baterias de longa duração para garantir fornecimento de eletricidade confiável. Economia potencial reflete preços altos de LNG e limitações de infraestrutura egípcia de refinamento de gás. O projeto marca tendência maior de países petrolíferos buscarem transição para energia renovável para reduzir dependência de exportação de commodities. Tecnologia solar-bateria tornou-se suficientemente econômica para substituir geração térmica em muitos contextos. Sucesso egípcio poderia inspirar projetos similares em Oriente Médio e África do Norte. Bloomberg Technology" data-title="Projeto solar egípcio da Scatec pode economizar USD 400 milhões em LNG anualmente" data-share-url="https://www.bloomberg.com/news/articles/2026-06-19/scatec-says-egypt-solar-project-can-save-400-million-over-lng">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">08:44</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Projeto solar egípcio da Scatec pode economizar USD 400 milhões em LNG anualmente</div>
+        <div class="news-summary">O projeto de energia solar e armazenamento de bateria Obelisk da Scatec ASA no Egito pode economizar ao país até USD 400 milhões anuais em importações de gás natural liquefeito (LNG). A iniciativa combina geração solar de grande escala com baterias de longa duração para garantir fornecimento de eletricidade confiável. Economia potencial reflete preços altos de LNG e limitações de infraestrutura egípcia de refinamento de gás. O projeto marca tendência maior de países petrolíferos buscarem transição para energia renovável para reduzir dependência de exportação de commodities. Tecnologia solar-bateria tornou-se suficientemente econômica para substituir geração térmica em muitos contextos. Sucesso egípcio poderia inspirar projetos similares em Oriente Médio e África do Norte.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-19/scatec-says-egypt-solar-project-can-save-400-million-over-lng" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Jio de Ambani planeja construir constelação de satélites para rivalizar Starlink Jio Platforms, controlada pelo bilionário Mukesh Ambani, estuda planos para construir sua própria constelação de satélites, buscando consolidar controle sobre infraestrutura de conectividade na Índia. A iniciativa reflete ambições de Ambani de dominar múltiplas camadas de conectividade (fibra, celular, satélite) em mercado emergente de 1.4 bilhões de pessoas. O projeto competiria diretamente com Starlink de Elon Musk e iniciativas governamentais indianas de satélites. Investimento necessário seria na faixa de bilhões de dólares, exigindo parcerias e aprovação regulatória extensiva. Sucesso dependeria de custos de lançamento, licenciamento de espectro orbital e penetração de mercado em regiões rurais. A iniciativa marca tendência maior de empresas tech dominantes buscarem infraestrutura de rede própria. Bloomberg Technology" data-title="Jio de Ambani planeja construir constelação de satélites para rivalizar Starlink" data-share-url="https://www.bloomberg.com/news/articles/2026-06-19/ambani-s-jio-weighs-india-satellite-network-to-rival-starlink">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">08:19</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Jio de Ambani planeja construir constelação de satélites para rivalizar Starlink</div>
+        <div class="news-summary">Jio Platforms, controlada pelo bilionário Mukesh Ambani, estuda planos para construir sua própria constelação de satélites, buscando consolidar controle sobre infraestrutura de conectividade na Índia. A iniciativa reflete ambições de Ambani de dominar múltiplas camadas de conectividade (fibra, celular, satélite) em mercado emergente de 1.4 bilhões de pessoas. O projeto competiria diretamente com Starlink de Elon Musk e iniciativas governamentais indianas de satélites. Investimento necessário seria na faixa de bilhões de dólares, exigindo parcerias e aprovação regulatória extensiva. Sucesso dependeria de custos de lançamento, licenciamento de espectro orbital e penetração de mercado em regiões rurais. A iniciativa marca tendência maior de empresas tech dominantes buscarem infraestrutura de rede própria.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-19/ambani-s-jio-weighs-india-satellite-network-to-rival-starlink" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fabricantes de chips reavivam batalha de benchmarks enquanto concorrem contra Nvidia Com CPUs voltando ao centro das atenções após domínio prolongado da Nvidia em IA, fabricantes de processadores reacendem batalha de relações públicas sobre benchmarks de desempenho. Intel, AMD e outros buscam demonstrar avanços em processamento que reduzam dependência de GPUs especializadas. A competição de narrativas envolve escolha seletiva de métricas de desempenho que favorecem suas arquiteturas. Benchmarks anteriormente considerados 'nerds' agora ganham relevância comercial massiva na medida que custos de computação de IA crescem. Clientes corporativos enfrentam confusão sobre qual arquitetura escolher, levando demanda por análises independentes. A dinâmica reflete pressão decrescente da hegemonia de uma única empresa no mercado de IA. Bloomberg Technology" data-title="Fabricantes de chips reavivam batalha de benchmarks enquanto concorrem contra Nvidia" data-share-url="https://www.bloomberg.com/news/newsletters/2026-06-19/nvidia-s-ai-wins-had-quashed-the-benchmark-fight-cpu-race-is-bringing-it-back">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">08:02</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Fabricantes de chips reavivam batalha de benchmarks enquanto concorrem contra Nvidia</div>
+        <div class="news-summary">Com CPUs voltando ao centro das atenções após domínio prolongado da Nvidia em IA, fabricantes de processadores reacendem batalha de relações públicas sobre benchmarks de desempenho. Intel, AMD e outros buscam demonstrar avanços em processamento que reduzam dependência de GPUs especializadas. A competição de narrativas envolve escolha seletiva de métricas de desempenho que favorecem suas arquiteturas. Benchmarks anteriormente considerados 'nerds' agora ganham relevância comercial massiva na medida que custos de computação de IA crescem. Clientes corporativos enfrentam confusão sobre qual arquitetura escolher, levando demanda por análises independentes. A dinâmica reflete pressão decrescente da hegemonia de uma única empresa no mercado de IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/newsletters/2026-06-19/nvidia-s-ai-wins-had-quashed-the-benchmark-fight-cpu-race-is-bringing-it-back" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fintech turca Midas planeja expansão para sistemas de pagamento A empresa de tecnologias financeiras turca Midas aplicou ao banco central da Turquia por licença de instituição de dinheiro eletrônico enquanto busca lançar contas digitais e serviços de pagamento. A expansão reflete consolidação de tendência global de fintechs migrarem de serviços especializados para infraestrutura financeira completa. A Turquia apresenta mercado atraente com população jovem, altas taxas de bancarização insuficiente e crescente demanda por serviços digitais. Regulação bancária turca tornou-se mais recepcível a licenças de fintechs sob pressão de competição. O sucesso de Midas em obter licenças bancárias expandidas poderia accelerar consolidação no setor fintech turco. A iniciativa conecta tendências maiores de IA aplicada a serviços financeiros. Bloomberg Technology" data-title="Fintech turca Midas planeja expansão para sistemas de pagamento" data-share-url="https://www.bloomberg.com/news/articles/2026-06-19/turkish-fintech-firm-midas-plans-expansion-into-payment-systems">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Fintech turca Midas planeja expansão para sistemas de pagamento</div>
+        <div class="news-summary">A empresa de tecnologias financeiras turca Midas aplicou ao banco central da Turquia por licença de instituição de dinheiro eletrônico enquanto busca lançar contas digitais e serviços de pagamento. A expansão reflete consolidação de tendência global de fintechs migrarem de serviços especializados para infraestrutura financeira completa. A Turquia apresenta mercado atraente com população jovem, altas taxas de bancarização insuficiente e crescente demanda por serviços digitais. Regulação bancária turca tornou-se mais recepcível a licenças de fintechs sob pressão de competição. O sucesso de Midas em obter licenças bancárias expandidas poderia accelerar consolidação no setor fintech turco. A iniciativa conecta tendências maiores de IA aplicada a serviços financeiros.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-19/turkish-fintech-firm-midas-plans-expansion-into-payment-systems" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Podcast 'Hard Fork' debate visões divergentes sobre futuro da inteligência artificial Evento ao vivo do podcast 'Hard Fork' do New York Times apresentou debate entre especialistas sobre trajetórias divergentes da inteligência artificial, com discussões sobre segurança, regulação e implicações sociais. O evento contou com participantes do setor acadêmico, indústria e advocacy, refletindo polarização crescente sobre governança de IA. Momento marcante incluiu colapso dramático não-planejado de robô dançante, simbolizando fragilidade de sistemas de IA atuais apesar de hype. Debate enfatizou tensão entre potencial transformador de IA e riscos de concentração de poder em mãos de poucos atores corporativos. Listeners participaram com perguntas sobre ética, privacidade e impacto no mercado de trabalho. O evento refletiu crescimento de preocupações públicas sobre IA além de círculos especializados. NYT &gt; Technology" data-title="Podcast 'Hard Fork' debate visões divergentes sobre futuro da inteligência artificial" data-share-url="https://www.nytimes.com/2026/06/19/podcasts/hard-fork-live-part-3-differing-visions-of-an-ai-future.html">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">NYT &gt; Technology</span>
+        </div>
+        <div class="news-title">Podcast 'Hard Fork' debate visões divergentes sobre futuro da inteligência artificial</div>
+        <div class="news-summary">Evento ao vivo do podcast 'Hard Fork' do New York Times apresentou debate entre especialistas sobre trajetórias divergentes da inteligência artificial, com discussões sobre segurança, regulação e implicações sociais. O evento contou com participantes do setor acadêmico, indústria e advocacy, refletindo polarização crescente sobre governança de IA. Momento marcante incluiu colapso dramático não-planejado de robô dançante, simbolizando fragilidade de sistemas de IA atuais apesar de hype. Debate enfatizou tensão entre potencial transformador de IA e riscos de concentração de poder em mãos de poucos atores corporativos. Listeners participaram com perguntas sobre ética, privacidade e impacto no mercado de trabalho. O evento refletiu crescimento de preocupações públicas sobre IA além de círculos especializados.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/19/podcasts/hard-fork-live-part-3-differing-visions-of-an-ai-future.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Startup Miami anuncia solução para gargalo matemático que limitava modelos de linguagem A startup Subquadratic, baseada em Miami, saiu do modo furtivo anunciando ter resolvido um gargalo matemático crítico que limitava a velocidade e eficiência de grandes modelos de linguagem (LLMs). A descoberta aborda desafios computacionais de escala quadrática que tornavam treinamento de modelos maiores proibitivamente caro e lento. Se comprovada, a solução poderia democratizar desenvolvimento de IA de ponta reduzindo custos de computação significativamente. A empresa planeja licenciar a tecnologia para laboratórios de IA e empresas de cloud computing, criando potencial mercado multibilionário. Especialistas em aprendizado de máquina estão examinando as alegações com cautela, aguardando publicação de pesquisa revisada por pares. O timing coincide com pressão de investidores por avanços na eficiência de modelos fundacionais. MIT Technology Review" data-title="Startup Miami anuncia solução para gargalo matemático que limitava modelos de linguagem" data-share-url="https://www.technologyreview.com/2026/06/19/1139313/a-startup-claims-it-broke-through-a-bottleneck-thats-holding-back-llms/">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">07:40</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Startup Miami anuncia solução para gargalo matemático que limitava modelos de linguagem</div>
+        <div class="news-summary">A startup Subquadratic, baseada em Miami, saiu do modo furtivo anunciando ter resolvido um gargalo matemático crítico que limitava a velocidade e eficiência de grandes modelos de linguagem (LLMs). A descoberta aborda desafios computacionais de escala quadrática que tornavam treinamento de modelos maiores proibitivamente caro e lento. Se comprovada, a solução poderia democratizar desenvolvimento de IA de ponta reduzindo custos de computação significativamente. A empresa planeja licenciar a tecnologia para laboratórios de IA e empresas de cloud computing, criando potencial mercado multibilionário. Especialistas em aprendizado de máquina estão examinando as alegações com cautela, aguardando publicação de pesquisa revisada por pares. O timing coincide com pressão de investidores por avanços na eficiência de modelos fundacionais.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/06/19/1139313/a-startup-claims-it-broke-through-a-bottleneck-thats-holding-back-llms/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ensaios de interfaces cérebro-máquina decolam com primeiros 'power users' Avanços significativos em tecnologia de interface cérebro-máquina (BCI) estão acelerando testes clínicos com pacientes reais, incluindo Casey Harrell, um homem com esclerose lateral amiotrófica (ELA) que se tornou o primeiro 'power user' de um implante cerebral. Os pesquisadores relatam que Harrell consegue controlar cursores e dispositivos com precisão notável apenas por intenção, abrindo perspectivas transformadoras para pessoas com paralisia. Múltiplos ensaios clínicos estão em andamento em instituições líderes, testando segurança, durabilidade e aplicabilidade prática da tecnologia. Questões éticas e de privacidade relacionadas a implantes cerebrais estão sendo debatidas simultaneamente com desenvolvimentos técnicos. A indústria de neurotecnologia projeta mercado potencial de dezenas de bilhões de dólares em próximas duas décadas. Os sucessos clínicos poderiam justificar investimento bilateral de governos e setor privado. MIT Technology Review" data-title="Ensaios de interfaces cérebro-máquina decolam com primeiros 'power users'" data-share-url="https://www.technologyreview.com/2026/06/19/1139270/brain-computer-interface-trials-are-taking-off/">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Ensaios de interfaces cérebro-máquina decolam com primeiros 'power users'</div>
+        <div class="news-summary">Avanços significativos em tecnologia de interface cérebro-máquina (BCI) estão acelerando testes clínicos com pacientes reais, incluindo Casey Harrell, um homem com esclerose lateral amiotrófica (ELA) que se tornou o primeiro 'power user' de um implante cerebral. Os pesquisadores relatam que Harrell consegue controlar cursores e dispositivos com precisão notável apenas por intenção, abrindo perspectivas transformadoras para pessoas com paralisia. Múltiplos ensaios clínicos estão em andamento em instituições líderes, testando segurança, durabilidade e aplicabilidade prática da tecnologia. Questões éticas e de privacidade relacionadas a implantes cerebrais estão sendo debatidas simultaneamente com desenvolvimentos técnicos. A indústria de neurotecnologia projeta mercado potencial de dezenas de bilhões de dólares em próximas duas décadas. Os sucessos clínicos poderiam justificar investimento bilateral de governos e setor privado.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/06/19/1139270/brain-computer-interface-trials-are-taking-off/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Métrica inevitavelmente fraca e obscura em quantificação de vida Artigo do MIT Technology Review examina limitações fundamentais de métricas quantificadas em rastreamento de comportamento pessoal e bem-estar. O autor, após uma década rastreando próprios dados de atividade, conclui que métricas podem revelar aspectos úteis mas obscurecem ou corrompem muito mais. Crítica estende-se a tendências maiores de gamificação de vida pessoal e obsessão corporativa com otimização mensurável. O argumento conecta-se a debates sobre como sistemas de IA quantificam qualidade de vida de maneiras potencialmente enganosas. Reflexão desafia premissa que 'o que pode ser medido pode ser gerenciado', argumentando que aspectos mais importantes da experiência humana resistem quantificação. Análise oferece perspectiva sobria sobre limitações de abordagens data-driven para bem-estar. MIT Technology Review" data-title="Métrica inevitavelmente fraca e obscura em quantificação de vida" data-share-url="https://www.technologyreview.com/2026/06/19/1138778/inevitable-weakness-metrics-quantified-life-book-review/">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Métrica inevitavelmente fraca e obscura em quantificação de vida</div>
+        <div class="news-summary">Artigo do MIT Technology Review examina limitações fundamentais de métricas quantificadas em rastreamento de comportamento pessoal e bem-estar. O autor, após uma década rastreando próprios dados de atividade, conclui que métricas podem revelar aspectos úteis mas obscurecem ou corrompem muito mais. Crítica estende-se a tendências maiores de gamificação de vida pessoal e obsessão corporativa com otimização mensurável. O argumento conecta-se a debates sobre como sistemas de IA quantificam qualidade de vida de maneiras potencialmente enganosas. Reflexão desafia premissa que 'o que pode ser medido pode ser gerenciado', argumentando que aspectos mais importantes da experiência humana resistem quantificação. Análise oferece perspectiva sobria sobre limitações de abordagens data-driven para bem-estar.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/06/19/1138778/inevitable-weakness-metrics-quantified-life-book-review/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Kalshi em conversas iniciais de IPO com bancos de investimento Plataforma de mercado de predições Kalshi está explorando listagem pública após ultrapassar USD 2 bilhões em receita anualizada, segundo reportagens. A empresa enfrenta pressão regulatória nos EUA para restringir certos tipos de contratos, particularmente relacionados a eventos políticos e desportivos. IPO potencial sinalizaria crescente legitimidade de plataformas de predição em finanças mainstream. Kalshi construiu comunidade de traders sofisticados que usam plataforma para hedge ou especulação em eventos futuros. Valuation potencial refletiria múltiplos de fintech de alto crescimento, potencialmente na faixa de USD 8-15 bilhões. O timing de IPO ocorre enquanto reguladores refinam abordagem a plataformas de predição. Cointelegraph.com News" data-title="Kalshi em conversas iniciais de IPO com bancos de investimento" data-share-url="https://cointelegraph.com/news/kalshi-early-ipo-talks-investment-banks-report?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:44</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Kalshi em conversas iniciais de IPO com bancos de investimento</div>
+        <div class="news-summary">Plataforma de mercado de predições Kalshi está explorando listagem pública após ultrapassar USD 2 bilhões em receita anualizada, segundo reportagens. A empresa enfrenta pressão regulatória nos EUA para restringir certos tipos de contratos, particularmente relacionados a eventos políticos e desportivos. IPO potencial sinalizaria crescente legitimidade de plataformas de predição em finanças mainstream. Kalshi construiu comunidade de traders sofisticados que usam plataforma para hedge ou especulação em eventos futuros. Valuation potencial refletiria múltiplos de fintech de alto crescimento, potencialmente na faixa de USD 8-15 bilhões. O timing de IPO ocorre enquanto reguladores refinam abordagem a plataformas de predição.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/kalshi-early-ipo-talks-investment-banks-report?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Luta de Binance por MiCA levanta questões sobre influência do BCE Batalha regulatória de Binance contra regulação europeia de criptomoedas (MiCA) levanta questões sobre possível influência do Banco Central Europeu nos processos de licenciamento nacional. Advogados indicam que regras MiCA não proíbem comunicação BCE com reguladores nacionais durante processamento de aplicações, criando potencial assimetria de informações. Binance contesta colocação de exigências regulatórias que acredita excederem mandato MiCA. O conflito reflete tensão maior entre regulação europeia pesada e operações cripto globais. Resultado desta batalha poderá estabelecer precedente para como instituições cripto grandes navegam complexidade regulatória europeia. A situação também evidencia poder de autoridades de bancos centrais em moldar dinâmicas de criptomoedas. Cointelegraph.com News" data-title="Luta de Binance por MiCA levanta questões sobre influência do BCE" data-share-url="https://cointelegraph.com/news/mica-rules-questions-ecb-role-binance-licensing?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:38</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Luta de Binance por MiCA levanta questões sobre influência do BCE</div>
+        <div class="news-summary">Batalha regulatória de Binance contra regulação europeia de criptomoedas (MiCA) levanta questões sobre possível influência do Banco Central Europeu nos processos de licenciamento nacional. Advogados indicam que regras MiCA não proíbem comunicação BCE com reguladores nacionais durante processamento de aplicações, criando potencial assimetria de informações. Binance contesta colocação de exigências regulatórias que acredita excederem mandato MiCA. O conflito reflete tensão maior entre regulação europeia pesada e operações cripto globais. Resultado desta batalha poderá estabelecer precedente para como instituições cripto grandes navegam complexidade regulatória europeia. A situação também evidencia poder de autoridades de bancos centrais em moldar dinâmicas de criptomoedas.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/mica-rules-questions-ecb-role-binance-licensing?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ethereum enfrenta possível crise de financiamento de desenvolvimento, avisa ex-contribuidor Ex-contribuidor da Ethereum Foundation alertou que protocolo Ethereum poderia encarar crise de financiamento de desenvolvimento central dentro de 3-9 meses após expiração de programa de incentivo anterior. O aviso ocorre enquanto Ethereum Foundation reduz gastos, ajusta estratégia de tesouro e passa por onda de saídas de liderança. A crise refletiria dependência de financiamento institucionalizado para manter desenvolvimento de código central. O problema destaca paradoxo de sistemas descentralizados que precisam de coordenação e recursos concentrados para manutenção técnica fundamental. Se não resolvida, crise de financiamento poderia desacelerar atualizações críticas de Ethereum e beneficiar blockchains competitoras. A situação refaz debates sobre sustentabilidade econômica de projetos de código aberto. Cointelegraph.com News" data-title="Ethereum enfrenta possível crise de financiamento de desenvolvimento, avisa ex-contribuidor" data-share-url="https://cointelegraph.com/news/former-ethereum-foundation-contributor-claims-core-development-funding-crisis?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">10:16</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Ethereum enfrenta possível crise de financiamento de desenvolvimento, avisa ex-contribuidor</div>
+        <div class="news-summary">Ex-contribuidor da Ethereum Foundation alertou que protocolo Ethereum poderia encarar crise de financiamento de desenvolvimento central dentro de 3-9 meses após expiração de programa de incentivo anterior. O aviso ocorre enquanto Ethereum Foundation reduz gastos, ajusta estratégia de tesouro e passa por onda de saídas de liderança. A crise refletiria dependência de financiamento institucionalizado para manter desenvolvimento de código central. O problema destaca paradoxo de sistemas descentralizados que precisam de coordenação e recursos concentrados para manutenção técnica fundamental. Se não resolvida, crise de financiamento poderia desacelerar atualizações críticas de Ethereum e beneficiar blockchains competitoras. A situação refaz debates sobre sustentabilidade econômica de projetos de código aberto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/former-ethereum-foundation-contributor-claims-core-development-funding-crisis?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="GoMining desafia Square de Jack Dorsey com sistema de pagamentos baseado em Bitcoin GoMining desvendou kit de desenvolvimento de software e acesso programável para seu protocolo de pagamento Bitcoin GoBTC Pay, permitindo comerciantes aceitar BTC para transações e liquidação. A plataforma compete diretamente com Square (agora Block) de Jack Dorsey, oferecendo alternativa nativa a criptomoedas para processamento de pagamentos. O SDK permite que desenvolvedoras integrem Bitcoin payments em aplicações sem expertise técnica profunda em blockchain. GoMining visa capturar crescente segmento de comerciantes e consumidores dispostos a usar Bitcoin como forma de pagamento. A abordagem reflete maior adoção institucional de Bitcoin além de especulação, focando em utilidade real. Analistas veem movimento como significativo para normalização de Bitcoin em economia convencional. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="GoMining desafia Square de Jack Dorsey com sistema de pagamentos baseado em Bitcoin" data-share-url="https://www.coindesk.com/business/2026/06/19/gomining-challenges-jack-dorsey-s-square-with-payments-system-designed-around-bitcoin">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">09:30</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">GoMining desafia Square de Jack Dorsey com sistema de pagamentos baseado em Bitcoin</div>
+        <div class="news-summary">GoMining desvendou kit de desenvolvimento de software e acesso programável para seu protocolo de pagamento Bitcoin GoBTC Pay, permitindo comerciantes aceitar BTC para transações e liquidação. A plataforma compete diretamente com Square (agora Block) de Jack Dorsey, oferecendo alternativa nativa a criptomoedas para processamento de pagamentos. O SDK permite que desenvolvedoras integrem Bitcoin payments em aplicações sem expertise técnica profunda em blockchain. GoMining visa capturar crescente segmento de comerciantes e consumidores dispostos a usar Bitcoin como forma de pagamento. A abordagem reflete maior adoção institucional de Bitcoin além de especulação, focando em utilidade real. Analistas veem movimento como significativo para normalização de Bitcoin em economia convencional.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/06/19/gomining-challenges-jack-dorsey-s-square-with-payments-system-designed-around-bitcoin" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Binance pode servir traders filipinos sob framework regulatório SEC, diz BlockShoals Empresa BlockShoals afirma que Binance pode operar nas Filipinas sob arranjo sandbox regulatório SEC, permitindo acesso de trading sem licença local de provedor de serviço de ativos virtuais (VASP). A interpretação oferece caminho para Binance retornar ao mercado filipinofiliado, crítico para expansão regional da exchange. O sandbox permite testes de novos modelos de negócio com supervisão regulatória reduzida, criando zona cinzenta legal. Reguladores filipinos e Binance ainda precisam negociar detalhes de implementação. O resultado estabeleceria precedente para como exchanges operam em mercados emergentes com regulação em evolução. As Filipinas representam mercado cripto significativo com penetração de criptomoedas alta comparada a renda per capita. Cointelegraph.com News" data-title="Binance pode servir traders filipinos sob framework regulatório SEC, diz BlockShoals" data-share-url="https://cointelegraph.com/news/blockshoals-binance-regulatory-status-philippines?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">09:15</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Binance pode servir traders filipinos sob framework regulatório SEC, diz BlockShoals</div>
+        <div class="news-summary">Empresa BlockShoals afirma que Binance pode operar nas Filipinas sob arranjo sandbox regulatório SEC, permitindo acesso de trading sem licença local de provedor de serviço de ativos virtuais (VASP). A interpretação oferece caminho para Binance retornar ao mercado filipinofiliado, crítico para expansão regional da exchange. O sandbox permite testes de novos modelos de negócio com supervisão regulatória reduzida, criando zona cinzenta legal. Reguladores filipinos e Binance ainda precisam negociar detalhes de implementação. O resultado estabeleceria precedente para como exchanges operam em mercados emergentes com regulação em evolução. As Filipinas representam mercado cripto significativo com penetração de criptomoedas alta comparada a renda per capita.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/blockshoals-binance-regulatory-status-philippines?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Franklin Templeton propõe ETFs que convertem dividendos corporativos em Bitcoin Franklin Templeton apresentou pedido de aprovação para dois ETFs inovadores que reinvestem dividendos de ações corporativas diretamente em Bitcoin, criando estrutura nunca antes vista no mercado de fundos. Os 'Bitcoin DRIP' (Dividend Reinvestment Plans) mantêm portfólio de ações de grandes empresas enquanto fazem conversão automática de dividendos para BTC. A estrutura atrai investidores que desejam exposição a renda de ações mas com convicção em Bitcoin como ativo de reserva. Data de efetivação esperada em 1º de setembro de 2026 se aprovação regulatória for concedida pela SEC. A iniciativa marca adoção institucional crescente de Bitcoin no contexto de gestão de patrimônio tradicional. Analistas veem movimento como sinal de maturação de mercados cripto e integração com finanças mainstream. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="Franklin Templeton propõe ETFs que convertem dividendos corporativos em Bitcoin" data-share-url="https://www.coindesk.com/daybook-us/2026/06/19/franklin-templeton-proposes-new-funds-that-turn-corporate-dividends-into-bitcoin">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">08:27</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">Franklin Templeton propõe ETFs que convertem dividendos corporativos em Bitcoin</div>
+        <div class="news-summary">Franklin Templeton apresentou pedido de aprovação para dois ETFs inovadores que reinvestem dividendos de ações corporativas diretamente em Bitcoin, criando estrutura nunca antes vista no mercado de fundos. Os 'Bitcoin DRIP' (Dividend Reinvestment Plans) mantêm portfólio de ações de grandes empresas enquanto fazem conversão automática de dividendos para BTC. A estrutura atrai investidores que desejam exposição a renda de ações mas com convicção em Bitcoin como ativo de reserva. Data de efetivação esperada em 1º de setembro de 2026 se aprovação regulatória for concedida pela SEC. A iniciativa marca adoção institucional crescente de Bitcoin no contexto de gestão de patrimônio tradicional. Analistas veem movimento como sinal de maturação de mercados cripto e integração com finanças mainstream.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/daybook-us/2026/06/19/franklin-templeton-proposes-new-funds-that-turn-corporate-dividends-into-bitcoin" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Moedas smart-contract e DeFi sofrem perdas enquanto Bitcoin enfraquece 4º dia consecutivo Moedas de smart-contract e finanças descentralizadas lideraram perdas de mercado enquanto Bitcoin completou quarto dia consecutivo de queda, refletindo ambiente de risco-off mais amplo. Preocupações com STRC (ação preferencial dividendo-pagadora da Strategy) dominam sentimento de mercado cripto, causando liquidações em cascata de posições alavancadas. Altcoins sofrem proporcionalmente mais que Bitcoin em drawdowns, refletindo correlação crescente com ativos de risco. Analistas alertam que ambiente de liquidação pode criar oportunidades de compra para investidores de longo prazo. Volumes de trading caíram significativamente, indicando retirada de especuladores alavancados do mercado. A queda conjunta ocorre enquanto mercados tradicionais também enfrentam volatilidade gerada por tensões geopolíticas. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="Moedas smart-contract e DeFi sofrem perdas enquanto Bitcoin enfraquece 4º dia consecutivo" data-share-url="https://www.coindesk.com/markets/2026/06/19/smart-contract-and-defi-coins-lead-losses-as-bitcoin-wilts-for-4th-straight-day">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">07:47</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">Moedas smart-contract e DeFi sofrem perdas enquanto Bitcoin enfraquece 4º dia consecutivo</div>
+        <div class="news-summary">Moedas de smart-contract e finanças descentralizadas lideraram perdas de mercado enquanto Bitcoin completou quarto dia consecutivo de queda, refletindo ambiente de risco-off mais amplo. Preocupações com STRC (ação preferencial dividendo-pagadora da Strategy) dominam sentimento de mercado cripto, causando liquidações em cascata de posições alavancadas. Altcoins sofrem proporcionalmente mais que Bitcoin em drawdowns, refletindo correlação crescente com ativos de risco. Analistas alertam que ambiente de liquidação pode criar oportunidades de compra para investidores de longo prazo. Volumes de trading caíram significativamente, indicando retirada de especuladores alavancados do mercado. A queda conjunta ocorre enquanto mercados tradicionais também enfrentam volatilidade gerada por tensões geopolíticas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/19/smart-contract-and-defi-coins-lead-losses-as-bitcoin-wilts-for-4th-straight-day" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin projetado para fundo 'macro' do Q3 próximo a USD 50 mil antes de grande liquidação Traders de Bitcoin preveem fundo 'macro' de preço durante terceiro trimestre de 2026 próximo a USD 50 mil, antecipado por grande 'liquidation grab' de posições alavancadas. A projeção reflete ciclos históricos de Bitcoin onde preços caem para consolidação antes de rally novo. A grande liquidação prevista causaria 'descrença completa' entre participantes de mercado mas criaria base para retomada subsequente. O nível USD 50 mil representaria retorno a preços vistos em 2025, criando oportunidade para buyers pacientes. Analistas indicam que volume de negociação deveria confirmar mudança de sentimento de bearish para bullish antes de rally sustentado. A previsão reflete abordagem contra-cíclica de traders sofisticados. Cointelegraph.com News" data-title="Bitcoin projetado para fundo 'macro' do Q3 próximo a USD 50 mil antes de grande liquidação" data-share-url="https://cointelegraph.com/markets/bitcoin-tipped-for-q3-macro-bottom-near-50k-as-major-liquidity-grab-looms?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">07:44</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Bitcoin projetado para fundo 'macro' do Q3 próximo a USD 50 mil antes de grande liquidação</div>
+        <div class="news-summary">Traders de Bitcoin preveem fundo 'macro' de preço durante terceiro trimestre de 2026 próximo a USD 50 mil, antecipado por grande 'liquidation grab' de posições alavancadas. A projeção reflete ciclos históricos de Bitcoin onde preços caem para consolidação antes de rally novo. A grande liquidação prevista causaria 'descrença completa' entre participantes de mercado mas criaria base para retomada subsequente. O nível USD 50 mil representaria retorno a preços vistos em 2025, criando oportunidade para buyers pacientes. Analistas indicam que volume de negociação deveria confirmar mudança de sentimento de bearish para bullish antes de rally sustentado. A previsão reflete abordagem contra-cíclica de traders sofisticados.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-tipped-for-q3-macro-bottom-near-50k-as-major-liquidity-grab-looms?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercado de crédito digital sofre colapso massivo por liquidações de alavancagem O mercado de crédito digital foi atingido por vendas massivas enquanto CEO da Strive culpa liquidações forçadas de investidores alavancados pelo movimento. STRC e SATA, projetadas para negociar próximo a paridade de USD 100, caíram drasticamente antes de rebote parcial. Matt Cole descreve o episódio como 'o dia mais difícil na história de crédito digital', evidenciando fragilidade de estruturas de crédito cripto mesmo em moeda estável. O incidente levanta questões sobre adequação de alavancagem oferecida em mercados cripto e falta de proteção ao consumidor. Liquidações em cascata ocorrem quando investidores alavancados enfrentam margin calls e vendem para cobrir perdas. O evento marca segundo grande colapso em estruturas de crédito cripto em dois anos. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="Mercado de crédito digital sofre colapso massivo por liquidações de alavancagem" data-share-url="https://www.coindesk.com/markets/2026/06/19/digital-credit-market-hit-by-record-selloff-as-strive-ceo-blames-leverage-liquidations">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">06:19</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">Mercado de crédito digital sofre colapso massivo por liquidações de alavancagem</div>
+        <div class="news-summary">O mercado de crédito digital foi atingido por vendas massivas enquanto CEO da Strive culpa liquidações forçadas de investidores alavancados pelo movimento. STRC e SATA, projetadas para negociar próximo a paridade de USD 100, caíram drasticamente antes de rebote parcial. Matt Cole descreve o episódio como 'o dia mais difícil na história de crédito digital', evidenciando fragilidade de estruturas de crédito cripto mesmo em moeda estável. O incidente levanta questões sobre adequação de alavancagem oferecida em mercados cripto e falta de proteção ao consumidor. Liquidações em cascata ocorrem quando investidores alavancados enfrentam margin calls e vendem para cobrir perdas. O evento marca segundo grande colapso em estruturas de crédito cripto em dois anos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/19/digital-credit-market-hit-by-record-selloff-as-strive-ceo-blames-leverage-liquidations" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Atividade de Bitcoin aproxima recordes com explosão de microtransações Uso recorde de operação OP_RETURN em Bitcoin está impulsionando explosão de transações de baixo valor, empurrando atividade de rede de Bitcoin próxima a máximos históricos apesar de flutuações de preço. A atividade reflete crescente utilização de Bitcoin como camada de autenticidade e timestamp para documentos digitais e contratos inteligentes simples. O fenômeno reduz espaço de bloco disponível para transações de pagamento tradicional, elevando taxas de rede. Comunidade Bitcoin discute se microtransações representam uso legítimo do protocolo ou bloat desnecessário. O padrão de atividade sugere que Bitcoin está sendo usado para propósitos muito além de valor de loja. A intensidade de atividade poderia pressionar necessidade de upgrades de escalabilidade. Cointelegraph.com News" data-title="Atividade de Bitcoin aproxima recordes com explosão de microtransações" data-share-url="https://cointelegraph.com/news/bitcoin-activity-nears-record-highs-on-microtransaction-surge?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">06:16</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Atividade de Bitcoin aproxima recordes com explosão de microtransações</div>
+        <div class="news-summary">Uso recorde de operação OP_RETURN em Bitcoin está impulsionando explosão de transações de baixo valor, empurrando atividade de rede de Bitcoin próxima a máximos históricos apesar de flutuações de preço. A atividade reflete crescente utilização de Bitcoin como camada de autenticidade e timestamp para documentos digitais e contratos inteligentes simples. O fenômeno reduz espaço de bloco disponível para transações de pagamento tradicional, elevando taxas de rede. Comunidade Bitcoin discute se microtransações representam uso legítimo do protocolo ou bloat desnecessário. O padrão de atividade sugere que Bitcoin está sendo usado para propósitos muito além de valor de loja. A intensidade de atividade poderia pressionar necessidade de upgrades de escalabilidade.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bitcoin-activity-nears-record-highs-on-microtransaction-surge?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Microsoft descobre malware que sequestra carteiras cripto via pen-drives USB Microsoft identificou malware sofisticado que sequestra carteiras de criptomoedas e se espalha através de pen-drives USB, representando ameaça crítica à segurança de usuários cripto. O software intercepta arquivos de atalho e os redireiona para instalar worm que coleta chaves privadas da área de transferência Windows e insere suas próprias credenciais. A tática combina engenharia social com aproveitamento de convenções de sistema operacional para máxima eficácia. O achado alerta comunidade cripto sobre persistência de vetores de ataque tradicionais apesar de sofisticação de blockchain. Especialistas em segurança recomendam ar-gapped storage (offline) para holdings cripto significativos. O incidente reforça lições sobre higiene de cibersegurança em era cripto. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="Microsoft descobre malware que sequestra carteiras cripto via pen-drives USB" data-share-url="https://www.coindesk.com/tech/2026/06/19/microsoft-found-malware-that-hijacks-crypto-wallets-and-spreads-through-usb-sticks">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">05:48</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">Microsoft descobre malware que sequestra carteiras cripto via pen-drives USB</div>
+        <div class="news-summary">Microsoft identificou malware sofisticado que sequestra carteiras de criptomoedas e se espalha através de pen-drives USB, representando ameaça crítica à segurança de usuários cripto. O software intercepta arquivos de atalho e os redireiona para instalar worm que coleta chaves privadas da área de transferência Windows e insere suas próprias credenciais. A tática combina engenharia social com aproveitamento de convenções de sistema operacional para máxima eficácia. O achado alerta comunidade cripto sobre persistência de vetores de ataque tradicionais apesar de sofisticação de blockchain. Especialistas em segurança recomendam ar-gapped storage (offline) para holdings cripto significativos. O incidente reforça lições sobre higiene de cibersegurança em era cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/06/19/microsoft-found-malware-that-hijacks-crypto-wallets-and-spreads-through-usb-sticks" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Goldman Sachs reduz meta de preço de ouro em USD 500, duvidando de cortes de taxas Goldman Sachs revisou sua previsão de preço de ouro para final de 2026, reduzindo meta em USD 500 para USD 4.900, refletindo ceticismo crescente sobre cortes de taxa de juros de bancos centrais. A redução não indica queda absoluta em preço de ouro (ainda acima de níveis atuais) mas sinaliza expectativa de ganhos menores que anteriormente previsto. O ceticismo sobre cortes de taxa conecta-se a inflação teimosa e defesa de inflação esperada por mercados de taxas. Ouro tipicamente sobe quando taxas de juros reais caem (juros nominais menos inflação), criando ganho de capital de proprietários. A revisão Goldman afeta demanda por ouro entre investidores macro seguindo recomendações de casas de investimento grandes. A dinâmica também afeta altcoins que tendem a performar bem em ambientes de taxas baixas. Cointelegraph.com News" data-title="Goldman Sachs reduz meta de preço de ouro em USD 500, duvidando de cortes de taxas" data-share-url="https://cointelegraph.com/news/goldman-sachs-cuts-year-end-gold-target-by-500-doubting-rate-cuts?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 jun 2026</span>
+          <span class="news-time">05:05</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Goldman Sachs reduz meta de preço de ouro em USD 500, duvidando de cortes de taxas</div>
+        <div class="news-summary">Goldman Sachs revisou sua previsão de preço de ouro para final de 2026, reduzindo meta em USD 500 para USD 4.900, refletindo ceticismo crescente sobre cortes de taxa de juros de bancos centrais. A redução não indica queda absoluta em preço de ouro (ainda acima de níveis atuais) mas sinaliza expectativa de ganhos menores que anteriormente previsto. O ceticismo sobre cortes de taxa conecta-se a inflação teimosa e defesa de inflação esperada por mercados de taxas. Ouro tipicamente sobe quando taxas de juros reais caem (juros nominais menos inflação), criando ganho de capital de proprietários. A revisão Goldman afeta demanda por ouro entre investidores macro seguindo recomendações de casas de investimento grandes. A dinâmica também afeta altcoins que tendem a performar bem em ambientes de taxas baixas.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/goldman-sachs-cuts-year-end-gold-target-by-500-doubting-rate-cuts?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
