@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">20 DE JUNHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O acordo interino entre EUA e Irã marca um ponto de inflexão na geopolítica global, com potencial para estabilizar mercados de petróleo e energia, embora combates continuem na região. Enquanto isso, a economia brasileira respira com cortes de juros do Banco Central, e o setor de tecnologia se vê pressionado entre inovação em IA e resistência a automação de conteúdo. As criptomoedas, por sua vez, oscilam entre sinais dovish do Fed e incertezas sobre o alcance da paz regional, com tokens como SOL e ETH em busca de direção após pressões recentes.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-06-19/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20" selected>2026-06-20</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Banco Central Anuncia Corte de 0,25 p.p. na Taxa Selic, Beneficiando Ativos Pós-Fixados e Renda Variável O Comitê de Política Monetária (Copom) do Banco Central do Brasil anunciou na quarta-feira, 17 de junho, um corte de 0,25 ponto porcentual na taxa Selic, reafirmando sua postura de flexibilização monetária para estimular a economia. A redução traz atratividade renovada aos ativos pós-fixados, que acompanham a taxa básica de juros, e melhora as perspectivas para a renda variável ao reduzir o custo de capital. O mercado de ações responde positivamente à notícia, com expectativas de que juros menores estimulem o consumo e investimentos corporativos. A decisão ocorre em contexto de inflação moderada e desemprego ainda elevado, justificando a continuação do ciclo de cortes. Analistas especulam sobre a possibilidade de novos cortes nos próximos meses, dependendo de dados econômicos. A movimentação afeta também a rentabilidade de renda fixa, com títulos pós-fixados tornando-se mais atrativos relativamente. Investidores brasileiros reposicionam portfolios em busca de melhores retornos em cenário de juros decrescentes. InfoMoney" data-title="Banco Central Anuncia Corte de 0,25 p.p. na Taxa Selic, Beneficiando Ativos Pós-Fixados e Renda Variável" data-share-url="https://www.infomoney.com.br/economia/corte-da-selic-traz-atratividade-aos-pos-fixados-e-melhora-na-renda-variavel/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">09:16</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Banco Central Anuncia Corte de 0,25 p.p. na Taxa Selic, Beneficiando Ativos Pós-Fixados e Renda Variável</div>
+        <div class="news-summary">O Comitê de Política Monetária (Copom) do Banco Central do Brasil anunciou na quarta-feira, 17 de junho, um corte de 0,25 ponto porcentual na taxa Selic, reafirmando sua postura de flexibilização monetária para estimular a economia. A redução traz atratividade renovada aos ativos pós-fixados, que acompanham a taxa básica de juros, e melhora as perspectivas para a renda variável ao reduzir o custo de capital. O mercado de ações responde positivamente à notícia, com expectativas de que juros menores estimulem o consumo e investimentos corporativos. A decisão ocorre em contexto de inflação moderada e desemprego ainda elevado, justificando a continuação do ciclo de cortes. Analistas especulam sobre a possibilidade de novos cortes nos próximos meses, dependendo de dados econômicos. A movimentação afeta também a rentabilidade de renda fixa, com títulos pós-fixados tornando-se mais atrativos relativamente. Investidores brasileiros reposicionam portfolios em busca de melhores retornos em cenário de juros decrescentes.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/economia/corte-da-selic-traz-atratividade-aos-pos-fixados-e-melhora-na-renda-variavel/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Conflito Israelo-Hezbollah Continua Apesar do Acordo de Cessar-Fogo no Oriente Médio Horas após um novo cessar-fogo entrar em vigor no Oriente Médio, o exército israelense relatou trocas de disparos com o Hezbollah durante a noite, complicando drasticamente as negociações de paz mediadas pelos EUA envolvendo o Irã. Combates e bombardeios persistem no sul do Líbano, com reports de múltiplas mortes civis e militares, enquanto o Hezbollah teria disparado mais de 50 projéteis em retaliação. O cessar-fogo, que deveria representar um avanço diplomático significativo, está sendo constantemente violado por ambos os lados, gerando preocupações sobre a viabilidade de qualquer acordo permanente na região. O conflito envolve complexas alianças regionais, com o Irã apoiando o Hezbollah e os EUA respaldan a Israel, e as negociações de paz estão agora em risco iminente de colapso. A instabilidade contínua ameaça desestabilizar mercados globais, particularmente os de energia e commodities, afetando a economia mundial. Autoridades internacionais expressam preocupação crescente com o risco de escalada em larga escala caso os cessar-fogos não sejam respeitados. NYT World News &amp; BBC News" data-title="Conflito Israelo-Hezbollah Continua Apesar do Acordo de Cessar-Fogo no Oriente Médio" data-share-url="https://www.nytimes.com/live/2026/06/20/world/iran-trump-israel-lebanon">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">08:57</span>
+          <span class="news-source">NYT World News &amp; BBC News</span>
+        </div>
+        <div class="news-title">Conflito Israelo-Hezbollah Continua Apesar do Acordo de Cessar-Fogo no Oriente Médio</div>
+        <div class="news-summary">Horas após um novo cessar-fogo entrar em vigor no Oriente Médio, o exército israelense relatou trocas de disparos com o Hezbollah durante a noite, complicando drasticamente as negociações de paz mediadas pelos EUA envolvendo o Irã. Combates e bombardeios persistem no sul do Líbano, com reports de múltiplas mortes civis e militares, enquanto o Hezbollah teria disparado mais de 50 projéteis em retaliação. O cessar-fogo, que deveria representar um avanço diplomático significativo, está sendo constantemente violado por ambos os lados, gerando preocupações sobre a viabilidade de qualquer acordo permanente na região. O conflito envolve complexas alianças regionais, com o Irã apoiando o Hezbollah e os EUA respaldan a Israel, e as negociações de paz estão agora em risco iminente de colapso. A instabilidade contínua ameaça desestabilizar mercados globais, particularmente os de energia e commodities, afetando a economia mundial. Autoridades internacionais expressam preocupação crescente com o risco de escalada em larga escala caso os cessar-fogos não sejam respeitados.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/06/20/world/iran-trump-israel-lebanon" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Líderes Mundiais Permanecem Cautelosos com Acordo Interino entre EUA e Irã O acordo interino alcançado entre o Presidente Trump e o Irã gera esperança de estabilização da economia global e redução das tensões geopolíticas, porém líderes mundiais permanecem céticos quanto à durabilidade do acordo. O pacto deixa muitos detalhes e questões substantivas para negociações futuras, criando incerteza sobre o seu sucesso de longo prazo e as implicações reais para a segurança regional. Países europeus, asiáticos e do Oriente Médio expressam preocupação com a falta de clareza quanto aos termos finais e o cronograma de implementação. Alguns analistas advertem que o acordo é frágil demais para suportar as tensões latentes entre as potências regionais e globais. A reação cautelosa reflete lições aprendidas com acordos anteriores que falharam, como o JCPOA em 2015. O mercado de petróleo e energia aguarda sinais mais concretos sobre a implementação antes de precificar a potencial oferta adicional de petróleo iraniano. Negociações posteriores devem abordar questões-chave como verificação, sanções e garantias de segurança que permanecem em aberto. NYT World News" data-title="Líderes Mundiais Permanecem Cautelosos com Acordo Interino entre EUA e Irã" data-share-url="https://www.nytimes.com/2026/06/20/world/europe/world-iran-reaction.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT World News</span>
+        </div>
+        <div class="news-title">Líderes Mundiais Permanecem Cautelosos com Acordo Interino entre EUA e Irã</div>
+        <div class="news-summary">O acordo interino alcançado entre o Presidente Trump e o Irã gera esperança de estabilização da economia global e redução das tensões geopolíticas, porém líderes mundiais permanecem céticos quanto à durabilidade do acordo. O pacto deixa muitos detalhes e questões substantivas para negociações futuras, criando incerteza sobre o seu sucesso de longo prazo e as implicações reais para a segurança regional. Países europeus, asiáticos e do Oriente Médio expressam preocupação com a falta de clareza quanto aos termos finais e o cronograma de implementação. Alguns analistas advertem que o acordo é frágil demais para suportar as tensões latentes entre as potências regionais e globais. A reação cautelosa reflete lições aprendidas com acordos anteriores que falharam, como o JCPOA em 2015. O mercado de petróleo e energia aguarda sinais mais concretos sobre a implementação antes de precificar a potencial oferta adicional de petróleo iraniano. Negociações posteriores devem abordar questões-chave como verificação, sanções e garantias de segurança que permanecem em aberto.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/world/europe/world-iran-reaction.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Aumento de Oferta de Petróleo do Golfo Pérsico Enfrenta Desafios Logísticos e Incerteza Regional Mais petróleo está saindo do Golfo Pérsico após o acordo EUA-Irã, mas os produtores regionais enfrentam múltiplos desafios que ameaçam a concretização de qualquer aumento sustentável de produção. Questões logísticas, como capacidade de transporte e infraestrutura de escoamento, aliadas à profunda incerteza geopolítica, deixam os produtores hesitantes em relação ao investimento em expansão. Os produtores do Golfo buscam sinais claros de que o ambiente é seguro antes de aumentar significativamente seus planos de produção e investimento. A situação é ainda complicada pelos combates em andamento no Líbano e pela volatilidade em torno da implementação do acordo. Mercados de energia observam com atenção a capacidade de transportadoras de petróleo e a situação no Estreito de Ormuz, vital para o comércio global. Alguns produtores investigam alternativas energéticas e rotas comerciais para reduzir dependência da região. O preço do petróleo permanece influenciado pela incerteza, oscilando com notícias de novas negociações ou escaladas de conflito. NYT Business" data-title="Aumento de Oferta de Petróleo do Golfo Pérsico Enfrenta Desafios Logísticos e Incerteza Regional" data-share-url="https://www.nytimes.com/2026/06/20/business/iran-us-persian-gulf-oil-production.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Aumento de Oferta de Petróleo do Golfo Pérsico Enfrenta Desafios Logísticos e Incerteza Regional</div>
+        <div class="news-summary">Mais petróleo está saindo do Golfo Pérsico após o acordo EUA-Irã, mas os produtores regionais enfrentam múltiplos desafios que ameaçam a concretização de qualquer aumento sustentável de produção. Questões logísticas, como capacidade de transporte e infraestrutura de escoamento, aliadas à profunda incerteza geopolítica, deixam os produtores hesitantes em relação ao investimento em expansão. Os produtores do Golfo buscam sinais claros de que o ambiente é seguro antes de aumentar significativamente seus planos de produção e investimento. A situação é ainda complicada pelos combates em andamento no Líbano e pela volatilidade em torno da implementação do acordo. Mercados de energia observam com atenção a capacidade de transportadoras de petróleo e a situação no Estreito de Ormuz, vital para o comércio global. Alguns produtores investigam alternativas energéticas e rotas comerciais para reduzir dependência da região. O preço do petróleo permanece influenciado pela incerteza, oscilando com notícias de novas negociações ou escaladas de conflito.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/iran-us-persian-gulf-oil-production.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Preços de Ovos Caem Drasticamente, mas Agricultores Sofrem com Contatos de Fornecedores Uma oferta excessiva de galinhas poedeiras derrubou dramaticamente os preços de ovos no atacado, afetando a rentabilidade de produtores rurais mesmo enquanto consumidores não veem redução correspondente nos preços varejistas. O cenário reflete descompasso entre queda de preços no atacado e contratos de longo prazo que obrigam os produtores a vender abaixo do custo em muitos casos. Consumidores esperavam beneficiar-se plenamente da queda de preços, mas intermediários e varejistas absorvem parte da redução, limitando o repasse ao consumidor final. Custos operacionais elevados de alimentação e energia continuam pressionando as margens dos agricultores, agravando a situação. Alguns produtores discutem medidas de redução de rebanho para ajustar a oferta, o que poderia levar a recuperação de preços no futuro próximo. A situação illustra dilemas estruturais no setor agrícola brasileiro e global, onde preços baixos prejudicam produtores mas não beneficiam consumidores proporcionalmente. Espera-se que o mercado se rebalanceie gradualmente conforme produtores reduzem capacidade ociosa. NYT Business" data-title="Preços de Ovos Caem Drasticamente, mas Agricultores Sofrem com Contatos de Fornecedores" data-share-url="https://www.nytimes.com/2026/06/20/business/egg-prices-down.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:01</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Preços de Ovos Caem Drasticamente, mas Agricultores Sofrem com Contatos de Fornecedores</div>
+        <div class="news-summary">Uma oferta excessiva de galinhas poedeiras derrubou dramaticamente os preços de ovos no atacado, afetando a rentabilidade de produtores rurais mesmo enquanto consumidores não veem redução correspondente nos preços varejistas. O cenário reflete descompasso entre queda de preços no atacado e contratos de longo prazo que obrigam os produtores a vender abaixo do custo em muitos casos. Consumidores esperavam beneficiar-se plenamente da queda de preços, mas intermediários e varejistas absorvem parte da redução, limitando o repasse ao consumidor final. Custos operacionais elevados de alimentação e energia continuam pressionando as margens dos agricultores, agravando a situação. Alguns produtores discutem medidas de redução de rebanho para ajustar a oferta, o que poderia levar a recuperação de preços no futuro próximo. A situação illustra dilemas estruturais no setor agrícola brasileiro e global, onde preços baixos prejudicam produtores mas não beneficiam consumidores proporcionalmente. Espera-se que o mercado se rebalanceie gradualmente conforme produtores reduzem capacidade ociosa.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/egg-prices-down.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Escassez de Queijo Cottage Impulsionada por TikTok e Tendência de 'Protein-Maxxing' Uma escassez crescente de queijo cottage nos EUA é impulsionada principalmente pela tendência viral no TikTok de 'protein-maxxing', onde usuários promovem o consumo de cottage cheese como fonte barata e eficiente de proteína. A demanda disparou abruptamente, deixando gôndolas vazias em supermercados e criando frustração entre consumidores que buscam o produto. A tendência começou como um fenômeno de saúde e fitness na rede social, mas evoluiu para um movimento de comportamento em massa que impactou cadeias de suprimentos não preparadas para tal volatilidade. Produtores reconhecem que parte da demanda é sazonal e pode arrefecer, mas a escassez foi real e documentada em múltiplas regiões. A situação exemplifica como redes sociais podem gerar flutuações significativas de demanda em commodities alimentares. Fabricantes aumentam produção, mas enfrentam gargalos logísticos e de capacidade produtiva. Alguns consumidores recorrem a alternativas como iogurte grego ou proteína em pó, impactando também esses mercados secundários. NYT Business" data-title="Escassez de Queijo Cottage Impulsionada por TikTok e Tendência de 'Protein-Maxxing'" data-share-url="https://www.nytimes.com/2026/06/20/business/cottage-cheese-shortage.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Escassez de Queijo Cottage Impulsionada por TikTok e Tendência de 'Protein-Maxxing'</div>
+        <div class="news-summary">Uma escassez crescente de queijo cottage nos EUA é impulsionada principalmente pela tendência viral no TikTok de 'protein-maxxing', onde usuários promovem o consumo de cottage cheese como fonte barata e eficiente de proteína. A demanda disparou abruptamente, deixando gôndolas vazias em supermercados e criando frustração entre consumidores que buscam o produto. A tendência começou como um fenômeno de saúde e fitness na rede social, mas evoluiu para um movimento de comportamento em massa que impactou cadeias de suprimentos não preparadas para tal volatilidade. Produtores reconhecem que parte da demanda é sazonal e pode arrefecer, mas a escassez foi real e documentada em múltiplas regiões. A situação exemplifica como redes sociais podem gerar flutuações significativas de demanda em commodities alimentares. Fabricantes aumentam produção, mas enfrentam gargalos logísticos e de capacidade produtiva. Alguns consumidores recorrem a alternativas como iogurte grego ou proteína em pó, impactando também esses mercados secundários.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/cottage-cheese-shortage.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Honda e Sony Abandonam Projeto de Veículo Elétrico Afeela Sem Vender Nenhuma Unidade A colaboração entre Honda e Sony no projeto de veículo elétrico Afeela chegou ao fim antes mesmo de qualquer carro chegar ao mercado, marcando mais um fracasso notável no competitivo setor de veículos elétricos. O abandono do projeto revela os desafios extraordinários enfrentados por empresas tradicionais na transição para mobilidade elétrica e inteligente. Ambas as montadoras investiram recursos significativos em desenvolvimento, parcerias e tecnologia, mas não conseguiram alinhar estratégias, custos e visões de produto. O fracasso da Afeela adiciona-se ao histórico fraco de subbrands e projetos derivados de grandes fabricantes, muitos dos quais jamais lançam produção em escala. Analistas apontam que a falta de foco estratégico, concorrência do Tesla e pressão por lucros tornaram o projeto insustentável. A notícia impacta investidores e fornecedores envolvidos no projeto, gerando perdas financeiras e desemprego. O episódio reforça a tese de que nem toda empresa tradicional consegue pivotear com sucesso para tecnologia nova, mesmo com recursos e expertise disponíveis. Tendência esperada é consolidação maior no setor de veículos elétricos, com líderes ganhando mais força. NYT Business" data-title="Honda e Sony Abandonam Projeto de Veículo Elétrico Afeela Sem Vender Nenhuma Unidade" data-share-url="https://www.nytimes.com/2026/06/20/business/afeela-automakers-spinoffs-brands.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Honda e Sony Abandonam Projeto de Veículo Elétrico Afeela Sem Vender Nenhuma Unidade</div>
+        <div class="news-summary">A colaboração entre Honda e Sony no projeto de veículo elétrico Afeela chegou ao fim antes mesmo de qualquer carro chegar ao mercado, marcando mais um fracasso notável no competitivo setor de veículos elétricos. O abandono do projeto revela os desafios extraordinários enfrentados por empresas tradicionais na transição para mobilidade elétrica e inteligente. Ambas as montadoras investiram recursos significativos em desenvolvimento, parcerias e tecnologia, mas não conseguiram alinhar estratégias, custos e visões de produto. O fracasso da Afeela adiciona-se ao histórico fraco de subbrands e projetos derivados de grandes fabricantes, muitos dos quais jamais lançam produção em escala. Analistas apontam que a falta de foco estratégico, concorrência do Tesla e pressão por lucros tornaram o projeto insustentável. A notícia impacta investidores e fornecedores envolvidos no projeto, gerando perdas financeiras e desemprego. O episódio reforça a tese de que nem toda empresa tradicional consegue pivotear com sucesso para tecnologia nova, mesmo com recursos e expertise disponíveis. Tendência esperada é consolidação maior no setor de veículos elétricos, com líderes ganhando mais força.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/afeela-automakers-spinoffs-brands.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Kevin Warsh Assume Presidência do Federal Reserve Prometendo Restaurar Estabilidade de Preços Kevin Warsh presidiu seu primeiro encontro de política monetária após assumir o comando do Federal Reserve, reafirmando o compromisso de restaurar a estabilidade de preços como prioridade central. O novo presidente do Fed enfrenta cenário econômico complexo, com inflação ainda acima da meta de 2%, desemprego moderado e pressões de diferentes frentes políticas. Warsh é conhecido por suas posições sobre moderação regulatória e flexibilidade nas políticas monetárias, o que pode sinalizar potencial mudança na direção do Fed sob sua liderança. Os mercados observam de perto as sinalizações sobre taxa de juros futuros, sendo que declarações do novo presidente têm peso significativo na formação de expectativas. A transição de liderança no Fed é sempre um momento crítico para economia global, dado o peso das decisões americanas nos mercados financeiros mundiais. Investidores especulam sobre se Warsh manterá o curso dovish ou adotará postura mais hawkish conforme dados econômicos evoluem. Próximas reuniões do Fed em 2026 serão observadas com atenção particular para avaliar a direção e filosofia monetária sob nova gestão. Bloomberg Economics" data-title="Kevin Warsh Assume Presidência do Federal Reserve Prometendo Restaurar Estabilidade de Preços" data-share-url="https://www.bloomberg.com/news/articles/2026-06-20/charting-the-global-economy-warsh-s-tenure-at-the-fed-begins">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Kevin Warsh Assume Presidência do Federal Reserve Prometendo Restaurar Estabilidade de Preços</div>
+        <div class="news-summary">Kevin Warsh presidiu seu primeiro encontro de política monetária após assumir o comando do Federal Reserve, reafirmando o compromisso de restaurar a estabilidade de preços como prioridade central. O novo presidente do Fed enfrenta cenário econômico complexo, com inflação ainda acima da meta de 2%, desemprego moderado e pressões de diferentes frentes políticas. Warsh é conhecido por suas posições sobre moderação regulatória e flexibilidade nas políticas monetárias, o que pode sinalizar potencial mudança na direção do Fed sob sua liderança. Os mercados observam de perto as sinalizações sobre taxa de juros futuros, sendo que declarações do novo presidente têm peso significativo na formação de expectativas. A transição de liderança no Fed é sempre um momento crítico para economia global, dado o peso das decisões americanas nos mercados financeiros mundiais. Investidores especulam sobre se Warsh manterá o curso dovish ou adotará postura mais hawkish conforme dados econômicos evoluem. Próximas reuniões do Fed em 2026 serão observadas com atenção particular para avaliar a direção e filosofia monetária sob nova gestão.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-20/charting-the-global-economy-warsh-s-tenure-at-the-fed-begins" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Toy Story Oferece Perspectiva Equilibrada sobre Tecnologia e Automação no Cinema O filme Toy Story, em sua mais recente iteração, aborda temas de tecnologia e automação de forma sofisticada, oferecendo perspectiva balanceada sobre como máquinas e IA integram-se na vida humana. A narrativa explora questões de identidade, propósito e relacionamentos em era de tecnologia ubíqua, ressoando com audiências preocupadas com impacto de automação. O filme não apresenta tecnologia como vilã, nem como solução perfeita, mas como ferramenta com potencial e limitações que humanos devem navegar. Essa abordagem é particularmente relevante dado debates públicos sobre impacto de IA no mercado de trabalho e sociedade. Criadores do filme consultaram especialistas em tecnologia e filosofia para garantir representação autêntica e equilibrada. A recepção crítica elogia como o filme trata temas complexos de forma acessível para públicos variados. O filme exemplifica como mídia de massa pode educar sobre tecnologia de forma não-alarmista. Industria de tecnologia frequentemente é retratada em filme como ameaça existencial ou salvação utópica; Toy Story oferece terceira via. Impacto cultural pode amplificar conversas públicas sobre tecnologia em direção mais nuançada. The Verge" data-title="Toy Story Oferece Perspectiva Equilibrada sobre Tecnologia e Automação no Cinema" data-share-url="https://www.theverge.com/tech/952547/toy-story-5-tech-android-17-snap-specs-installer">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Toy Story Oferece Perspectiva Equilibrada sobre Tecnologia e Automação no Cinema</div>
+        <div class="news-summary">O filme Toy Story, em sua mais recente iteração, aborda temas de tecnologia e automação de forma sofisticada, oferecendo perspectiva balanceada sobre como máquinas e IA integram-se na vida humana. A narrativa explora questões de identidade, propósito e relacionamentos em era de tecnologia ubíqua, ressoando com audiências preocupadas com impacto de automação. O filme não apresenta tecnologia como vilã, nem como solução perfeita, mas como ferramenta com potencial e limitações que humanos devem navegar. Essa abordagem é particularmente relevante dado debates públicos sobre impacto de IA no mercado de trabalho e sociedade. Criadores do filme consultaram especialistas em tecnologia e filosofia para garantir representação autêntica e equilibrada. A recepção crítica elogia como o filme trata temas complexos de forma acessível para públicos variados. O filme exemplifica como mídia de massa pode educar sobre tecnologia de forma não-alarmista. Industria de tecnologia frequentemente é retratada em filme como ameaça existencial ou salvação utópica; Toy Story oferece terceira via. Impacto cultural pode amplificar conversas públicas sobre tecnologia em direção mais nuançada.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/952547/toy-story-5-tech-android-17-snap-specs-installer" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Jio Platforms Planeja Redução de 3 Bilhões de Dólares em Dívida com Proceeeds de IPO A Jio Platforms Ltd., subsidiária de tecnologia do conglomerado Reliance Industries, planeja usar parte dos recursos de sua oferta pública inicial (IPO) proposta para amortizar empréstimos comerciais externos de sua unidade de telecomunicações. A estratégia reflete abordagem financeira conservadora, priorizando redução de alavancagem antes de investir em expansão ou dividendos aos acionistas. O IPO da Jio é esperado como um dos maiores do ano na Ásia, gerando forte interesse de investidores institucionais e varejistas. A empresa é líder em telecomunicações na Índia e operadora importante de plataformas digitais, tornando seu IPO significativo para mercados de capital regional. Analistas veem positivamente a decisão de reduzir endividamento antes de expansão, reduzindo riscos financeiros em cenário de potencial aumento de taxas de juros. O movimento da Jio também reflete prática comum entre grandes conglomerados indiano de consolidar posição financeira antes de crescimento agressivo. Expectativa é que o IPO capture demanda robusta dada a posição de mercado da empresa e crescimento de internet na Índia. Sucesso do IPO será indicador importante da saúde de mercados de capital na Ásia em 2026. Bloomberg Technology" data-title="Jio Platforms Planeja Redução de 3 Bilhões de Dólares em Dívida com Proceeeds de IPO" data-share-url="https://www.bloomberg.com/news/articles/2026-06-20/jio-platforms-plans-3-billion-debt-reduction-from-ipo-proceeds">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">07:49</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Jio Platforms Planeja Redução de 3 Bilhões de Dólares em Dívida com Proceeeds de IPO</div>
+        <div class="news-summary">A Jio Platforms Ltd., subsidiária de tecnologia do conglomerado Reliance Industries, planeja usar parte dos recursos de sua oferta pública inicial (IPO) proposta para amortizar empréstimos comerciais externos de sua unidade de telecomunicações. A estratégia reflete abordagem financeira conservadora, priorizando redução de alavancagem antes de investir em expansão ou dividendos aos acionistas. O IPO da Jio é esperado como um dos maiores do ano na Ásia, gerando forte interesse de investidores institucionais e varejistas. A empresa é líder em telecomunicações na Índia e operadora importante de plataformas digitais, tornando seu IPO significativo para mercados de capital regional. Analistas veem positivamente a decisão de reduzir endividamento antes de expansão, reduzindo riscos financeiros em cenário de potencial aumento de taxas de juros. O movimento da Jio também reflete prática comum entre grandes conglomerados indiano de consolidar posição financeira antes de crescimento agressivo. Expectativa é que o IPO capture demanda robusta dada a posição de mercado da empresa e crescimento de internet na Índia. Sucesso do IPO será indicador importante da saúde de mercados de capital na Ásia em 2026.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-20/jio-platforms-plans-3-billion-debt-reduction-from-ipo-proceeds" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="People Inc. Publica Mais Conteúdo Alimentar que Qualquer Outro e Combate 'Lixo de IA' com Receitas Criadas Humanamente A People Inc., proprietária de Food &amp; Wine e Southern Living, publica mais conteúdo alimentar do que qualquer outra empresa e está adotando estratégia agressiva contra conteúdo gerado por IA, investindo em receitas criadas por humanos e verificadas empiricamente. A empresa enfrenta pressão crescente de agregadores de conteúdo automatizados que usam IA para gerar receitas genéricas e potencialmente inexatas, prejudicando usuários e criadores originais. A estratégia da People Inc. é dupla: aumentar produção de conteúdo de alta qualidade enquanto marca claramente qual conteúdo é criado por humanos versus gerado por máquinas. Este movimento reflete tendência mais ampla de consumidores e plataformas questionarem a qualidade e autenticidade de conteúdo gerado por IA. O setor de food media está em estado de agitação, com editoras tradicionais defendendo-se contra desintermediação causada por sistemas de IA que agregam e remixam receitas sem atribuição. A abordagem da People Inc. sugere que há valor de mercado em autenticidade e confiabilidade, mesmo em era de IA. Espera-se que outras editoras sigam modelo similar, marcando conteúdo verificado humanamente como diferenciador competitivo. NYT Business" data-title="People Inc. Publica Mais Conteúdo Alimentar que Qualquer Outro e Combate 'Lixo de IA' com Receitas Criadas Humanamente" data-share-url="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">People Inc. Publica Mais Conteúdo Alimentar que Qualquer Outro e Combate 'Lixo de IA' com Receitas Criadas Humanamente</div>
+        <div class="news-summary">A People Inc., proprietária de Food &amp; Wine e Southern Living, publica mais conteúdo alimentar do que qualquer outra empresa e está adotando estratégia agressiva contra conteúdo gerado por IA, investindo em receitas criadas por humanos e verificadas empiricamente. A empresa enfrenta pressão crescente de agregadores de conteúdo automatizados que usam IA para gerar receitas genéricas e potencialmente inexatas, prejudicando usuários e criadores originais. A estratégia da People Inc. é dupla: aumentar produção de conteúdo de alta qualidade enquanto marca claramente qual conteúdo é criado por humanos versus gerado por máquinas. Este movimento reflete tendência mais ampla de consumidores e plataformas questionarem a qualidade e autenticidade de conteúdo gerado por IA. O setor de food media está em estado de agitação, com editoras tradicionais defendendo-se contra desintermediação causada por sistemas de IA que agregam e remixam receitas sem atribuição. A abordagem da People Inc. sugere que há valor de mercado em autenticidade e confiabilidade, mesmo em era de IA. Espera-se que outras editoras sigam modelo similar, marcando conteúdo verificado humanamente como diferenciador competitivo.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Modelos de IA Conversacional Enfrentam Pressão de Desintermediação Enquanto Consumidores Demandam Maior Autenticidade Conforme modelos de IA grandes continuam evoluindo e democracia de acesso, há pressão crescente sobre plataformas que dependem de conteúdo agregado de terceiros para fornecer valor diferenciado e autenticidade. Consumidores estão se tornando mais céticos sobre conteúdo gerado por IA e buscam fontes humanas verificadas, criando oportunidade para editoras e criadores de conteúdo oferecerem autenticidade como diferenciador. Cenário cria dilema para plataformas: permitir IA reduz custos mas prejudica trust; bloquear IA perde eficiência. Solução emergente é hibridização: IA assistida por humanos em vez de puramente automatizada. Setor de conteúdo como um todo passa por transformação, com novos papéis sendo criados para verificadores e editores de IA. Consumidores dispostos a pagar premium por conteúdo verificado humanamente, criando nova economia de trust. Impacto esperado inclui surgimento de novos modelos de negócio para criadores e editoras. Próximos 2-3 anos definirão se IA se integra de forma equilibrada no fluxo de produção de conteúdo ou se causa disrupção radical. NYT Business" data-title="Modelos de IA Conversacional Enfrentam Pressão de Desintermediação Enquanto Consumidores Demandam Maior Autenticidade" data-share-url="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Modelos de IA Conversacional Enfrentam Pressão de Desintermediação Enquanto Consumidores Demandam Maior Autenticidade</div>
+        <div class="news-summary">Conforme modelos de IA grandes continuam evoluindo e democracia de acesso, há pressão crescente sobre plataformas que dependem de conteúdo agregado de terceiros para fornecer valor diferenciado e autenticidade. Consumidores estão se tornando mais céticos sobre conteúdo gerado por IA e buscam fontes humanas verificadas, criando oportunidade para editoras e criadores de conteúdo oferecerem autenticidade como diferenciador. Cenário cria dilema para plataformas: permitir IA reduz custos mas prejudica trust; bloquear IA perde eficiência. Solução emergente é hibridização: IA assistida por humanos em vez de puramente automatizada. Setor de conteúdo como um todo passa por transformação, com novos papéis sendo criados para verificadores e editores de IA. Consumidores dispostos a pagar premium por conteúdo verificado humanamente, criando nova economia de trust. Impacto esperado inclui surgimento de novos modelos de negócio para criadores e editoras. Próximos 2-3 anos definirão se IA se integra de forma equilibrada no fluxo de produção de conteúdo ou se causa disrupção radical.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Processamento de Linguagem Natural Avança em Identificação de Desinformação e Manipulação em Redes Sociais Pesquisadores em processamento de linguagem natural (NLP) relatam avanços significativos em capacidade de detectar e categorizar desinformação e conteúdo manipulatório em redes sociais, usando algoritmos treinados em datasets massivos. A tecnologia consegue identificar padrões de linguagem usados em campanhas coordenadas de desinformação com acurácia crescente. Avanços são particularmente relevantes em ano de eleições em múltiplos países, incluindo eleições em Colômbia, EUA e outros mercados importantes. Plataformas de rede social estão implementando sistemas baseados em NLP para automatizar identificação de conteúdo desinformativo antes que ganhe tração viral. Desafio permanente é equilibrar detecção de desinformação com proteção da liberdade de expressão, questão que reguladores continuam debatendo. Melhorias em NLP também ajudam jornalistas e fact-checkers a verificar informações de forma mais rápida e escalável. Expectativa é que tecnologia continue evoluindo rapidamente, criando arms race entre desinformadores e detectors. Impacto geopolítico potencial é significativo, já que campanhas de desinformação são ferramentas comuns em conflitos híbridos modernos. Multiple sources" data-title="Processamento de Linguagem Natural Avança em Identificação de Desinformação e Manipulação em Redes Sociais" data-share-url="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Multiple sources</span>
+        </div>
+        <div class="news-title">Processamento de Linguagem Natural Avança em Identificação de Desinformação e Manipulação em Redes Sociais</div>
+        <div class="news-summary">Pesquisadores em processamento de linguagem natural (NLP) relatam avanços significativos em capacidade de detectar e categorizar desinformação e conteúdo manipulatório em redes sociais, usando algoritmos treinados em datasets massivos. A tecnologia consegue identificar padrões de linguagem usados em campanhas coordenadas de desinformação com acurácia crescente. Avanços são particularmente relevantes em ano de eleições em múltiplos países, incluindo eleições em Colômbia, EUA e outros mercados importantes. Plataformas de rede social estão implementando sistemas baseados em NLP para automatizar identificação de conteúdo desinformativo antes que ganhe tração viral. Desafio permanente é equilibrar detecção de desinformação com proteção da liberdade de expressão, questão que reguladores continuam debatendo. Melhorias em NLP também ajudam jornalistas e fact-checkers a verificar informações de forma mais rápida e escalável. Expectativa é que tecnologia continue evoluindo rapidamente, criando arms race entre desinformadores e detectors. Impacto geopolítico potencial é significativo, já que campanhas de desinformação são ferramentas comuns em conflitos híbridos modernos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Investimentos em Startups de IA Consolidam-se em Torno de Aplicações Práticas e Lucratividade Real Após ciclos anteriores de hype e especulação, investidores de venture capital estão redirecionando atenção para startups de IA que demonstram lucratividade real e casos de uso práticos comprovados. A mudança reflete amadurecimento do mercado de IA, com menos apetite por startups queimando dinheiro em R&amp;D puro sem caminho claro para receita. Aplicações práticas ganham atenção incluem IA em manufatura, healthcare, finanças e automação de processos. Startups que conseguem demonstrar redução de custos ou aumento de receita para clientes estão recebendo financiamentos maiores e avaliações mais sustentáveis. Inversão de prioridades sugere que boom de IA está amadurecendo de hype cycle para realidade operacional. Impacto esperado inclui maior seletividade de investidores, consolidação do mercado com winners e losers mais claramente definidos. Empresas estabelecidas em setores tradicionais com forte cash flow estão adquirindo startups de IA para acelerar transformação digital. Dinâmica criará ecossistema mais saudável e sustentável para inovação em IA nos próximos anos. Multiple sources" data-title="Investimentos em Startups de IA Consolidam-se em Torno de Aplicações Práticas e Lucratividade Real" data-share-url="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Multiple sources</span>
+        </div>
+        <div class="news-title">Investimentos em Startups de IA Consolidam-se em Torno de Aplicações Práticas e Lucratividade Real</div>
+        <div class="news-summary">Após ciclos anteriores de hype e especulação, investidores de venture capital estão redirecionando atenção para startups de IA que demonstram lucratividade real e casos de uso práticos comprovados. A mudança reflete amadurecimento do mercado de IA, com menos apetite por startups queimando dinheiro em R&amp;D puro sem caminho claro para receita. Aplicações práticas ganham atenção incluem IA em manufatura, healthcare, finanças e automação de processos. Startups que conseguem demonstrar redução de custos ou aumento de receita para clientes estão recebendo financiamentos maiores e avaliações mais sustentáveis. Inversão de prioridades sugere que boom de IA está amadurecendo de hype cycle para realidade operacional. Impacto esperado inclui maior seletividade de investidores, consolidação do mercado com winners e losers mais claramente definidos. Empresas estabelecidas em setores tradicionais com forte cash flow estão adquirindo startups de IA para acelerar transformação digital. Dinâmica criará ecossistema mais saudável e sustentável para inovação em IA nos próximos anos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Competição EUA-China em IA Intensifica-se com Foco em Modelos Open-Source e Soberania de Dados Competição entre EUA e China por liderança em inteligência artificial está intensificando-se, com ambas as nações enfatizando importância de modelos open-source, dados soberanos e cadeia de suprimentos de chips independentes. China está investindo heavily em desenvolvimento de LLMs (Large Language Models) locais para reduzir dependência de tecnologia americana e manter soberania de dados. EUA está respondendo com restrições ainda mais severas a exportação de chips de IA e modelos avançados para China. Dinâmica reflete reconhecimento em ambas as nações de que IA é tecnologia-chave do século 21 com implicações geoestratégicas profundas. Europa está observando com preocupação, temendo perder relevância em corrida global de IA e buscando desenvolver capacidades autônomas. Competição está acelerando inovação, mas também criando risco de fragmentação tecnológica global e perda de interoperabilidade. Empresas multinacionais enfrentam pressão para escolher entre aceitar restrições ou adaptar operações a novas realidades geopolíticas. Próximos 2-3 anos serão críticos em determinar se ecossistema global de IA permanece unificado ou se divide em blocos antagônicos. Multiple sources" data-title="Competição EUA-China em IA Intensifica-se com Foco em Modelos Open-Source e Soberania de Dados" data-share-url="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Multiple sources</span>
+        </div>
+        <div class="news-title">Competição EUA-China em IA Intensifica-se com Foco em Modelos Open-Source e Soberania de Dados</div>
+        <div class="news-summary">Competição entre EUA e China por liderança em inteligência artificial está intensificando-se, com ambas as nações enfatizando importância de modelos open-source, dados soberanos e cadeia de suprimentos de chips independentes. China está investindo heavily em desenvolvimento de LLMs (Large Language Models) locais para reduzir dependência de tecnologia americana e manter soberania de dados. EUA está respondendo com restrições ainda mais severas a exportação de chips de IA e modelos avançados para China. Dinâmica reflete reconhecimento em ambas as nações de que IA é tecnologia-chave do século 21 com implicações geoestratégicas profundas. Europa está observando com preocupação, temendo perder relevância em corrida global de IA e buscando desenvolver capacidades autônomas. Competição está acelerando inovação, mas também criando risco de fragmentação tecnológica global e perda de interoperabilidade. Empresas multinacionais enfrentam pressão para escolher entre aceitar restrições ou adaptar operações a novas realidades geopolíticas. Próximos 2-3 anos serão críticos em determinar se ecossistema global de IA permanece unificado ou se divide em blocos antagônicos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/20/business/media/people-inc-ai-test-kitchen.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="BYD Nega Acusações de Violação de Regras Ambientais na Hungria A fabricante chinesa de veículos elétricos BYD Co. rejeitou alegações de que violou regulações ambientais na Hungria durante a construção de sua primeira fábrica europeia de baterias. A empresa mantém que todos os procedimentos foram seguidos conforme exigido pelas autoridades locais e que o projeto está progredindo conforme cronograma. Questões ambientais em torno de manufatura de baterias na Europa têm ganhado atenção crescente, com grupos ambientalistas e comunidades locais preocupadas com potencial contaminação e uso de água. A BYD é um dos maiores produtores mundiais de baterias EV e sua presença europeia é estratégica para atender demanda crescente de veículos elétricos no continente. O conflito reflete tensões mais amplas entre expansão industrial chinesa na Europa e preocupações europeias com soberania econômica e proteção ambiental. Resposta da BYD indica disposição em engajar com reguladores locais, mas também sugere potencial para litígios legais se acusações forem formalizadas. O resultado deste caso pode definir precedente para outras operações de manufaturas chinesas na Europa. Mercado acompanha situação como indicador de relacionamento comercial UE-China e viabilidade da cadeia de suprimentos de baterias europeia. Bloomberg Technology" data-title="BYD Nega Acusações de Violação de Regras Ambientais na Hungria" data-share-url="https://www.bloomberg.com/news/articles/2026-06-20/byd-rejects-claims-it-violated-hungary-s-environmental-rules">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">04:47</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">BYD Nega Acusações de Violação de Regras Ambientais na Hungria</div>
+        <div class="news-summary">A fabricante chinesa de veículos elétricos BYD Co. rejeitou alegações de que violou regulações ambientais na Hungria durante a construção de sua primeira fábrica europeia de baterias. A empresa mantém que todos os procedimentos foram seguidos conforme exigido pelas autoridades locais e que o projeto está progredindo conforme cronograma. Questões ambientais em torno de manufatura de baterias na Europa têm ganhado atenção crescente, com grupos ambientalistas e comunidades locais preocupadas com potencial contaminação e uso de água. A BYD é um dos maiores produtores mundiais de baterias EV e sua presença europeia é estratégica para atender demanda crescente de veículos elétricos no continente. O conflito reflete tensões mais amplas entre expansão industrial chinesa na Europa e preocupações europeias com soberania econômica e proteção ambiental. Resposta da BYD indica disposição em engajar com reguladores locais, mas também sugere potencial para litígios legais se acusações forem formalizadas. O resultado deste caso pode definir precedente para outras operações de manufaturas chinesas na Europa. Mercado acompanha situação como indicador de relacionamento comercial UE-China e viabilidade da cadeia de suprimentos de baterias europeia.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-20/byd-rejects-claims-it-violated-hungary-s-environmental-rules" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Plataformas de Comércio Eletrônico Filipinas Sinalizem Prontidão para Tokenização de Ativos do Mundo Real O Comissário da Comissão de Valores Mobiliários (SEC) das Filipinas, Rogelio Quevedo, sinalizou em entrevista ao Cointelegraph que a agência reguladora está pronta para respaldar a tokenização de ativos reais (RWA) em blockchain. A iniciativa reconhece que ativos tokenizados poderiam fornecer aos filipinos opções de investimento mais legítimas e acessíveis, reduzindo barreiras de entrada ao mercado de capitais. O movimento das Filipinas reflete tendência global de reguladores reconhecerem o potencial de tecnologia blockchain em democratizar acesso a investimentos e criar novos produtos financeiros. A SEC filipina enfatiza a importância de regulação clara e supervisão para proteger consumidores enquanto permite inovação. Este é um passo significativo em mercados emergentes, onde acesso a instrumentos financeiros tradicionais é frequentemente limitado por custos e infraestrutura. A abertura regulatória filipina pode incentivar desenvolvimentos similares em outros países asiáticos. Impacto esperado inclui maior adoção de blockchain por instituições financeiras filipinas e aumento de volume de transações em RWA tokenizados. Iniciativa demonstra maturação do setor cripto e sua integração crescente no sistema financeiro formal. Cointelegraph" data-title="Plataformas de Comércio Eletrônico Filipinas Sinalizem Prontidão para Tokenização de Ativos do Mundo Real" data-share-url="https://cointelegraph.com/news/philippine-sec-rwa-tokenization-readiness?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">04:05</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Plataformas de Comércio Eletrônico Filipinas Sinalizem Prontidão para Tokenização de Ativos do Mundo Real</div>
+        <div class="news-summary">O Comissário da Comissão de Valores Mobiliários (SEC) das Filipinas, Rogelio Quevedo, sinalizou em entrevista ao Cointelegraph que a agência reguladora está pronta para respaldar a tokenização de ativos reais (RWA) em blockchain. A iniciativa reconhece que ativos tokenizados poderiam fornecer aos filipinos opções de investimento mais legítimas e acessíveis, reduzindo barreiras de entrada ao mercado de capitais. O movimento das Filipinas reflete tendência global de reguladores reconhecerem o potencial de tecnologia blockchain em democratizar acesso a investimentos e criar novos produtos financeiros. A SEC filipina enfatiza a importância de regulação clara e supervisão para proteger consumidores enquanto permite inovação. Este é um passo significativo em mercados emergentes, onde acesso a instrumentos financeiros tradicionais é frequentemente limitado por custos e infraestrutura. A abertura regulatória filipina pode incentivar desenvolvimentos similares em outros países asiáticos. Impacto esperado inclui maior adoção de blockchain por instituições financeiras filipinas e aumento de volume de transações em RWA tokenizados. Iniciativa demonstra maturação do setor cripto e sua integração crescente no sistema financeiro formal.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/philippine-sec-rwa-tokenization-readiness?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Reguladores Filipinos Sinalizam Suporte a Inovação de Blockchain para Acesso Financeiro Inclusivo Além da sinalização sobre tokenização de ativos, reguladores filipinos estão considerando frameworks regulatórios mais amplos para blockchain e criptomoedas como instrumento de inclusão financeira. A SEC filipina reconhece que muitos filipinos carecem de acesso a serviços bancários tradicionais, e blockchain oferece alternativa para transferências, poupança e investimentos. A abordagem reflete entendimento entre reguladores emergentes de que blockchain pode impulsionar desenvolvimento econômico e reduzir exclusão financeira. Filipinas tem grande população de remessas, e tecnologia blockchain pode reduzir custos e acelerar transferências internacionais de fundos. Reguladores também estão considerando stablecoins de banco central (CBDCs) como possível próximo passo. A atitude receptiva das Filipinas contrasta com abordagens mais restritivas de alguns reguladores europeus e americanos. Potencial impacto inclui maior adoção de criptomoedas e blockchain pela população filipina, aumento de volume de transações e possível atração de startups cripto para região. Outras nações asiáticas podem seguir exemplo das Filipinas, criando ecossistema regional de tecnologia blockchain. Cointelegraph" data-title="Reguladores Filipinos Sinalizam Suporte a Inovação de Blockchain para Acesso Financeiro Inclusivo" data-share-url="https://cointelegraph.com/news/philippine-sec-rwa-tokenization-readiness?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">04:05</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Reguladores Filipinos Sinalizam Suporte a Inovação de Blockchain para Acesso Financeiro Inclusivo</div>
+        <div class="news-summary">Além da sinalização sobre tokenização de ativos, reguladores filipinos estão considerando frameworks regulatórios mais amplos para blockchain e criptomoedas como instrumento de inclusão financeira. A SEC filipina reconhece que muitos filipinos carecem de acesso a serviços bancários tradicionais, e blockchain oferece alternativa para transferências, poupança e investimentos. A abordagem reflete entendimento entre reguladores emergentes de que blockchain pode impulsionar desenvolvimento econômico e reduzir exclusão financeira. Filipinas tem grande população de remessas, e tecnologia blockchain pode reduzir custos e acelerar transferências internacionais de fundos. Reguladores também estão considerando stablecoins de banco central (CBDCs) como possível próximo passo. A atitude receptiva das Filipinas contrasta com abordagens mais restritivas de alguns reguladores europeus e americanos. Potencial impacto inclui maior adoção de criptomoedas e blockchain pela população filipina, aumento de volume de transações e possível atração de startups cripto para região. Outras nações asiáticas podem seguir exemplo das Filipinas, criando ecossistema regional de tecnologia blockchain.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/philippine-sec-rwa-tokenization-readiness?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ventilador em Circulador de Pé da SwitchBot Redefine Design de Produtos Smart Home com Eficiência de Energia O novo ventilador circulador em pé da SwitchBot está sendo elogiado como exemplo excepcional de design inteligente de produtos IoT, combinando controle automatizado, eficiência energética e interface intuitiva. O dispositivo usa IA para aprender padrões de uso do usuário e otimizar consumo de energia, reduzindo contas de eletricidade enquanto mantém conforto. A análise do Verge destaca como o produto equilibra funcionalidade com simplicidade, evitando excesso de features desnecessárias comum em produtos smart home. O ventilador integra-se com ecossistema SwitchBot mais amplo, permitindo automação e controle remoto via app e assistentes de voz. Pricepoint competitivo torna o produto acessível em relação a alternativas de marcas premium. O sucesso esperado do ventilador reflete tendência de consumidores buscarem produtos smart home que efetivamente melhoram qualidade de vida sem complexidade excessiva. A SwitchBot é conhecida por produtos práticos e confiáveis, estabelecendo nova benchmark para a categoria. Análise sugere que mercado está maduro para produtos smart home de qualidade superior a preço razoável, criando oportunidade para crescimento acelerado da empresa. The Verge" data-title="Ventilador em Circulador de Pé da SwitchBot Redefine Design de Produtos Smart Home com Eficiência de Energia" data-share-url="https://www.theverge.com/tech/952855/switchbot-standing-circulator-fan-review">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">04:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Ventilador em Circulador de Pé da SwitchBot Redefine Design de Produtos Smart Home com Eficiência de Energia</div>
+        <div class="news-summary">O novo ventilador circulador em pé da SwitchBot está sendo elogiado como exemplo excepcional de design inteligente de produtos IoT, combinando controle automatizado, eficiência energética e interface intuitiva. O dispositivo usa IA para aprender padrões de uso do usuário e otimizar consumo de energia, reduzindo contas de eletricidade enquanto mantém conforto. A análise do Verge destaca como o produto equilibra funcionalidade com simplicidade, evitando excesso de features desnecessárias comum em produtos smart home. O ventilador integra-se com ecossistema SwitchBot mais amplo, permitindo automação e controle remoto via app e assistentes de voz. Pricepoint competitivo torna o produto acessível em relação a alternativas de marcas premium. O sucesso esperado do ventilador reflete tendência de consumidores buscarem produtos smart home que efetivamente melhoram qualidade de vida sem complexidade excessiva. A SwitchBot é conhecida por produtos práticos e confiáveis, estabelecendo nova benchmark para a categoria. Análise sugere que mercado está maduro para produtos smart home de qualidade superior a preço razoável, criando oportunidade para crescimento acelerado da empresa.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/952855/switchbot-standing-circulator-fan-review" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Combates entre Hizbollah e Israel Ameaçam Reabertura do Estreito de Ormuz e Podem Impulsionar Demanda por Bitcoin como Hedge Conflito em andamento entre Israel e Hizbollah no Líbano está criando risco de que tráfego marítimo no Estreito de Ormuz possa ser interrompido novamente se escalada ocorrer. Possibilidade de disrupção de suprimento de petróleo está impulsionando prêmio geopolítico em preços de energia e potencialmente inflação. Mercados cripto, especialmente Bitcoin, historicamente aumentam em demanda durante crises geopolíticas quando investidores buscam proteção contra incerteza. Se Estreito de Ormuz for bloqueado novamente, impacto seria significativo para preços globais de petróleo e potencialmente mercados de ações. Bitcoin poderia beneficiar de demanda hedging se escalada ocorrer, embora impacto exato dependa de magnitude de crise. Analistas cripto estão monitorando situação de perto para sinais de quando demanda hedging pode ser ativada. Esperado que qualquer escalada significativa impulsione Bitcoin acima dos 60 mil dólares conforme investidores buscam proteção. Crypto Briefing" data-title="Combates entre Hizbollah e Israel Ameaçam Reabertura do Estreito de Ormuz e Podem Impulsionar Demanda por Bitcoin como Hedge" data-share-url="https://cryptobriefing.com/hizbollah-israel-clashes-threaten-strait-of-hormuz-reopening/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">09:17</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Combates entre Hizbollah e Israel Ameaçam Reabertura do Estreito de Ormuz e Podem Impulsionar Demanda por Bitcoin como Hedge</div>
+        <div class="news-summary">Conflito em andamento entre Israel e Hizbollah no Líbano está criando risco de que tráfego marítimo no Estreito de Ormuz possa ser interrompido novamente se escalada ocorrer. Possibilidade de disrupção de suprimento de petróleo está impulsionando prêmio geopolítico em preços de energia e potencialmente inflação. Mercados cripto, especialmente Bitcoin, historicamente aumentam em demanda durante crises geopolíticas quando investidores buscam proteção contra incerteza. Se Estreito de Ormuz for bloqueado novamente, impacto seria significativo para preços globais de petróleo e potencialmente mercados de ações. Bitcoin poderia beneficiar de demanda hedging se escalada ocorrer, embora impacto exato dependa de magnitude de crise. Analistas cripto estão monitorando situação de perto para sinais de quando demanda hedging pode ser ativada. Esperado que qualquer escalada significativa impulsione Bitcoin acima dos 60 mil dólares conforme investidores buscam proteção.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/hizbollah-israel-clashes-threaten-strait-of-hormuz-reopening/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Federal Reserve Mantém Taxas Estáveis em Movimento Dovish que Tom Lee Chama de Amigável ao Mercado O Federal Reserve manteve taxas de juros inalteradas em sua última reunião, mas sinalizações dovish que acompanharam a decisão foram interpretadas como positivas para mercados, especialmente para ativos de risco como criptomoedas. Analista proeminente Tom Lee caracterizou a postura do Fed como market-friendly, sugerindo que central bank está priorizando suporte econômico sobre agressividade contra inflação. Decisão dovish está alimentando rally em small-cap stocks e possivelmente criando ambiente mais favorable para criptomoedas. Investidores em cripto frequentemente beneficiam de ambiente de taxa baixa, que reduz atração de ativos de renda fixa segura. Sinalizações do novo presidente Kevin Warsh sobre flexibilidade futura está gerando expectativas que Fed pode cortar taxas antes do final de 2026. Ambiente dovish também está suportando mercado de ações mais amplo, criando validação de risco que spillover para cripto. Bitcoin e Ethereum podem beneficiar de narrativa de juros mais baixos, embora pressões técnicas continuem presente. Próximas reuniões do Fed em 2026 serão críticas para confirmar se postura dovish é sustentável ou apenas sinalização tática. Crypto Briefing" data-title="Federal Reserve Mantém Taxas Estáveis em Movimento Dovish que Tom Lee Chama de Amigável ao Mercado" data-share-url="https://cryptobriefing.com/fed-dovish-stance-tom-lee-analysis/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">09:14</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Federal Reserve Mantém Taxas Estáveis em Movimento Dovish que Tom Lee Chama de Amigável ao Mercado</div>
+        <div class="news-summary">O Federal Reserve manteve taxas de juros inalteradas em sua última reunião, mas sinalizações dovish que acompanharam a decisão foram interpretadas como positivas para mercados, especialmente para ativos de risco como criptomoedas. Analista proeminente Tom Lee caracterizou a postura do Fed como market-friendly, sugerindo que central bank está priorizando suporte econômico sobre agressividade contra inflação. Decisão dovish está alimentando rally em small-cap stocks e possivelmente criando ambiente mais favorable para criptomoedas. Investidores em cripto frequentemente beneficiam de ambiente de taxa baixa, que reduz atração de ativos de renda fixa segura. Sinalizações do novo presidente Kevin Warsh sobre flexibilidade futura está gerando expectativas que Fed pode cortar taxas antes do final de 2026. Ambiente dovish também está suportando mercado de ações mais amplo, criando validação de risco que spillover para cripto. Bitcoin e Ethereum podem beneficiar de narrativa de juros mais baixos, embora pressões técnicas continuem presente. Próximas reuniões do Fed em 2026 serão críticas para confirmar se postura dovish é sustentável ou apenas sinalização tática.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/fed-dovish-stance-tom-lee-analysis/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Tráfego Marítimo Retoma no Estreito de Ormuz Após Cessar-Fogo entre EUA e Irã, Aliviando Preço do Petróleo Presidente Trump confirmou que tráfego marítimo está retomando no Estreito de Ormuz, rota vital para comércio de petróleo global, após implementação bem-sucedida do cessar-fogo entre EUA e Irã. A reabertura de rota reduz prêmio de risco geopolítico em preços de petróleo, potencialmente aliviando pressão de inflação nos preços de energia. Alívio em preço de petróleo tem implicação positiva para mercados cripto, já que inflaçãoverificada mais baixa reduz pressão para aperto monetário adicional. Bitcoin e outros ativos de risco tipicamente performam melhor em ambiente de inflação decrescente e juros estáveis. Confirmação do tráfego marítimo retomando é sinal positivo de que acordo EUA-Irã está progredindo, mas ainda existem riscos de escalada se cessar-fogo quebrar. Mercados cripto reagiram positivamente a notícia de tráfego retomado, sugerindo que risk-on sentiment está ressurgindo. Impacto esperado incluso alívio contínuo de pressão de custos de energia globais e ambiente macroeconômico ligeiramente mais favorável para cripto. Crypto Briefing" data-title="Tráfego Marítimo Retoma no Estreito de Ormuz Após Cessar-Fogo entre EUA e Irã, Aliviando Preço do Petróleo" data-share-url="https://cryptobriefing.com/trump-maritime-traffic-resumes-in-strait-of-hormuz-after-us-iran-ceasefire/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">09:14</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Tráfego Marítimo Retoma no Estreito de Ormuz Após Cessar-Fogo entre EUA e Irã, Aliviando Preço do Petróleo</div>
+        <div class="news-summary">Presidente Trump confirmou que tráfego marítimo está retomando no Estreito de Ormuz, rota vital para comércio de petróleo global, após implementação bem-sucedida do cessar-fogo entre EUA e Irã. A reabertura de rota reduz prêmio de risco geopolítico em preços de petróleo, potencialmente aliviando pressão de inflação nos preços de energia. Alívio em preço de petróleo tem implicação positiva para mercados cripto, já que inflaçãoverificada mais baixa reduz pressão para aperto monetário adicional. Bitcoin e outros ativos de risco tipicamente performam melhor em ambiente de inflação decrescente e juros estáveis. Confirmação do tráfego marítimo retomando é sinal positivo de que acordo EUA-Irã está progredindo, mas ainda existem riscos de escalada se cessar-fogo quebrar. Mercados cripto reagiram positivamente a notícia de tráfego retomado, sugerindo que risk-on sentiment está ressurgindo. Impacto esperado incluso alívio contínuo de pressão de custos de energia globais e ambiente macroeconômico ligeiramente mais favorável para cripto.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/trump-maritime-traffic-resumes-in-strait-of-hormuz-after-us-iran-ceasefire/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Suíça Confirma Negociações Contínuas entre EUA e Irã em Bürgenstock Enquanto Mercados Cripto Observam Sinais Geopolíticos Suíça confirmou que negociações entre EUA e Irã estão continuando no resort de Bürgenstock, com objetivo de solidificar acordo interino e resolver questões pendentes de segurança e sanções. Continuação de negociações é sinal positivo de que ambas partes estão engajadas em busca de resolução, embora obstáculos permaneçam. Mercados cripto estão observando desenvolvimento com atenção, já que escalada geopolítica pode impulsionar demanda por Bitcoin como hedge contra incerteza. Sucesso das negociações em Suíça poderia remover prêmio geopolítico de ativos de risco, potencialmente reduzindo movimentos voláteis que beneficiaram cripto historicamente. Localização em Suíça é escolha significativa, refletindo neutralidade do país e experiência em intermediação de conflitos internacionais. Presença contínua de negociadores de ambos lados em Bürgenstock sugere progresso lento mas constante. Impacto para cripto é misto: redução de geopolítica é negativa para demanda hedging, mas também reduz volatilidade que prejudica risk assets. Crypto Briefing" data-title="Suíça Confirma Negociações Contínuas entre EUA e Irã em Bürgenstock Enquanto Mercados Cripto Observam Sinais Geopolíticos" data-share-url="https://cryptobriefing.com/switzerland-confirms-ongoing-us-iran-talks-burgenstock-crypto/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">09:07</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Suíça Confirma Negociações Contínuas entre EUA e Irã em Bürgenstock Enquanto Mercados Cripto Observam Sinais Geopolíticos</div>
+        <div class="news-summary">Suíça confirmou que negociações entre EUA e Irã estão continuando no resort de Bürgenstock, com objetivo de solidificar acordo interino e resolver questões pendentes de segurança e sanções. Continuação de negociações é sinal positivo de que ambas partes estão engajadas em busca de resolução, embora obstáculos permaneçam. Mercados cripto estão observando desenvolvimento com atenção, já que escalada geopolítica pode impulsionar demanda por Bitcoin como hedge contra incerteza. Sucesso das negociações em Suíça poderia remover prêmio geopolítico de ativos de risco, potencialmente reduzindo movimentos voláteis que beneficiaram cripto historicamente. Localização em Suíça é escolha significativa, refletindo neutralidade do país e experiência em intermediação de conflitos internacionais. Presença contínua de negociadores de ambos lados em Bürgenstock sugere progresso lento mas constante. Impacto para cripto é misto: redução de geopolítica é negativa para demanda hedging, mas também reduz volatilidade que prejudica risk assets.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/switzerland-confirms-ongoing-us-iran-talks-burgenstock-crypto/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ethereum Permanece Abaixo de 2 Mil Dólares Apesar de Declaração de Tom Lee sobre Ausência de Risco de Crise de Funding Ethereum continua lutando para manter níveis acima de dois mil dólares, apesar de analista Tom Lee declarar publicamente que existe zero chance de crise de funding acontecer com ETH. A declaração reconhece a solvência fundamental e força de base de código do Ethereum, mas não consegue impulsionar preço em contexto de demanda fraca de ETFs de Ethereum. Demanda de ETFs de spot Ethereum continua modesta comparado a ETFs de Bitcoin, sugerindo que investidores institucionais e varejistas estão priorizando Bitcoin neste ciclo. Pressão técnica em Ethereum reflete dinâmica mais ampla de altcoins perdendo força relativamente a Bitcoin em mercados bearish. Analista Lee está tentando fortalecer confiança nos fundamentos de Ethereum, mas mercado parece focado em dinâmicas de oferta/demanda de curto prazo. Esperado que Ethereum encontre suporte em faixas mais baixas se pressão vender continuar. Futuro de Ethereum dependerá em grande parte de sucesso de rollups de Layer 2 e adoção de aplicações de alta utilidade. Movimento de Tom Lee sugere que detentores de Ethereum precisam ser pacientes e focados em fundamentals em vez de preço de curto prazo. AMBCrypto" data-title="Ethereum Permanece Abaixo de 2 Mil Dólares Apesar de Declaração de Tom Lee sobre Ausência de Risco de Crise de Funding" data-share-url="https://ambcrypto.com/ethereum-zero-chance-of-a-funding-crisis-happening-for-eth-says-tom-lee/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Ethereum Permanece Abaixo de 2 Mil Dólares Apesar de Declaração de Tom Lee sobre Ausência de Risco de Crise de Funding</div>
+        <div class="news-summary">Ethereum continua lutando para manter níveis acima de dois mil dólares, apesar de analista Tom Lee declarar publicamente que existe zero chance de crise de funding acontecer com ETH. A declaração reconhece a solvência fundamental e força de base de código do Ethereum, mas não consegue impulsionar preço em contexto de demanda fraca de ETFs de Ethereum. Demanda de ETFs de spot Ethereum continua modesta comparado a ETFs de Bitcoin, sugerindo que investidores institucionais e varejistas estão priorizando Bitcoin neste ciclo. Pressão técnica em Ethereum reflete dinâmica mais ampla de altcoins perdendo força relativamente a Bitcoin em mercados bearish. Analista Lee está tentando fortalecer confiança nos fundamentos de Ethereum, mas mercado parece focado em dinâmicas de oferta/demanda de curto prazo. Esperado que Ethereum encontre suporte em faixas mais baixas se pressão vender continuar. Futuro de Ethereum dependerá em grande parte de sucesso de rollups de Layer 2 e adoção de aplicações de alta utilidade. Movimento de Tom Lee sugere que detentores de Ethereum precisam ser pacientes e focados em fundamentals em vez de preço de curto prazo.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/ethereum-zero-chance-of-a-funding-crisis-happening-for-eth-says-tom-lee/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Pudgy Penguins Expande Presença Varejista com Lançamento de Trading Cards na Target A Pudgy Penguins, franquia nascida de NFTs, está expandindo sua presença em varejo físico através do lançamento de trading cards da Série Vibes 3 em lojas Target em todo os Estados Unidos. O movimento marca passo significativo na estratégia da empresa de transcender puramente mundo digital e estabelecer presença tangível em comércio de massa. A expansão reflete sucesso crescente da Pudgy Penguins em monetização de sua comunidade e intellectual property através de múltiplos canais. Trading cards são meio tradicional de collectibles que está vivendo ressurgimento entre gerações mais novas, especialmente quando conectados a universos digitais. Presença em Target traz legitimidade ao brand e expõe Pudgy Penguins a audiência muito maior de consumers casuals não necessariamente familiarizados com NFTs. Modelo híbrido de físico e digital está emergindo como padrão de sucesso para projetos cripto nascidos em comunidades online. Sucesso da Pudgy Penguins pode incentivar outros projetos NFT a explorar expansão em varejo físico. Impacto esperado inclui aumento de reconhecimento de marca, geração de receita adicional e potencial aceleração do preço do token PENGUIN. Cointelegraph" data-title="Pudgy Penguins Expande Presença Varejista com Lançamento de Trading Cards na Target" data-share-url="https://cointelegraph.com/news/pudgy-penguins-expands-retail-footprint-with-target-trading-card-rollout?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">08:49</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Pudgy Penguins Expande Presença Varejista com Lançamento de Trading Cards na Target</div>
+        <div class="news-summary">A Pudgy Penguins, franquia nascida de NFTs, está expandindo sua presença em varejo físico através do lançamento de trading cards da Série Vibes 3 em lojas Target em todo os Estados Unidos. O movimento marca passo significativo na estratégia da empresa de transcender puramente mundo digital e estabelecer presença tangível em comércio de massa. A expansão reflete sucesso crescente da Pudgy Penguins em monetização de sua comunidade e intellectual property através de múltiplos canais. Trading cards são meio tradicional de collectibles que está vivendo ressurgimento entre gerações mais novas, especialmente quando conectados a universos digitais. Presença em Target traz legitimidade ao brand e expõe Pudgy Penguins a audiência muito maior de consumers casuals não necessariamente familiarizados com NFTs. Modelo híbrido de físico e digital está emergindo como padrão de sucesso para projetos cripto nascidos em comunidades online. Sucesso da Pudgy Penguins pode incentivar outros projetos NFT a explorar expansão em varejo físico. Impacto esperado inclui aumento de reconhecimento de marca, geração de receita adicional e potencial aceleração do preço do token PENGUIN.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/pudgy-penguins-expands-retail-footprint-with-target-trading-card-rollout?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="ENS Busca Recuperação de Zona de Demanda, Mas Sinais Bearish Persistem no Indicador de Momentum O token ENS (Ethereum Name Service) está buscando recuperação técnica de zonas de demanda identificadas por analistas, porém sinais bearish persistem nos indicadores de momentum que sugerem que queda mais profunda ainda não pode ser descartada. A luta entre compradores e vendedores está equilibrada, criando incerteza sobre direção de curto prazo. Zonas de demanda técnica frequentemente atraem compradores, mas se rompimento for violento, pode levar a queda ainda maior. Momentum indicators continuam mostrando fraqueza, sugerindo que força de compra pode estar exaurida. ENS como token de governança de serviço de nomes em Ethereum deveria beneficiar de maior adoção da rede, mas preço não está refletindo fundamentos positivos. Análise sugere que investidores devem aguardar confirmação de reversão antes de construir posições longas. Nível crítico de suporte para ENS será importante para determinar se queda para mais baixo continuará. Volatilidade esperada conforme mercado cripto enfrenta incertezas macro e micro. AMBCrypto" data-title="ENS Busca Recuperação de Zona de Demanda, Mas Sinais Bearish Persistem no Indicador de Momentum" data-share-url="https://ambcrypto.com/ens-eyes-rebound-from-demand-zone-but-bearish-signals-persist/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">ENS Busca Recuperação de Zona de Demanda, Mas Sinais Bearish Persistem no Indicador de Momentum</div>
+        <div class="news-summary">O token ENS (Ethereum Name Service) está buscando recuperação técnica de zonas de demanda identificadas por analistas, porém sinais bearish persistem nos indicadores de momentum que sugerem que queda mais profunda ainda não pode ser descartada. A luta entre compradores e vendedores está equilibrada, criando incerteza sobre direção de curto prazo. Zonas de demanda técnica frequentemente atraem compradores, mas se rompimento for violento, pode levar a queda ainda maior. Momentum indicators continuam mostrando fraqueza, sugerindo que força de compra pode estar exaurida. ENS como token de governança de serviço de nomes em Ethereum deveria beneficiar de maior adoção da rede, mas preço não está refletindo fundamentos positivos. Análise sugere que investidores devem aguardar confirmação de reversão antes de construir posições longas. Nível crítico de suporte para ENS será importante para determinar se queda para mais baixo continuará. Volatilidade esperada conforme mercado cripto enfrenta incertezas macro e micro.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/ens-eyes-rebound-from-demand-zone-but-bearish-signals-persist/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin Enfrenta Pressão de Dois Sinais Bearish Enquanto Baleia Saem e Traders de Opções Preparam-se para Queda Bitcoin está apresentando dois sinais técnicos bearish significativos conforme grandes detentores (baleias) estão se desfazendo de posições e traders de opções estão posicionando-se para movimento downside. A capitulação das baleias histórico frequentemente precede movimentos significativos de preço, geralmente para baixo. Análise técnica aponta possível rejeição em níveis de resistência importantes, sugerindo que força de compra pode estar enfraquecendo. Especulação de mercado sugere que Bitcoin pode testar suporte em faixa de 52 mil dólares se pressão bearish continuar. Dinâmica está ocorrendo apesar do movimento dovish do Fed, sugerindo que pressões técnicas e de sentimento podem estar superando fatores macroeconômicos positivos no curto prazo. Volume de negociação está contraído, indicando indecisão entre compradores e vendedores. Alguns analistas veem níveis mais baixos como oportunidade de compra de longo prazo, mas curto prazo parece desafiador. Nível crítico de suporte para Bitcoin é 52 mil dólares; rompimento abaixo criaria sinais ainda mais bearish. Investidores estão em estado de alerta, aguardando clareza sobre direção antes de posicionar-se significativamente. AMBCrypto" data-title="Bitcoin Enfrenta Pressão de Dois Sinais Bearish Enquanto Baleia Saem e Traders de Opções Preparam-se para Queda" data-share-url="https://ambcrypto.com/is-bitcoin-falling-to-52k-what-to-expect-as-2-bearish-signs-emerge/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Bitcoin Enfrenta Pressão de Dois Sinais Bearish Enquanto Baleia Saem e Traders de Opções Preparam-se para Queda</div>
+        <div class="news-summary">Bitcoin está apresentando dois sinais técnicos bearish significativos conforme grandes detentores (baleias) estão se desfazendo de posições e traders de opções estão posicionando-se para movimento downside. A capitulação das baleias histórico frequentemente precede movimentos significativos de preço, geralmente para baixo. Análise técnica aponta possível rejeição em níveis de resistência importantes, sugerindo que força de compra pode estar enfraquecendo. Especulação de mercado sugere que Bitcoin pode testar suporte em faixa de 52 mil dólares se pressão bearish continuar. Dinâmica está ocorrendo apesar do movimento dovish do Fed, sugerindo que pressões técnicas e de sentimento podem estar superando fatores macroeconômicos positivos no curto prazo. Volume de negociação está contraído, indicando indecisão entre compradores e vendedores. Alguns analistas veem níveis mais baixos como oportunidade de compra de longo prazo, mas curto prazo parece desafiador. Nível crítico de suporte para Bitcoin é 52 mil dólares; rompimento abaixo criaria sinais ainda mais bearish. Investidores estão em estado de alerta, aguardando clareza sobre direção antes de posicionar-se significativamente.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/is-bitcoin-falling-to-52k-what-to-expect-as-2-bearish-signs-emerge/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Aerodrome Finance Avança 14% e Defende Suporte de 0.42 Dólares Antes de Mover-se para Níveis-Chave Mais Altos O token AERO do Aerodrome Finance, plataforma de DEX em Optimism Layer 2, experimentou movimento positivo de 14%, defendendo com sucesso suporte crítico em 0.42 dólares e saltando para alta de 0.49 dólares no recente período de negociação. O movimento sugere que força de compra está ressurgindo após pressão recente, com novos compradores confortáveis em preços mais altos. Sucesso em defender suporte é sinal técnico bullish que histórico frequentemente precede movimentos de preço ainda maiores. Próximos níveis de resistência para AERO estão em foco conforme traders tentam determinar se movimento é sustentável ou apenas rally técnico. Aerodrome tem ganhado tração como DEX principal em Optimism conforme camada 2 cresce em utilidade e liquidez. Crescimento em volume de negociação de AERO acompanha movimento de preço, sugerindo engajamento real e não apenas manipulação. Se AERO conseguir romper acima de certos níveis de resistência chave, alvo de preço ainda mais alto pode ser alcançado. Investidores em protocolos de Layer 2 estão monitorando AERO como indicador de saúde do ecossistema Optimism mais amplo. AMBCrypto" data-title="Aerodrome Finance Avança 14% e Defende Suporte de 0.42 Dólares Antes de Mover-se para Níveis-Chave Mais Altos" data-share-url="https://ambcrypto.com/aerodrome-finance-surges-14-aero-eyes-these-key-levels-next/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Aerodrome Finance Avança 14% e Defende Suporte de 0.42 Dólares Antes de Mover-se para Níveis-Chave Mais Altos</div>
+        <div class="news-summary">O token AERO do Aerodrome Finance, plataforma de DEX em Optimism Layer 2, experimentou movimento positivo de 14%, defendendo com sucesso suporte crítico em 0.42 dólares e saltando para alta de 0.49 dólares no recente período de negociação. O movimento sugere que força de compra está ressurgindo após pressão recente, com novos compradores confortáveis em preços mais altos. Sucesso em defender suporte é sinal técnico bullish que histórico frequentemente precede movimentos de preço ainda maiores. Próximos níveis de resistência para AERO estão em foco conforme traders tentam determinar se movimento é sustentável ou apenas rally técnico. Aerodrome tem ganhado tração como DEX principal em Optimism conforme camada 2 cresce em utilidade e liquidez. Crescimento em volume de negociação de AERO acompanha movimento de preço, sugerindo engajamento real e não apenas manipulação. Se AERO conseguir romper acima de certos níveis de resistência chave, alvo de preço ainda mais alto pode ser alcançado. Investidores em protocolos de Layer 2 estão monitorando AERO como indicador de saúde do ecossistema Optimism mais amplo.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/aerodrome-finance-surges-14-aero-eyes-these-key-levels-next/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="TRON em 2026: Mais Usuários, Mais Confiança, Mas Posicionamento em Derivativos Mostra Cautela com Taxas Negativas TRON continua atraindo mais usuários e gerando confiança em comunidade durante 2026, porém dinâmica de posicionamento em mercados de derivativos está revelando cautela não dita, com taxa de funding negativa (funding rates) sugerindo excesso de posições short. Taxa de funding negativa historicamente indica que traders esperando queda estão dispostos a pagar taxa para manter posições, sugerindo otimismo relativo para TRON se reverter para positivo. Crescimento de usuários e transações em TRON reflete adoção contínua de rede como alternativa de baixo custo para Ethereum. Presença de JustLend e outros protocolos de DeFi em TRON está gerando atividade econômica e demand para token TRX. Entretanto, cautela em mercado de derivativos sugere que nem todos players estão confiantes em continuação de rally. Nível de suporte crítico para TRON será importante nos próximos meses conforme rede continua evoluindo. Impacto esperado inclui volatilidade contínua conforme forças otimistas (adoção) e pessimistas (macrocondições) entram em conflito. AMBCrypto" data-title="TRON em 2026: Mais Usuários, Mais Confiança, Mas Posicionamento em Derivativos Mostra Cautela com Taxas Negativas" data-share-url="https://ambcrypto.com/tron-in-2026-more-users-more-confidence-and-no-confidence/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">TRON em 2026: Mais Usuários, Mais Confiança, Mas Posicionamento em Derivativos Mostra Cautela com Taxas Negativas</div>
+        <div class="news-summary">TRON continua atraindo mais usuários e gerando confiança em comunidade durante 2026, porém dinâmica de posicionamento em mercados de derivativos está revelando cautela não dita, com taxa de funding negativa (funding rates) sugerindo excesso de posições short. Taxa de funding negativa historicamente indica que traders esperando queda estão dispostos a pagar taxa para manter posições, sugerindo otimismo relativo para TRON se reverter para positivo. Crescimento de usuários e transações em TRON reflete adoção contínua de rede como alternativa de baixo custo para Ethereum. Presença de JustLend e outros protocolos de DeFi em TRON está gerando atividade econômica e demand para token TRX. Entretanto, cautela em mercado de derivativos sugere que nem todos players estão confiantes em continuação de rally. Nível de suporte crítico para TRON será importante nos próximos meses conforme rede continua evoluindo. Impacto esperado inclui volatilidade contínua conforme forças otimistas (adoção) e pessimistas (macrocondições) entram em conflito.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/tron-in-2026-more-users-more-confidence-and-no-confidence/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Morgan Stanley Lança ETF de Spot SOL Mais Barato que Ofertas Anteriores, Potencialmente Impulsionando Demanda A Morgan Stanley lançou seu ETF de spot Solana (SOL) com fee entre as mais baixas do mercado, potencialmente impulsionando demanda institucional e varejista por SOL através de veículo regulado e de fácil acesso. Redução de fee em relação a outros provedores de ETF SOL torna Morgan Stanley competidor-chave no espaço de ETF de criptomoedas. Lançamento de novo ETF institucional geralmente correlaciona com influxo de capital em ativo subjacente, embora efeito não seja garantido. SOL tem mantido posição acima de 60 dólares, com suporte técnico em faixas de preço mais baixas. Morgan Stanley entrada no espaço de cripto ETFs é validação de maturidade do mercado cripto e interesse institucional crescente. Competição entre provedores de ETF está reduzindo fees e melhorando acessibilidade de criptomoedas para investidores tradicionais. Sucesso de Morgan Stanley's SOL ETF pode incentivar lançamentos adicionais de ETFs cripto de outras instituições financeiras estabelecidas. Impacto esperado inclui aumento de volume em SOL e potencial apreciação de preço conforme capital institucional entra. AMBCrypto" data-title="Morgan Stanley Lança ETF de Spot SOL Mais Barato que Ofertas Anteriores, Potencialmente Impulsionando Demanda" data-share-url="https://ambcrypto.com/cheapest-spot-sol-etf-ever-will-morgan-stanleys-debut-spur-the-altcoin/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">04:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Morgan Stanley Lança ETF de Spot SOL Mais Barato que Ofertas Anteriores, Potencialmente Impulsionando Demanda</div>
+        <div class="news-summary">A Morgan Stanley lançou seu ETF de spot Solana (SOL) com fee entre as mais baixas do mercado, potencialmente impulsionando demanda institucional e varejista por SOL através de veículo regulado e de fácil acesso. Redução de fee em relação a outros provedores de ETF SOL torna Morgan Stanley competidor-chave no espaço de ETF de criptomoedas. Lançamento de novo ETF institucional geralmente correlaciona com influxo de capital em ativo subjacente, embora efeito não seja garantido. SOL tem mantido posição acima de 60 dólares, com suporte técnico em faixas de preço mais baixas. Morgan Stanley entrada no espaço de cripto ETFs é validação de maturidade do mercado cripto e interesse institucional crescente. Competição entre provedores de ETF está reduzindo fees e melhorando acessibilidade de criptomoedas para investidores tradicionais. Sucesso de Morgan Stanley's SOL ETF pode incentivar lançamentos adicionais de ETFs cripto de outras instituições financeiras estabelecidas. Impacto esperado inclui aumento de volume em SOL e potencial apreciação de preço conforme capital institucional entra.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/cheapest-spot-sol-etf-ever-will-morgan-stanleys-debut-spur-the-altcoin/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Stellar e SushiSwap Parceria Abre Caminho para Reversão Técnica em XLM Após Pressão Recente Stellar e SushiSwap anunciaram partnership que integra protocolo de DEX SushiSwap com rede Stellar, criando novos casos de uso e potencial liquidez para token XLM. A parceria é significativa porque ambos protocolos trazem bases de usuários estabelecidas e tecnologia compatível para colaboração. Anúncio está gerando interesse de mercado e potencial para reversão técnica após pressão recente em preço de XLM. Integração SushiSwap-Stellar poderia atrair mais builders e aplicações para rede Stellar, historicamente focada em pagamentos transfronteiriços. Expansão de DeFi em Stellar poderia diversificar utilidade de rede além de seu caso de uso original. Mercado está respondendo positivamente ao anúncio, com traders posicionando-se para possível reversão de preço. Parceria exemplifica tendência de protocolos Layer 1 buscarem integração com DeFi para aumentar utilidade. Impacto esperado inclui maior atividade em Stellar, possível apreciação de XLM se reversão técnica se concretizar. AMBCrypto" data-title="Stellar e SushiSwap Parceria Abre Caminho para Reversão Técnica em XLM Após Pressão Recente" data-share-url="https://ambcrypto.com/is-reversal-on-the-cards-for-xlm-after-stellar-and-sushiswaps-latest-update/">
+        <div class="news-meta">
+          <span class="news-date">20 jun 2026</span>
+          <span class="news-time">03:30</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Stellar e SushiSwap Parceria Abre Caminho para Reversão Técnica em XLM Após Pressão Recente</div>
+        <div class="news-summary">Stellar e SushiSwap anunciaram partnership que integra protocolo de DEX SushiSwap com rede Stellar, criando novos casos de uso e potencial liquidez para token XLM. A parceria é significativa porque ambos protocolos trazem bases de usuários estabelecidas e tecnologia compatível para colaboração. Anúncio está gerando interesse de mercado e potencial para reversão técnica após pressão recente em preço de XLM. Integração SushiSwap-Stellar poderia atrair mais builders e aplicações para rede Stellar, historicamente focada em pagamentos transfronteiriços. Expansão de DeFi em Stellar poderia diversificar utilidade de rede além de seu caso de uso original. Mercado está respondendo positivamente ao anúncio, com traders posicionando-se para possível reversão de preço. Parceria exemplifica tendência de protocolos Layer 1 buscarem integração com DeFi para aumentar utilidade. Impacto esperado inclui maior atividade em Stellar, possível apreciação de XLM se reversão técnica se concretizar.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/is-reversal-on-the-cards-for-xlm-after-stellar-and-sushiswaps-latest-update/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
