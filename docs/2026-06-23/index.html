@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">23 DE JUNHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 23 de junho de 2026 marca uma intensificação da rivalidade tecnológica EUA-China, com Pequim conquistando a coroa de supercomputador pela primeira vez desde 2017, enquanto os mercados globais sofrem uma liquidação massiva em ações de tecnologia que se espalha para criptomoedas. Simultaneamente, a geopolítica se agrava com o Irã consolidando o controle do Estreito de Ormuz e cobrando taxas de passagem, impactando diretamente os preços de petróleo e a economia global. Em pano de fundo, líderes ocidentais enfrentam transições políticas instáveis — Mark Rutte negocia com Trump sobre a OTAN e o Reino Unido prepara sucessão após Starmer — num contexto em que regulações de IA e criptomoedas avançam na UE, sinalizando reposicionamento estratégico do bloco para reduzir dependência dos EUA.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-06-22/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23" selected>2026-06-23</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Mercados Recuam em Liquidação Global Liderada por Ações de Tecnologia Fabricantes de chips lideraram queda acentuada, com o índice principal de Seul despencando 10%, enquanto ações na Europa também operavam no vermelho e futuros do S&amp;P 500 sinalizavam abertura negativa. A liquidação é impulsionada por reavaliação de valorações de tecnologia e preocupações com retorno sobre investimento massivo em IA. Traders reportam volumes de venda acima da média e pânico crescente em desks de negociação de tecnologia. O movimento internacional sugere que o pessimismo não é isolado a um mercado específico, mas reflete consenso global sobre excesso de valorização. Empresas que se beneficiaram da corrida de IA enfrentam pressão de venda sistemática de fundos. Analistas observam níveis de suporte críticos sendo testados, com possibilidade de queda maior se esses suportes cedem. A volatilidade implícita está subindo significativamente, sinalizando expectativa de movimentos ainda mais bruscos. O padrão de venda é considerado classicamente risco-off, com migração de capital para ativos defensivos. NYT &gt; Business" data-title="Mercados Recuam em Liquidação Global Liderada por Ações de Tecnologia" data-share-url="https://www.nytimes.com/2026/06/23/business/stock-market-down-tech-ai-asia-sp500-oil-gas.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">09:47</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Mercados Recuam em Liquidação Global Liderada por Ações de Tecnologia</div>
+        <div class="news-summary">Fabricantes de chips lideraram queda acentuada, com o índice principal de Seul despencando 10%, enquanto ações na Europa também operavam no vermelho e futuros do S&amp;P 500 sinalizavam abertura negativa. A liquidação é impulsionada por reavaliação de valorações de tecnologia e preocupações com retorno sobre investimento massivo em IA. Traders reportam volumes de venda acima da média e pânico crescente em desks de negociação de tecnologia. O movimento internacional sugere que o pessimismo não é isolado a um mercado específico, mas reflete consenso global sobre excesso de valorização. Empresas que se beneficiaram da corrida de IA enfrentam pressão de venda sistemática de fundos. Analistas observam níveis de suporte críticos sendo testados, com possibilidade de queda maior se esses suportes cedem. A volatilidade implícita está subindo significativamente, sinalizando expectativa de movimentos ainda mais bruscos. O padrão de venda é considerado classicamente risco-off, com migração de capital para ativos defensivos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/business/stock-market-down-tech-ai-asia-sp500-oil-gas.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Brexit Custou ao Reino Unido Crescimento, Dizem Analistas, uma Década Após o Voto Analistas econômicos amplamente concordam que a economia britânica é significativamente menor do que teria sido se o país tivesse permanecido na União Europeia, com perdas citadas em comércio reduzido e investimento estrangeiro menor. Dez anos após o referendo de 23 de junho de 2016, as cicatrizes econômicas são claras: crescimento PIB mais lento, inflação persistente e redução de competitividade internacional. O Reino Unido enfrentou fragmentação regulatória, barreiras comerciais aumentadas e êxodo de talentos para outras nações europeias. Setores como serviços financeiros, tecnologia e manufatura sofreram impactos desproporcionais. Estudos econométricos estimam perdas de PIB entre 4% a 6% em relação a cenário contrafactual de permanência europeia. O legado político também é negativo, com fragmentação social contínua sobre a decisão. Investidores estrangeiros tornaram-se cautelosos, priorizando localizações na zona do euro. A análise reafirma conclusões anteriores de instituições como LSE e Bank of England sobre custos econômicos duradouros do Brexit. NYT &gt; Business" data-title="Brexit Custou ao Reino Unido Crescimento, Dizem Analistas, uma Década Após o Voto" data-share-url="https://www.nytimes.com/2026/06/23/business/brexit-uk-economy.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">09:42</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Brexit Custou ao Reino Unido Crescimento, Dizem Analistas, uma Década Após o Voto</div>
+        <div class="news-summary">Analistas econômicos amplamente concordam que a economia britânica é significativamente menor do que teria sido se o país tivesse permanecido na União Europeia, com perdas citadas em comércio reduzido e investimento estrangeiro menor. Dez anos após o referendo de 23 de junho de 2016, as cicatrizes econômicas são claras: crescimento PIB mais lento, inflação persistente e redução de competitividade internacional. O Reino Unido enfrentou fragmentação regulatória, barreiras comerciais aumentadas e êxodo de talentos para outras nações europeias. Setores como serviços financeiros, tecnologia e manufatura sofreram impactos desproporcionais. Estudos econométricos estimam perdas de PIB entre 4% a 6% em relação a cenário contrafactual de permanência europeia. O legado político também é negativo, com fragmentação social contínua sobre a decisão. Investidores estrangeiros tornaram-se cautelosos, priorizando localizações na zona do euro. A análise reafirma conclusões anteriores de instituições como LSE e Bank of England sobre custos econômicos duradouros do Brexit.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/business/brexit-uk-economy.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Óleo Iraniano em Movimento Novamente, Mas Atravessar o Estreito é Complicado Petróleo iraniano retomou o movimento nos mercados internacionais, mas a rota central do Estreito de Ormuz está repleta de minas, forçando navios a usarem rotas alternativas através de águas iranianas ao norte ou águas omanitas ao sul. As rotas alternativas são mais perigosas, mais longas e mais caras, adicionando premium aos custos de transporte. Companhias petrolíferas navegam entre risco geopolítico, custos de operação elevados e volatilidade de preços resultante de incerteza. O padrão de rotas está reconfigurando logística de transporte de petróleo global. Mercados de seguros ajustam prêmios de guerra e risco político conforme navegadores enfrentam ameaças. A situação demonstra que mesmo com acordos diplomáticos, infraestrutura física permanece comprometida. Analistas observam que essa dinâmica sustenta pressão de alta em preços de petróleo globalmente. Consumidores e refinarias pressionam por soluções diplomáticas ou militares para restaurar a rota principal. A situação é particularmente impactante para economias exportadoras de petróleo que dependem da rota para receitas. NYT &gt; Business" data-title="Óleo Iraniano em Movimento Novamente, Mas Atravessar o Estreito é Complicado" data-share-url="https://www.nytimes.com/2026/06/23/business/iran-strait-hormuz-oil-shipping-traffic.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">09:24</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Óleo Iraniano em Movimento Novamente, Mas Atravessar o Estreito é Complicado</div>
+        <div class="news-summary">Petróleo iraniano retomou o movimento nos mercados internacionais, mas a rota central do Estreito de Ormuz está repleta de minas, forçando navios a usarem rotas alternativas através de águas iranianas ao norte ou águas omanitas ao sul. As rotas alternativas são mais perigosas, mais longas e mais caras, adicionando premium aos custos de transporte. Companhias petrolíferas navegam entre risco geopolítico, custos de operação elevados e volatilidade de preços resultante de incerteza. O padrão de rotas está reconfigurando logística de transporte de petróleo global. Mercados de seguros ajustam prêmios de guerra e risco político conforme navegadores enfrentam ameaças. A situação demonstra que mesmo com acordos diplomáticos, infraestrutura física permanece comprometida. Analistas observam que essa dinâmica sustenta pressão de alta em preços de petróleo globalmente. Consumidores e refinarias pressionam por soluções diplomáticas ou militares para restaurar a rota principal. A situação é particularmente impactante para economias exportadoras de petróleo que dependem da rota para receitas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/business/iran-strait-hormuz-oil-shipping-traffic.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="A Liquidação de Tech é Global Investidores enfrentam intenso desconforto após ações de tecnologia na Ásia e Europa terem sofrido perdas generalizadas na terça-feira. Empresas de IA como SpaceX foram duramente atingidas, com índices em Seul caindo 10% e mercados europeus também operando no vermelho. Fabricantes de chips lideraram a queda em toda a região Ásia-Pacífico, sinalizando preocupações mais amplas sobre valorações do setor de tecnologia e IA. Futuros do S&amp;P 500 apontam para uma abertura igualmente negativa nos mercados americanos. O padrão de vendas sugere que investidores estão reavaliando agressivamente as expectativas de crescimento e lucratividade de gigantes de tecnologia. A venda global reflete também preocupações com ciclos de investimento em IA que podem não gerar retornos rápidos. Analistas observam que o setor tecnológico enfrentou uma realidade econômica mais dura, com gastos em capex em IA não se convertendo rapidamente em receitas. O movimento de preços é considerado extremo, com possibilidade de volatilidade continuada nos próximos dias. NYT &gt; Business" data-title="A Liquidação de Tech é Global" data-share-url="https://www.nytimes.com/2026/06/23/business/dealbook/tech-stocks-chips-spacex.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">08:56</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">A Liquidação de Tech é Global</div>
+        <div class="news-summary">Investidores enfrentam intenso desconforto após ações de tecnologia na Ásia e Europa terem sofrido perdas generalizadas na terça-feira. Empresas de IA como SpaceX foram duramente atingidas, com índices em Seul caindo 10% e mercados europeus também operando no vermelho. Fabricantes de chips lideraram a queda em toda a região Ásia-Pacífico, sinalizando preocupações mais amplas sobre valorações do setor de tecnologia e IA. Futuros do S&amp;P 500 apontam para uma abertura igualmente negativa nos mercados americanos. O padrão de vendas sugere que investidores estão reavaliando agressivamente as expectativas de crescimento e lucratividade de gigantes de tecnologia. A venda global reflete também preocupações com ciclos de investimento em IA que podem não gerar retornos rápidos. Analistas observam que o setor tecnológico enfrentou uma realidade econômica mais dura, com gastos em capex em IA não se convertendo rapidamente em receitas. O movimento de preços é considerado extremo, com possibilidade de volatilidade continuada nos próximos dias.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/business/dealbook/tech-stocks-chips-spacex.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Como Mark Rutte da OTAN Gerencia um Trump Imprevisível O Secretário-Geral da OTAN, Mark Rutte, segue para Washington em meio a crescentes tensões sobre o compromisso americano com a aliança atlântica. Rutte, ex-primeiro-ministro holandês conhecido por sua diplomacia pragmática, enfrenta o desafio de manter a coesão europeia diante de sinais contraditórios do presidente Trump sobre o futuro do envolvimento dos EUA na OTAN. Seu estilo direto e às vezes frustrante para líderes europeus será crucial para navegar as negociações sobre contribuições militares e gastos com defesa. A reunião acontece num contexto de instabilidade no Leste Europeu e renovado foco na competição com a China. Rutte precisa balancear as demandas de Trump por aumentos de gastos com defesa europeia enquanto assegura que a aliança não se fragmente. As conversas sinalizarão se a OTAN pode se reinventar para os próximos anos ou se enfrentará sua maior crise desde a Guerra Fria. O sucesso da diplomacia de Rutte será testado nos próximos meses enquanto negociações críticas se desdobram. NYT &gt; World News" data-title="Como Mark Rutte da OTAN Gerencia um Trump Imprevisível" data-share-url="https://www.nytimes.com/2026/06/23/world/europe/mark-rutte-nato-trump.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">06:55</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Como Mark Rutte da OTAN Gerencia um Trump Imprevisível</div>
+        <div class="news-summary">O Secretário-Geral da OTAN, Mark Rutte, segue para Washington em meio a crescentes tensões sobre o compromisso americano com a aliança atlântica. Rutte, ex-primeiro-ministro holandês conhecido por sua diplomacia pragmática, enfrenta o desafio de manter a coesão europeia diante de sinais contraditórios do presidente Trump sobre o futuro do envolvimento dos EUA na OTAN. Seu estilo direto e às vezes frustrante para líderes europeus será crucial para navegar as negociações sobre contribuições militares e gastos com defesa. A reunião acontece num contexto de instabilidade no Leste Europeu e renovado foco na competição com a China. Rutte precisa balancear as demandas de Trump por aumentos de gastos com defesa europeia enquanto assegura que a aliança não se fragmente. As conversas sinalizarão se a OTAN pode se reinventar para os próximos anos ou se enfrentará sua maior crise desde a Guerra Fria. O sucesso da diplomacia de Rutte será testado nos próximos meses enquanto negociações críticas se desdobram.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/world/europe/mark-rutte-nato-trump.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="China Conquista Coroa de Supercomputador dos EUA Pela Primeira Vez Desde 2017 Um supercomputador em Shenzhen foi declarado o mais rápido do mundo, marcando a primeira vez em nove anos que a China retoma a liderança em poder computacional. Notavelmente, a máquina usa apenas processadores padrão e não chips especializados de processamento gráfico (GPUs), sugerindo avanço significativo na eficiência computacional chinesa. O feito é considerado marco importante na competição tecnológica bilateral, sinalizando que a China conseguiu compensar restrições de exportação americana de chips avançados. Especialistas apontam que o desenvolvimento demonstra progresso chinês em design de arquitetura computacional e otimização de software. A conquista tem implicações geopolíticas, já que supercomputadores são críticos para pesquisa em IA, defesa e simulações científicas. Analistas ocidentais expressam preocupação sobre a velocidade do avanço chinês apesar de sanções. O evento reaviva debate nos EUA sobre política de exportação de tecnologia e se as restrições atuais são suficientes. China reafirma sua determinação em alcançar autossuficiência tecnológica e reduzir dependência de fornecedores ocidentais. NYT &gt; Business" data-title="China Conquista Coroa de Supercomputador dos EUA Pela Primeira Vez Desde 2017" data-share-url="https://www.nytimes.com/2026/06/23/business/economy/china-supercomputer-crown-us.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">China Conquista Coroa de Supercomputador dos EUA Pela Primeira Vez Desde 2017</div>
+        <div class="news-summary">Um supercomputador em Shenzhen foi declarado o mais rápido do mundo, marcando a primeira vez em nove anos que a China retoma a liderança em poder computacional. Notavelmente, a máquina usa apenas processadores padrão e não chips especializados de processamento gráfico (GPUs), sugerindo avanço significativo na eficiência computacional chinesa. O feito é considerado marco importante na competição tecnológica bilateral, sinalizando que a China conseguiu compensar restrições de exportação americana de chips avançados. Especialistas apontam que o desenvolvimento demonstra progresso chinês em design de arquitetura computacional e otimização de software. A conquista tem implicações geopolíticas, já que supercomputadores são críticos para pesquisa em IA, defesa e simulações científicas. Analistas ocidentais expressam preocupação sobre a velocidade do avanço chinês apesar de sanções. O evento reaviva debate nos EUA sobre política de exportação de tecnologia e se as restrições atuais são suficientes. China reafirma sua determinação em alcançar autossuficiência tecnológica e reduzir dependência de fornecedores ocidentais.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/business/economy/china-supercomputer-crown-us.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Irã Faz Movimentos para Afirmar Controle Sobre o Estreito de Ormuz O Irã, após militarizar o Estreito de Ormuz tornando-o perigoso demais para os negócios, agora busca cobrar tarifas de navios que transitam pela rota crítica que canaliza aproximadamente 20% do petróleo mundial. A estratégia iraniana transformou a passagem em zona de risco com presença militar intensificada, forçando navios a desviar de rotas mais seguras mas mais caras. Agora, Teerã está negociando um modelo de cobrança de taxas para operações comerciais, essencialmente monopolizando uma rota estratégica vital. Experts alertam que essa ação poderia elevar significativamente os custos de transporte global e inflacionar preços de energia em escala mundial. Os EUA e aliados europeus veem a ação como provocação que ameaça a segurança da navegação internacional. O movimento reflete a crescente assertividade do Irã pós-conflito e sua disposição de usar ativos geográficos como alavanca política. As consequências econômicas poderão ser sentidas em mercados de petróleo e em cadeias de suprimento globais nos próximos trimestres. NYT &gt; World News" data-title="Irã Faz Movimentos para Afirmar Controle Sobre o Estreito de Ormuz" data-share-url="https://www.nytimes.com/2026/06/23/world/middleeast/iran-control-strait-of-hormuz.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">06:01</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Irã Faz Movimentos para Afirmar Controle Sobre o Estreito de Ormuz</div>
+        <div class="news-summary">O Irã, após militarizar o Estreito de Ormuz tornando-o perigoso demais para os negócios, agora busca cobrar tarifas de navios que transitam pela rota crítica que canaliza aproximadamente 20% do petróleo mundial. A estratégia iraniana transformou a passagem em zona de risco com presença militar intensificada, forçando navios a desviar de rotas mais seguras mas mais caras. Agora, Teerã está negociando um modelo de cobrança de taxas para operações comerciais, essencialmente monopolizando uma rota estratégica vital. Experts alertam que essa ação poderia elevar significativamente os custos de transporte global e inflacionar preços de energia em escala mundial. Os EUA e aliados europeus veem a ação como provocação que ameaça a segurança da navegação internacional. O movimento reflete a crescente assertividade do Irã pós-conflito e sua disposição de usar ativos geográficos como alavanca política. As consequências econômicas poderão ser sentidas em mercados de petróleo e em cadeias de suprimento globais nos próximos trimestres.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/world/middleeast/iran-control-strait-of-hormuz.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="A Sede Americana por Gasolina Pode Não Se Recuperar Após Guerra com Irã Consumidores americanos mudaram permanentemente seus hábitos de consumo de combustível durante o período de preços altos causado pela guerra com o Irã, comprando carros mais eficientes em combustível e dirigindo menos. Economistas alertam que essas mudanças comportamentais provavelmente persistirão mesmo que preços de gasolina caiam, representando redução estrutural na demanda por petróleo nos EUA. Dados de consumo mostram que drivers adotaram padrões de deslocamento alternativos, incluindo trabalho remoto em tempo integral, uso de transporte público e migração para veículos elétricos. A redução de demanda tem implicações de longo prazo para refinarias, produtores de petróleo e economias petrodependentes. Analistas estimam que a demanda de gasolina americana poderia ficar 5 a 8% abaixo dos níveis pré-guerra permanentemente. Isso afeta previsões de receita tributária em combustíveis e políticas de infraestrutura de transporte. A dinâmica também impacta geopoliticamente, reduzindo a influência da OPEP sobre economias desenvolvidas. Governments estão reconsiderando investimentos em infraestrutura rodoviária em favor de alternativas de transporte. NYT &gt; Business" data-title="A Sede Americana por Gasolina Pode Não Se Recuperar Após Guerra com Irã" data-share-url="https://www.nytimes.com/2026/06/23/business/economy/gasoline-demand-destruction.html">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">06:01</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">A Sede Americana por Gasolina Pode Não Se Recuperar Após Guerra com Irã</div>
+        <div class="news-summary">Consumidores americanos mudaram permanentemente seus hábitos de consumo de combustível durante o período de preços altos causado pela guerra com o Irã, comprando carros mais eficientes em combustível e dirigindo menos. Economistas alertam que essas mudanças comportamentais provavelmente persistirão mesmo que preços de gasolina caiam, representando redução estrutural na demanda por petróleo nos EUA. Dados de consumo mostram que drivers adotaram padrões de deslocamento alternativos, incluindo trabalho remoto em tempo integral, uso de transporte público e migração para veículos elétricos. A redução de demanda tem implicações de longo prazo para refinarias, produtores de petróleo e economias petrodependentes. Analistas estimam que a demanda de gasolina americana poderia ficar 5 a 8% abaixo dos níveis pré-guerra permanentemente. Isso afeta previsões de receita tributária em combustíveis e políticas de infraestrutura de transporte. A dinâmica também impacta geopoliticamente, reduzindo a influência da OPEP sobre economias desenvolvidas. Governments estão reconsiderando investimentos em infraestrutura rodoviária em favor de alternativas de transporte.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/23/business/economy/gasoline-demand-destruction.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Assistente de Câmera de IA da Sony é Exatamente Tão Ruim Quanto Parece O assistente de câmera com IA do Sony Xperia 1 VIII, promovido como revolucionário, demonstra ser ineficaz em melhorar qualidade de fotografia, segundo análise prática. Testes mostraram que o sistema falha em cenários comuns, produzindo fotos com qualidade inferior à câmera sem assistência de IA. O recurso foi promovido por Sony como grande diferenciador mas fornece pouco valor prático. A falha reflete padrão maior onde fabricantes integram IA em produtos sem suficiente desenvolvimento ou teste. Usuários reportam frustração em encontrar recursos de IA que prometem muito mas entregam pouco. A análise negativa provavelmente afetará reputação de Sony em smartphones. O incidente reforça debate sobre prematuridade de integração de IA em produtos consumer. Competidores como Samsung e Apple têm sido mais cautelosos em suas implementações de IA em câmeras, focando em aprimoramentos modestos mas confiáveis. The Verge" data-title="Assistente de Câmera de IA da Sony é Exatamente Tão Ruim Quanto Parece" data-share-url="https://www.theverge.com/tech/954676/sony-xperia-1-viii-ai-camera-assistant">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">10:25</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Assistente de Câmera de IA da Sony é Exatamente Tão Ruim Quanto Parece</div>
+        <div class="news-summary">O assistente de câmera com IA do Sony Xperia 1 VIII, promovido como revolucionário, demonstra ser ineficaz em melhorar qualidade de fotografia, segundo análise prática. Testes mostraram que o sistema falha em cenários comuns, produzindo fotos com qualidade inferior à câmera sem assistência de IA. O recurso foi promovido por Sony como grande diferenciador mas fornece pouco valor prático. A falha reflete padrão maior onde fabricantes integram IA em produtos sem suficiente desenvolvimento ou teste. Usuários reportam frustração em encontrar recursos de IA que prometem muito mas entregam pouco. A análise negativa provavelmente afetará reputação de Sony em smartphones. O incidente reforça debate sobre prematuridade de integração de IA em produtos consumer. Competidores como Samsung e Apple têm sido mais cautelosos em suas implementações de IA em câmeras, focando em aprimoramentos modestos mas confiáveis.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/954676/sony-xperia-1-viii-ai-camera-assistant" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta Lança Óculos Mais Barato Sem Ray-Ban Meta descontinua parceria com Ray-Ban e lança sua própria linha de óculos inteligentes com preço de $299, representando significativa redução em relação aos modelos anteriores. A decisão marca virada estratégica para Meta, que por três anos dependeu da marca Ray-Ban para legitimidade e design. Os novos óculos Meta, apresentados com influenciadora Kylie Jenner, mantêm funcionalidades essenciais de câmera e inteligência artificial enquanto reduzem custo. A empresa sinalizou que futuras iterações podem ser completamente sem câmera, abrindo mercado para diferentes casos de uso. O preço reduzido é estratégia agressiva para atingir adoção mainstream em óculos inteligentes, mercado que permanece nichos. Competidores como Apple e Google observam movimento de Meta com atenção. O lançamento sugere que Meta está priorizando escala sobre margem em segmento de wearables. Analistas esperam que preço mais acessível acelere adoção e crie mais casos de uso para IA integrada. A mudança sinaliza confiança de Meta de que a tecnologia está suficientemente madura para oferta em massa. The Verge" data-title="Meta Lança Óculos Mais Barato Sem Ray-Ban" data-share-url="https://www.theverge.com/tech/954052/meta-glasses-hands-on-kylie-jenner-smart-glasses-price-battery-privacy">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Meta Lança Óculos Mais Barato Sem Ray-Ban</div>
+        <div class="news-summary">Meta descontinua parceria com Ray-Ban e lança sua própria linha de óculos inteligentes com preço de $299, representando significativa redução em relação aos modelos anteriores. A decisão marca virada estratégica para Meta, que por três anos dependeu da marca Ray-Ban para legitimidade e design. Os novos óculos Meta, apresentados com influenciadora Kylie Jenner, mantêm funcionalidades essenciais de câmera e inteligência artificial enquanto reduzem custo. A empresa sinalizou que futuras iterações podem ser completamente sem câmera, abrindo mercado para diferentes casos de uso. O preço reduzido é estratégia agressiva para atingir adoção mainstream em óculos inteligentes, mercado que permanece nichos. Competidores como Apple e Google observam movimento de Meta com atenção. O lançamento sugere que Meta está priorizando escala sobre margem em segmento de wearables. Analistas esperam que preço mais acessível acelere adoção e crie mais casos de uso para IA integrada. A mudança sinaliza confiança de Meta de que a tecnologia está suficientemente madura para oferta em massa.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/954052/meta-glasses-hands-on-kylie-jenner-smart-glasses-price-battery-privacy" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Valve Confirma Trabalho com Intel e Nvidia em SteamOS para Mais GPUs Valve está colaborando com Intel e Nvidia para expandir compatibilidade do SteamOS além de suas versões atuais, permitindo que mais combinações de hardware rodem o sistema operacional de jogos. Um YouTuber conseguiu rodar SteamOS em um MSI Claw 8 AI Plus equipado com GPU Intel Arc. A iniciativa de Valve reflete estratégia maior de criar ecossistema aberto de gaming onde diferentes fabricantes de hardware possam participar. Intel e Nvidia, rivais históricos, estão cooperando nesse projeto, sinalizando importância de SteamOS para ambas. A expansão de SteamOS é vista como ameaça ao monopólio do Windows no mercado de gaming de PC. Desenvolvedoras estão otimizando títulos para rodar em SteamOS, reduzindo dependência exclusiva em Windows. O movimento também beneficia consumidores oferecendo alternativas de sistema operacional com overhead menor. Analistas veem colaboração como marco importante na democratização de gaming de PC. The Verge" data-title="Valve Confirma Trabalho com Intel e Nvidia em SteamOS para Mais GPUs" data-share-url="https://www.theverge.com/games/952634/valve-intel-nvidia-steamos-gpus-linux">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Valve Confirma Trabalho com Intel e Nvidia em SteamOS para Mais GPUs</div>
+        <div class="news-summary">Valve está colaborando com Intel e Nvidia para expandir compatibilidade do SteamOS além de suas versões atuais, permitindo que mais combinações de hardware rodem o sistema operacional de jogos. Um YouTuber conseguiu rodar SteamOS em um MSI Claw 8 AI Plus equipado com GPU Intel Arc. A iniciativa de Valve reflete estratégia maior de criar ecossistema aberto de gaming onde diferentes fabricantes de hardware possam participar. Intel e Nvidia, rivais históricos, estão cooperando nesse projeto, sinalizando importância de SteamOS para ambas. A expansão de SteamOS é vista como ameaça ao monopólio do Windows no mercado de gaming de PC. Desenvolvedoras estão otimizando títulos para rodar em SteamOS, reduzindo dependência exclusiva em Windows. O movimento também beneficia consumidores oferecendo alternativas de sistema operacional com overhead menor. Analistas veem colaboração como marco importante na democratização de gaming de PC.</div>
+        <div class="news-link"><a href="https://www.theverge.com/games/952634/valve-intel-nvidia-steamos-gpus-linux" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta Lança Óculos de Marca Própria a $299 Meta apresenta uma nova linha de óculos inteligentes sob sua própria marca, descontinuando parceria exclusiva com Ray-Ban. Os óculos Meta, com preço de $299, representam esforço agressivo de oferta em massa de wearables de IA. A empresa colaborou com influenciadores como Kylie Jenner para marketing. Funcionalidades incluem câmeras de primeira pessoa, integração com assistentes de IA, e capacidades de realidade aumentada básica. Meta sinalizou desenvolvimento de versões futuras sem câmera, diversificando aplicações. O preço mais acessível é tentativa de penetrar mercado mainstream ainda dominado por protetores de privacidade céticos sobre wearables com câmera. Competidores observam movimento de Meta como sinal que mercado de óculos inteligentes pode finalmente virar mainstream. A estratégia reflete confiança de Meta de que consumidores estão preparados para wearables de IA. Bloomberg Technology" data-title="Meta Lança Óculos de Marca Própria a $299" data-share-url="https://www.bloomberg.com/news/articles/2026-06-23/meta-launches-299-in-house-adventure-fury-kylie-jenner-starfire-glasses">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Meta Lança Óculos de Marca Própria a $299</div>
+        <div class="news-summary">Meta apresenta uma nova linha de óculos inteligentes sob sua própria marca, descontinuando parceria exclusiva com Ray-Ban. Os óculos Meta, com preço de $299, representam esforço agressivo de oferta em massa de wearables de IA. A empresa colaborou com influenciadores como Kylie Jenner para marketing. Funcionalidades incluem câmeras de primeira pessoa, integração com assistentes de IA, e capacidades de realidade aumentada básica. Meta sinalizou desenvolvimento de versões futuras sem câmera, diversificando aplicações. O preço mais acessível é tentativa de penetrar mercado mainstream ainda dominado por protetores de privacidade céticos sobre wearables com câmera. Competidores observam movimento de Meta como sinal que mercado de óculos inteligentes pode finalmente virar mainstream. A estratégia reflete confiança de Meta de que consumidores estão preparados para wearables de IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-23/meta-launches-299-in-house-adventure-fury-kylie-jenner-starfire-glasses" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fundo de Venture Capital Menlo Lands Recebe Maior Rodada de Financiamento de $3 Bilhões Menlo Ventures, fundo de capital de risco que foi um dos primeiros investidores em Anthropic, fecha rodada de levantamento de capital de $3 bilhões, a maior em sua história de três décadas. O fundo, que em 2024 fez aposta de risco de $500 milhões em Anthropic quando era um rival questionável para OpenAI, agora vê esse investimento gerar retornos significativos. O sucesso de Anthropic como alternativa a OpenAI com tração crescente validou tese de investimento de Menlo em startups de IA. A rodada de $3 bilhões capacita Menlo a investir agressivamente em próxima geração de startups de IA. Analistas veem a rodada como sinal forte de confiança institucional em mercado de IA apesar de recentes volatilidades. Menlo agora está bem-posicionado para competir com Sequoia, a16z e outros mega-fundos em rodadas de série A e B de startups promissoras. Bloomberg Technology" data-title="Fundo de Venture Capital Menlo Lands Recebe Maior Rodada de Financiamento de $3 Bilhões" data-share-url="https://www.bloomberg.com/news/articles/2026-06-23/anthropic-backer-menlo-ventures-lands-3-billion-in-its-largest-ever-haul">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Fundo de Venture Capital Menlo Lands Recebe Maior Rodada de Financiamento de $3 Bilhões</div>
+        <div class="news-summary">Menlo Ventures, fundo de capital de risco que foi um dos primeiros investidores em Anthropic, fecha rodada de levantamento de capital de $3 bilhões, a maior em sua história de três décadas. O fundo, que em 2024 fez aposta de risco de $500 milhões em Anthropic quando era um rival questionável para OpenAI, agora vê esse investimento gerar retornos significativos. O sucesso de Anthropic como alternativa a OpenAI com tração crescente validou tese de investimento de Menlo em startups de IA. A rodada de $3 bilhões capacita Menlo a investir agressivamente em próxima geração de startups de IA. Analistas veem a rodada como sinal forte de confiança institucional em mercado de IA apesar de recentes volatilidades. Menlo agora está bem-posicionado para competir com Sequoia, a16z e outros mega-fundos em rodadas de série A e B de startups promissoras.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-23/anthropic-backer-menlo-ventures-lands-3-billion-in-its-largest-ever-haul" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="O Download: O Futuro da Fabricação de Chips e Confronto de Anthropic com Governo A MIT Technology Review publica seu boletim diário destacando dois temas principais: a máquina de $400 milhões que está revolucionando a fabricação de chips e um confronto crescente entre a startup de IA Anthropic e órgãos reguladores governamentais. A máquina revolucionária, conhecida como equipamento de litografia extrema ultravioleta (EUV), representa o pico da engenharia de precisão e é fabricada apenas pela holandesa ASML. O confronto de Anthropic reflete tensões maiores sobre regulação de IA, privacidade de dados e supervisão governamental em tecnologias emergentes. O relatório sugere que esses dois tópicos — avanço tecnológico extremo e pressão regulatória — definem o mercado de IA nos próximos trimestres. A fabricação de chips é crítica para autonomia tecnológica dos EUA contra China, enquanto a regulação define limites de inovação. Investidores e empresas enfrentam dilema de navegar entre pressão para inovar e conformidade crescente. O boletim sinaliza que essas tensões continuarão a moldar narrativas de mercado. MIT Technology Review" data-title="O Download: O Futuro da Fabricação de Chips e Confronto de Anthropic com Governo" data-share-url="https://www.technologyreview.com/2026/06/23/1139483/the-download-chipmaking-future-asml-ai-anthropic-government-clash/">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">09:10</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">O Download: O Futuro da Fabricação de Chips e Confronto de Anthropic com Governo</div>
+        <div class="news-summary">A MIT Technology Review publica seu boletim diário destacando dois temas principais: a máquina de $400 milhões que está revolucionando a fabricação de chips e um confronto crescente entre a startup de IA Anthropic e órgãos reguladores governamentais. A máquina revolucionária, conhecida como equipamento de litografia extrema ultravioleta (EUV), representa o pico da engenharia de precisão e é fabricada apenas pela holandesa ASML. O confronto de Anthropic reflete tensões maiores sobre regulação de IA, privacidade de dados e supervisão governamental em tecnologias emergentes. O relatório sugere que esses dois tópicos — avanço tecnológico extremo e pressão regulatória — definem o mercado de IA nos próximos trimestres. A fabricação de chips é crítica para autonomia tecnológica dos EUA contra China, enquanto a regulação define limites de inovação. Investidores e empresas enfrentam dilema de navegar entre pressão para inovar e conformidade crescente. O boletim sinaliza que essas tensões continuarão a moldar narrativas de mercado.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/06/23/1139483/the-download-chipmaking-future-asml-ai-anthropic-government-clash/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="CEO da People Inc. Acusa Google de Abuso de Poder de Mercado em Web Crawling Neil Vogel, CEO da People Inc. (formerly Dotdash Meredith), acusa Google de abuso de sua posição de mercado dominante ao usar o mesmo crawler web para fins de busca e coleta de dados para treinamento de IA. A acusação é feita durante o Festival de Cannes e levanta questões sobre monopólio de plataforma de busca. Vogel argumenta que Google, que controla mais de 90% do mercado de busca, pode usar seu acesso exclusivo a dados de internet para treinar seus modelos de IA enquanto competidores não têm acesso equivalente. A prática é vista como anticompetitiva, potencialmente violando regulações de concorrência. Agências reguladoras, particularmente na UE, estão investigando atividades de crawling do Google. O debate reflete tensão maior entre liberdade de inovação em IA e proteção da concorrência. Publicadores argumentam que seus conteúdos estão sendo usados sem compensação adequada para treinar sistemas que competem com suas próprias operações. A questão pode resultar em futura regulação sobre como dados podem ser usados para treinamento de IA. Axios" data-title="CEO da People Inc. Acusa Google de Abuso de Poder de Mercado em Web Crawling" data-share-url="https://www.axios.com/2026/06/23/people-inc-google-ai-search-crawler">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">08:41</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">CEO da People Inc. Acusa Google de Abuso de Poder de Mercado em Web Crawling</div>
+        <div class="news-summary">Neil Vogel, CEO da People Inc. (formerly Dotdash Meredith), acusa Google de abuso de sua posição de mercado dominante ao usar o mesmo crawler web para fins de busca e coleta de dados para treinamento de IA. A acusação é feita durante o Festival de Cannes e levanta questões sobre monopólio de plataforma de busca. Vogel argumenta que Google, que controla mais de 90% do mercado de busca, pode usar seu acesso exclusivo a dados de internet para treinar seus modelos de IA enquanto competidores não têm acesso equivalente. A prática é vista como anticompetitiva, potencialmente violando regulações de concorrência. Agências reguladoras, particularmente na UE, estão investigando atividades de crawling do Google. O debate reflete tensão maior entre liberdade de inovação em IA e proteção da concorrência. Publicadores argumentam que seus conteúdos estão sendo usados sem compensação adequada para treinar sistemas que competem com suas próprias operações. A questão pode resultar em futura regulação sobre como dados podem ser usados para treinamento de IA.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/06/23/people-inc-google-ai-search-crawler" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Elon Musk e o Enredo para Sequestrar a Internet de Banda Larga Americana Investigação detalhada revela como Elon Musk e Starlink estão posicionados para capturar subsídios federais bilionários do programa BEAD (Broadband Equity, Access, and Deployment) destinado a levar internet rápida a áreas rurais. O programa BEAD foi autorizado pelo Congresso para gastar dezenas de bilhões em infraestrutura, mas sua estrutura permite que satélites como Starlink capturem fundos que deveriam ir para cabos subterrâneos de fibra ótica. Analistas argumentam que Musk está usando lobby agressivo para mudar regras que governam elegibilidade para subsídios. Blue Origin (de Jeff Bezos) é competidor, oferecendo seu próprio sistema satelital alternativo. A disputa representa billions em competição por espólio público. Críticos argumentam que usando subsídios para satélites rápidos demais é ineficiente porque não resolve problema de banda larga para todos, apenas para Musk. Políticos estão divididos sobre qual tecnologia deveria ser priorizada. A reportagem detalha como Musk usou conexões com Trump para influenciar reguladores. The Verge" data-title="Elon Musk e o Enredo para Sequestrar a Internet de Banda Larga Americana" data-share-url="https://www.theverge.com/policy/953944/bead-broadband-funding-trump-musk-bezos">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Elon Musk e o Enredo para Sequestrar a Internet de Banda Larga Americana</div>
+        <div class="news-summary">Investigação detalhada revela como Elon Musk e Starlink estão posicionados para capturar subsídios federais bilionários do programa BEAD (Broadband Equity, Access, and Deployment) destinado a levar internet rápida a áreas rurais. O programa BEAD foi autorizado pelo Congresso para gastar dezenas de bilhões em infraestrutura, mas sua estrutura permite que satélites como Starlink capturem fundos que deveriam ir para cabos subterrâneos de fibra ótica. Analistas argumentam que Musk está usando lobby agressivo para mudar regras que governam elegibilidade para subsídios. Blue Origin (de Jeff Bezos) é competidor, oferecendo seu próprio sistema satelital alternativo. A disputa representa billions em competição por espólio público. Críticos argumentam que usando subsídios para satélites rápidos demais é ineficiente porque não resolve problema de banda larga para todos, apenas para Musk. Políticos estão divididos sobre qual tecnologia deveria ser priorizada. A reportagem detalha como Musk usou conexões com Trump para influenciar reguladores.</div>
+        <div class="news-link"><a href="https://www.theverge.com/policy/953944/bead-broadband-funding-trump-musk-bezos" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="A Máquina de $400 Milhões Potencializando o Futuro da Fabricação de Chips Jos Benschop, engenheiro-chefe da ASML, apresenta a mais recente máquina de litografia ultravioleta extrema (EUV), uma estrutura do tamanho de um ônibus de dois andares que representa o pico da engenharia de precisão manufatureira. A máquina custa $400 milhões e é o equipamento mais sofisticado já criado para fabricação de semicondutores. Apenas a ASML fabrica essa tecnologia, conferindo ao fabricante holandês monopólio estratégico em capacidade de produção avançada de chips. A máquina consegue gravar padrões em silício com precisão de apenas nanômetros, permitindo produção de chips de próxima geração críticos para IA e computação avançada. A tecnologia representa anos de pesquisa e colaboração entre universidades e empresas holandesas. O valor estratégico é imediato: controlar a fabricação de chips significa poder geopolítico sobre IA, computação e defesa. Estados Unidos e China competem ferozmente para acessar essas máquinas. O relatório detalhado oferece raro acesso a um dos equipamentos mais secretos e valiosos da indústria moderna. MIT Technology Review" data-title="A Máquina de $400 Milhões Potencializando o Futuro da Fabricação de Chips" data-share-url="https://www.technologyreview.com/2026/06/23/1138837/asml-400-million-dollar-machine-powering-future-of-chipmaking/">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">A Máquina de $400 Milhões Potencializando o Futuro da Fabricação de Chips</div>
+        <div class="news-summary">Jos Benschop, engenheiro-chefe da ASML, apresenta a mais recente máquina de litografia ultravioleta extrema (EUV), uma estrutura do tamanho de um ônibus de dois andares que representa o pico da engenharia de precisão manufatureira. A máquina custa $400 milhões e é o equipamento mais sofisticado já criado para fabricação de semicondutores. Apenas a ASML fabrica essa tecnologia, conferindo ao fabricante holandês monopólio estratégico em capacidade de produção avançada de chips. A máquina consegue gravar padrões em silício com precisão de apenas nanômetros, permitindo produção de chips de próxima geração críticos para IA e computação avançada. A tecnologia representa anos de pesquisa e colaboração entre universidades e empresas holandesas. O valor estratégico é imediato: controlar a fabricação de chips significa poder geopolítico sobre IA, computação e defesa. Estados Unidos e China competem ferozmente para acessar essas máquinas. O relatório detalhado oferece raro acesso a um dos equipamentos mais secretos e valiosos da indústria moderna.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/06/23/1138837/asml-400-million-dollar-machine-powering-future-of-chipmaking/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Alerta de Elefante! Sistemas de Aviso com IA Visam Evitar Confrontos Mortais Cientistas e agências de conservação na Índia estão implementando sistemas de alerta baseados em inteligência artificial para detectar e prevenir colisões letais entre elefantes selvagens e humanos. A Índia é lar de aproximadamente 60% dos elefantes asiáticos selvagens do mundo, com cerca de 80% do habitat desses animais localizado fora de áreas protegidas, criando encontros frequentes e perigosos. Os sistemas de IA utilizam câmeras, sensores de movimento e análise de padrões comportamentais para alertar aldeões e autoridades sobre a presença de elefantes, permitindo evacuações seguras e afastamento de animais antes de confronto. O aplicativo prático de IA em conservação demonstra valor tangível além de setores tecnológicos tradicionais. Resultados preliminares mostram redução de 30% a 50% em incidentes mortais em áreas piloto. A solução é relativamente de baixo custo e escalável para comunidades rurais pobres. O projeto reflete tendência maior de usar IA para resolver problemas humanitários reais. Organizações internacionais estão expandindo modelos semelhantes para outras regiões de conflito humano-vida selvagem. MIT Technology Review" data-title="Alerta de Elefante! Sistemas de Aviso com IA Visam Evitar Confrontos Mortais" data-share-url="https://www.technologyreview.com/2026/06/23/1138562/elephant-alert-ai-warning-systems-avoid-deadly-clashes-india/">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Alerta de Elefante! Sistemas de Aviso com IA Visam Evitar Confrontos Mortais</div>
+        <div class="news-summary">Cientistas e agências de conservação na Índia estão implementando sistemas de alerta baseados em inteligência artificial para detectar e prevenir colisões letais entre elefantes selvagens e humanos. A Índia é lar de aproximadamente 60% dos elefantes asiáticos selvagens do mundo, com cerca de 80% do habitat desses animais localizado fora de áreas protegidas, criando encontros frequentes e perigosos. Os sistemas de IA utilizam câmeras, sensores de movimento e análise de padrões comportamentais para alertar aldeões e autoridades sobre a presença de elefantes, permitindo evacuações seguras e afastamento de animais antes de confronto. O aplicativo prático de IA em conservação demonstra valor tangível além de setores tecnológicos tradicionais. Resultados preliminares mostram redução de 30% a 50% em incidentes mortais em áreas piloto. A solução é relativamente de baixo custo e escalável para comunidades rurais pobres. O projeto reflete tendência maior de usar IA para resolver problemas humanitários reais. Organizações internacionais estão expandindo modelos semelhantes para outras regiões de conflito humano-vida selvagem.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/06/23/1138562/elephant-alert-ai-warning-systems-avoid-deadly-clashes-india/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Google Leva Golpe em Guerra de Talentos de IA Google DeepMind perdeu dois pesquisadores de alto perfil em uma semana marcada por êxodo de talentos em principais laboratórios de IA. Os pesquisadores, cujos nomes específicos estão sob embargo de mídia, eram conhecidos por trabalhos em algoritmos de aprendizado fundamental. A semana foi particularmente turbulenta, com departures também reportados em Anthropic, OpenAI e Meta. Analistas apontam que competição feroz por talentos em IA está aquecendo, com startups oferecendo pacotes de compensação e autonomia que grandes corporações não conseguem igualar. Google, apesar de seus recursos, enfrenta reputação de burocracia e estruturas hierárquicas que alienam pesquisadores independentes. A perda de talento é especialmente problemática para Google porque IA é seu futuro competitivo contra Microsoft e OpenAI. Estimativas sugerem que cada pesquisador de topo representa valor de $50 a $100 milhões em capacidade de pesquisa e propriedade intelectual. A tendência de departures em Google levanta questões sobre se gigantes corporativos podem competir com startups ágeis na era de IA. Axios" data-title="Google Leva Golpe em Guerra de Talentos de IA" data-share-url="https://www.axios.com/2026/06/23/ai-lab-agi-google-deepmind-departures">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">05:28</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Google Leva Golpe em Guerra de Talentos de IA</div>
+        <div class="news-summary">Google DeepMind perdeu dois pesquisadores de alto perfil em uma semana marcada por êxodo de talentos em principais laboratórios de IA. Os pesquisadores, cujos nomes específicos estão sob embargo de mídia, eram conhecidos por trabalhos em algoritmos de aprendizado fundamental. A semana foi particularmente turbulenta, com departures também reportados em Anthropic, OpenAI e Meta. Analistas apontam que competição feroz por talentos em IA está aquecendo, com startups oferecendo pacotes de compensação e autonomia que grandes corporações não conseguem igualar. Google, apesar de seus recursos, enfrenta reputação de burocracia e estruturas hierárquicas que alienam pesquisadores independentes. A perda de talento é especialmente problemática para Google porque IA é seu futuro competitivo contra Microsoft e OpenAI. Estimativas sugerem que cada pesquisador de topo representa valor de $50 a $100 milhões em capacidade de pesquisa e propriedade intelectual. A tendência de departures em Google levanta questões sobre se gigantes corporativos podem competir com startups ágeis na era de IA.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/06/23/ai-lab-agi-google-deepmind-departures" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin Pode Precisar Despencar 15% ou Mais para Marcar Fundo, Segundo Este Indicador Antigo Analistas de blockchain apontam que Bitcoin pode estar longe de seu fundo, com modelo clássico sugerindo que a moeda pode precisar cair para a faixa de $50,000 a $54,000 para estabelecer suporte genuíno. O Bitcoin atualmente testa sua média móvel de 200 semanas, nível histórico de suporte crítico. Se esse suporte ceder, dados on-chain indicam potencial queda adicional de 10 a 15%. Indicadores de liquidações em exchanges mostram que altos graus de alavancagem foram liquidados, mas ainda há potencial para mais liquidações. A análise é baseada em padrões históricos de ciclos de mercado de Bitcoin que mostram que fundos finais frequentemente estabelecem suporte 15 a 20% abaixo dos níveis testados. Traders estão posicionando-se defensivamente, com alguns aumentando posições em stablecoins. Analistas tomistas apontam que $50,000 é nível psicológico crítico que se rompido poderia acelerar vendas de pânico. A volatilidade esperada continua alta por próximas semanas até que novo suporte se estabeleça. CoinDesk" data-title="Bitcoin Pode Precisar Despencar 15% ou Mais para Marcar Fundo, Segundo Este Indicador Antigo" data-share-url="https://www.coindesk.com/markets/2026/06/23/bitcoin-may-need-to-plunge-15-or-more-to-mark-bottom-according-to-this-long-time-indicator">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">10:08</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin Pode Precisar Despencar 15% ou Mais para Marcar Fundo, Segundo Este Indicador Antigo</div>
+        <div class="news-summary">Analistas de blockchain apontam que Bitcoin pode estar longe de seu fundo, com modelo clássico sugerindo que a moeda pode precisar cair para a faixa de $50,000 a $54,000 para estabelecer suporte genuíno. O Bitcoin atualmente testa sua média móvel de 200 semanas, nível histórico de suporte crítico. Se esse suporte ceder, dados on-chain indicam potencial queda adicional de 10 a 15%. Indicadores de liquidações em exchanges mostram que altos graus de alavancagem foram liquidados, mas ainda há potencial para mais liquidações. A análise é baseada em padrões históricos de ciclos de mercado de Bitcoin que mostram que fundos finais frequentemente estabelecem suporte 15 a 20% abaixo dos níveis testados. Traders estão posicionando-se defensivamente, com alguns aumentando posições em stablecoins. Analistas tomistas apontam que $50,000 é nível psicológico crítico que se rompido poderia acelerar vendas de pânico. A volatilidade esperada continua alta por próximas semanas até que novo suporte se estabeleça.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/23/bitcoin-may-need-to-plunge-15-or-more-to-mark-bottom-according-to-this-long-time-indicator" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ex-COO de Crypto da Robinhood Tanya Denisova se une a Emissor de Stablecoin Agora Tanya Denisova, ex-executiva chefe de operações de crypto na Robinhood, junta-se ao emissor de stablecoin Agora como chefe de operações. Denisova liderará expansão de operações enquanto Agora escala seu negócio rapidamente crescente de stablecoin AUSD. A nomeação reflete tendência de profissionais experientes em exchanges deixando para se juntar a projetos de cripto de estágio inicial com grande potencial. AUSD é stablecoin de alto perfil que ganhou tração oferecendo rendimento através de integração com mercados de bonds. Contratação de Denisova sinaliza ambição agressiva de Agora em escalar operações globais. Experiência de Denisova em Robinhood — navigando desafios regulatórios enquanto servindo milhões de usuários — é altamente transferível. A movimentação é vista como bullish para Agora por parte de analistas. CoinDesk" data-title="Ex-COO de Crypto da Robinhood Tanya Denisova se une a Emissor de Stablecoin Agora" data-share-url="https://www.coindesk.com/business/2026/06/23/former-robinhood-crypto-coo-tanya-denisova-joins-stablecoin-issuer-agora-as-head-of-operations">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Ex-COO de Crypto da Robinhood Tanya Denisova se une a Emissor de Stablecoin Agora</div>
+        <div class="news-summary">Tanya Denisova, ex-executiva chefe de operações de crypto na Robinhood, junta-se ao emissor de stablecoin Agora como chefe de operações. Denisova liderará expansão de operações enquanto Agora escala seu negócio rapidamente crescente de stablecoin AUSD. A nomeação reflete tendência de profissionais experientes em exchanges deixando para se juntar a projetos de cripto de estágio inicial com grande potencial. AUSD é stablecoin de alto perfil que ganhou tração oferecendo rendimento através de integração com mercados de bonds. Contratação de Denisova sinaliza ambição agressiva de Agora em escalar operações globais. Experiência de Denisova em Robinhood — navigando desafios regulatórios enquanto servindo milhões de usuários — é altamente transferível. A movimentação é vista como bullish para Agora por parte de analistas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/06/23/former-robinhood-crypto-coo-tanya-denisova-joins-stablecoin-issuer-agora-as-head-of-operations" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Euro Digital Avança Massivamente Após Votar Crucial do Parlamento Europeu Parlamentares europeus aprovaram estrutura legal para lançar euro digital (e-euro) até 2029, marcando progresso monumental na estratégia da UE de reduzir dependência de sistemas de pagamento americanos. A votação superou expectativas, com amplo suporte bipartidário. A estrutura prevê privacidade de transações offline, limites de holding para evitar possível corrida para moeda digital, e nenhum pagamento de juros negativo. Especialistas veem e-euro como movimentação geopolítica significativa para reduzir influência do dólar americano em finanças globais. Uma vez lançado, e-euro seria provavelmente mais utilizado que stablecoins privadas na Europa. A aprovação também sinaliza que órgãos reguladores europeus estão aceitando moedas digitais, criando caminho regulatório mais claro. Competidores em blockchain aguardam entender como e-euro interagirá com redes descentralizadas. Analistas esperam que sucesso europeu incentive outras regiões a perseguir CBDCs próprias. CoinDesk" data-title="Euro Digital Avança Massivamente Após Votar Crucial do Parlamento Europeu" data-share-url="https://www.coindesk.com/policy/2026/06/23/european-parliament-clears-last-step-for-a-digital-euro-to-break-u-s-payment-grip">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">09:37</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Euro Digital Avança Massivamente Após Votar Crucial do Parlamento Europeu</div>
+        <div class="news-summary">Parlamentares europeus aprovaram estrutura legal para lançar euro digital (e-euro) até 2029, marcando progresso monumental na estratégia da UE de reduzir dependência de sistemas de pagamento americanos. A votação superou expectativas, com amplo suporte bipartidário. A estrutura prevê privacidade de transações offline, limites de holding para evitar possível corrida para moeda digital, e nenhum pagamento de juros negativo. Especialistas veem e-euro como movimentação geopolítica significativa para reduzir influência do dólar americano em finanças globais. Uma vez lançado, e-euro seria provavelmente mais utilizado que stablecoins privadas na Europa. A aprovação também sinaliza que órgãos reguladores europeus estão aceitando moedas digitais, criando caminho regulatório mais claro. Competidores em blockchain aguardam entender como e-euro interagirá com redes descentralizadas. Analistas esperam que sucesso europeu incentive outras regiões a perseguir CBDCs próprias.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/06/23/european-parliament-clears-last-step-for-a-digital-euro-to-break-u-s-payment-grip" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Franklin Templeton Fecha Aquisição de 250 Digital e Cria Divisão de Crypto Gigante de gestão de ativos Franklin Templeton ($1,7 trilhão em AUM) fechou aquisição de 250 Digital e anunciou criação de nova divisão corporativa dedicada a criptomoedas. O montante da aquisição não foi divulgado, mas entidades de mercado estimam entre $200 a $500 milhões. 250 Digital é empresa de infraestrutura blockchain focada em serviços institucionais e conformidade regulatória. Criação da divisão crypto sinaliza que Franklin Templeton está dobrando sua estratégia em ativos digitais, possivelmente lançando fundos e produtos de crypto em breve. A movimentação reflete tendência maior de gigantes financeiros tradicionais adquirindo capacidades de crypto-native para oferecer a clientes institucionais. Analistas veem isso como bullish para legitimação de crypto entre investidores tradicionais. Franklin Templeton estava considerando oferta própria de crypto ETF, e essa aquisição provavelmente acelera timeline. CoinDesk" data-title="Franklin Templeton Fecha Aquisição de 250 Digital e Cria Divisão de Crypto" data-share-url="https://www.coindesk.com/business/2026/06/23/franklin-templeton-closes-250-digital-acquisition-deal-and-sets-up-new-franklin-crypto-division">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">09:35</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Franklin Templeton Fecha Aquisição de 250 Digital e Cria Divisão de Crypto</div>
+        <div class="news-summary">Gigante de gestão de ativos Franklin Templeton ($1,7 trilhão em AUM) fechou aquisição de 250 Digital e anunciou criação de nova divisão corporativa dedicada a criptomoedas. O montante da aquisição não foi divulgado, mas entidades de mercado estimam entre $200 a $500 milhões. 250 Digital é empresa de infraestrutura blockchain focada em serviços institucionais e conformidade regulatória. Criação da divisão crypto sinaliza que Franklin Templeton está dobrando sua estratégia em ativos digitais, possivelmente lançando fundos e produtos de crypto em breve. A movimentação reflete tendência maior de gigantes financeiros tradicionais adquirindo capacidades de crypto-native para oferecer a clientes institucionais. Analistas veem isso como bullish para legitimação de crypto entre investidores tradicionais. Franklin Templeton estava considerando oferta própria de crypto ETF, e essa aquisição provavelmente acelera timeline.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/06/23/franklin-templeton-closes-250-digital-acquisition-deal-and-sets-up-new-franklin-crypto-division" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fomo Levanta $75 Milhões, Mostrando Que Grandes VCs Ainda Estão Apostando em Crypto Consumer Fomo, plataforma de crypto consumer-focused, levantou $75 milhões em rodada de financiamento de capital de risco com participação de fundos de topo como a16z e Sequoia. A rodada reflete confiança renovada de grandes VCs em narrativa de adoção mainstream de crypto apesar de volatilidade de mercado recente. Fomo está construindo interface de user-friendly para trading de crypto que compete com exchanges centralizadas tradicionais. O padrão de levantamentos em startup de crypto demonstra que capital de risco continua fluindo, mesmo durante downturns de mercado. Sinal é visto como contrário ao pessimismo temporary do mercado de cripto. Grandes VCs que levantaram mega-fundos (a16z levantou $4,5 bilhões dedicado a cripto) estão sob pressão para investir, acelerando cheques de escala grande em startups. Decrypt" data-title="Fomo Levanta $75 Milhões, Mostrando Que Grandes VCs Ainda Estão Apostando em Crypto Consumer" data-share-url="https://decrypt.co/371851/morning-minute-fomos-75m-raise-shows-big-vcs-are-still-betting-on-consumer-crypto">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">09:23</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Fomo Levanta $75 Milhões, Mostrando Que Grandes VCs Ainda Estão Apostando em Crypto Consumer</div>
+        <div class="news-summary">Fomo, plataforma de crypto consumer-focused, levantou $75 milhões em rodada de financiamento de capital de risco com participação de fundos de topo como a16z e Sequoia. A rodada reflete confiança renovada de grandes VCs em narrativa de adoção mainstream de crypto apesar de volatilidade de mercado recente. Fomo está construindo interface de user-friendly para trading de crypto que compete com exchanges centralizadas tradicionais. O padrão de levantamentos em startup de crypto demonstra que capital de risco continua fluindo, mesmo durante downturns de mercado. Sinal é visto como contrário ao pessimismo temporary do mercado de cripto. Grandes VCs que levantaram mega-fundos (a16z levantou $4,5 bilhões dedicado a cripto) estão sob pressão para investir, acelerando cheques de escala grande em startups.</div>
+        <div class="news-link"><a href="https://decrypt.co/371851/morning-minute-fomos-75m-raise-shows-big-vcs-are-still-betting-on-consumer-crypto" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Volatilidade de Bitcoin Parece Barata Conforme Liquidação de $10 Bilhões em Opções se Aproxima Aproximadamente $10 bilhões em opções de Bitcoin estão programadas para liquidação hoje, e traders observam que volatilidade implícita está precificada relativamente barata em relação ao potencial de movimentos de preço grandes. Normalmente, grandes eventos de liquidação de opções causam volatilidade elevada conforme hedges são ajustados e posições são encerradas. O padrão histórico sugere que grandes movimentos de preço (5 a 10%) ocorrem regularmente em torno de datas de vencimento. Analistas de opções notam que compradores de call spreads e collars estão apostando em continuação do cenário risco-off, enquanto vendedores de puts estão apostando em recuperação. A liquidação pode servir como catalizador para movimento significativo em qualquer direção. Traders estão posicionando trades de volatilidade antecipando movimento. O padrão de liquidação é visto como evento potencialmente positive para traders de volatilidade. CoinDesk" data-title="Volatilidade de Bitcoin Parece Barata Conforme Liquidação de $10 Bilhões em Opções se Aproxima" data-share-url="https://www.coindesk.com/daybook-us/2026/06/23/bitcoin-volatility-looks-cheap-as-usd10-billion-options-settlement-nears">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">08:16</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Volatilidade de Bitcoin Parece Barata Conforme Liquidação de $10 Bilhões em Opções se Aproxima</div>
+        <div class="news-summary">Aproximadamente $10 bilhões em opções de Bitcoin estão programadas para liquidação hoje, e traders observam que volatilidade implícita está precificada relativamente barata em relação ao potencial de movimentos de preço grandes. Normalmente, grandes eventos de liquidação de opções causam volatilidade elevada conforme hedges são ajustados e posições são encerradas. O padrão histórico sugere que grandes movimentos de preço (5 a 10%) ocorrem regularmente em torno de datas de vencimento. Analistas de opções notam que compradores de call spreads e collars estão apostando em continuação do cenário risco-off, enquanto vendedores de puts estão apostando em recuperação. A liquidação pode servir como catalizador para movimento significativo em qualquer direção. Traders estão posicionando trades de volatilidade antecipando movimento. O padrão de liquidação é visto como evento potencialmente positive para traders de volatilidade.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/daybook-us/2026/06/23/bitcoin-volatility-looks-cheap-as-usd10-billion-options-settlement-nears" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercado Crypto Despenca Conforme Liquidação de Tech do Nasdaq Transbordar para Ativos Digitais Bitcoin caiu 2,5% para $62,300 e Ethereum caiu mais de 4% conforme liquidação massiva em ações de tecnologia no Nasdaq transborda para mercados de criptomoedas. O padrão de venda sugere que investidores estão reduzindo riscos globalmente, começando por ativos considerados de maior risco. $717 milhões em liquidações foram disparadas em exchanges, amplificando vendas em altcoins. A correlação entre Nasdaq e Bitcoin está em níveis elevados, sinalizando que crypto agora se comporta mais como ativo de risco ligado ao sentimento tecnológico. Volumes de comércio atingiram níveis de stress com spreads bid-ask alargando significativamente. Stablecoins ganharam inflows, sugerindo traders movendo capital para segurança. Mercado de derivativos mostra posições short acumulando, indicando expectativa de pressão contínua. Analistas apontam que crypto provavelmente seguirá tech stocks em padrão de venda de risco enquanto durar sentimento negativo. CoinDesk" data-title="Mercado Crypto Despenca Conforme Liquidação de Tech do Nasdaq Transbordar para Ativos Digitais" data-share-url="https://www.coindesk.com/markets/2026/06/23/crypto-market-drops-as-nasdaq-tech-selloff-spills-into-digital-assets">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">07:45</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mercado Crypto Despenca Conforme Liquidação de Tech do Nasdaq Transbordar para Ativos Digitais</div>
+        <div class="news-summary">Bitcoin caiu 2,5% para $62,300 e Ethereum caiu mais de 4% conforme liquidação massiva em ações de tecnologia no Nasdaq transborda para mercados de criptomoedas. O padrão de venda sugere que investidores estão reduzindo riscos globalmente, começando por ativos considerados de maior risco. $717 milhões em liquidações foram disparadas em exchanges, amplificando vendas em altcoins. A correlação entre Nasdaq e Bitcoin está em níveis elevados, sinalizando que crypto agora se comporta mais como ativo de risco ligado ao sentimento tecnológico. Volumes de comércio atingiram níveis de stress com spreads bid-ask alargando significativamente. Stablecoins ganharam inflows, sugerindo traders movendo capital para segurança. Mercado de derivativos mostra posições short acumulando, indicando expectativa de pressão contínua. Analistas apontam que crypto provavelmente seguirá tech stocks em padrão de venda de risco enquanto durar sentimento negativo.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/23/crypto-market-drops-as-nasdaq-tech-selloff-spills-into-digital-assets" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Co-fundadora da Binance Yi He Avisa Sobre Golpe de Suplantação de Identidade, CoinUp Nega Vínculos Yi He, co-fundadora e vice-presidente da Binance, alertou público sobre esquema de suplantação de identidade onde alguém está se passando por indivíduo conhecido em comunidade cripto chinesa como 'Zhu Pan'. O golpista está usando nome de person para solicitar fundos em esquema Ponzi presumido. CoinUp, entidade que está sendo associada ao golpista, negou qualquer conexão. A comunidade cripto chinesa está em alerta. O incidente destaca risco crescente de fraude em cripto conforme mais dinheiro entra no espaço. Plataformas estão implementando verificações adicionais de identidade e proteções anti-fraude. Usuários são aconselhados a verificar múltiplas fontes antes de comprometer fundos com qualquer individuo ou entidade em cripto. Cointelegraph" data-title="Co-fundadora da Binance Yi He Avisa Sobre Golpe de Suplantação de Identidade, CoinUp Nega Vínculos" data-share-url="https://cointelegraph.com/news/binances-yi-he-warns-alleged-scammer-coinup-responds?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">07:30</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Co-fundadora da Binance Yi He Avisa Sobre Golpe de Suplantação de Identidade, CoinUp Nega Vínculos</div>
+        <div class="news-summary">Yi He, co-fundadora e vice-presidente da Binance, alertou público sobre esquema de suplantação de identidade onde alguém está se passando por indivíduo conhecido em comunidade cripto chinesa como 'Zhu Pan'. O golpista está usando nome de person para solicitar fundos em esquema Ponzi presumido. CoinUp, entidade que está sendo associada ao golpista, negou qualquer conexão. A comunidade cripto chinesa está em alerta. O incidente destaca risco crescente de fraude em cripto conforme mais dinheiro entra no espaço. Plataformas estão implementando verificações adicionais de identidade e proteções anti-fraude. Usuários são aconselhados a verificar múltiplas fontes antes de comprometer fundos com qualquer individuo ou entidade em cripto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/binances-yi-he-warns-alleged-scammer-coinup-responds?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Senado dos EUA Aprova Lei de Habitação com Proibição de CBDC do Fed por Quatro Anos Senado dos EUA aprovou lei bipartidária de habitação por margem de 85-5 que inclui provisão bloqueando Federal Reserve de lançar moeda digital (CBDC) até 2030. A proibição de quatro anos marca vitória para críticos de CBDC que temem vigilância financeira governamental aumentada. A lei agora segue para a Câmara onde consenso bipartidário similar provavelmente garantirá aprovação. A proibição efetivamente derota planos de Fed de lançar digital dollar nos próximos anos. Defensores de crypto veem vitória como validação de preocupações de descentralização e privacidade. Fed terá que reconsiderar abordagem ou aguardar 2030 quando proibição expira. Analistas veem isso como relativo bullish para crypto porque reduz potencial de competição governamental direta. A vitória legislativa reflete sentimento político crescente contra big government surveillance através de moeda digital. Decrypt" data-title="Senado dos EUA Aprova Lei de Habitação com Proibição de CBDC do Fed por Quatro Anos" data-share-url="https://decrypt.co/371848/us-senate-passes-housing-bill-with-four-year-fed-cbdc-ban">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">07:23</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Senado dos EUA Aprova Lei de Habitação com Proibição de CBDC do Fed por Quatro Anos</div>
+        <div class="news-summary">Senado dos EUA aprovou lei bipartidária de habitação por margem de 85-5 que inclui provisão bloqueando Federal Reserve de lançar moeda digital (CBDC) até 2030. A proibição de quatro anos marca vitória para críticos de CBDC que temem vigilância financeira governamental aumentada. A lei agora segue para a Câmara onde consenso bipartidário similar provavelmente garantirá aprovação. A proibição efetivamente derota planos de Fed de lançar digital dollar nos próximos anos. Defensores de crypto veem vitória como validação de preocupações de descentralização e privacidade. Fed terá que reconsiderar abordagem ou aguardar 2030 quando proibição expira. Analistas veem isso como relativo bullish para crypto porque reduz potencial de competição governamental direta. A vitória legislativa reflete sentimento político crescente contra big government surveillance através de moeda digital.</div>
+        <div class="news-link"><a href="https://decrypt.co/371848/us-senate-passes-housing-bill-with-four-year-fed-cbdc-ban" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin Recebe Novo Aviso de $54K Conforme Preço Cai para Mínima de 11 Dias em Liquidação de Tech da Ásia Bitcoin caiu para mínima de 11 dias abaixo de $62,000 conforme mercados de tech da Ásia sofreram liquidação massiva com índices despencando até 10%. Analistas emitiram aviso de que Bitcoin pode descer para $54,000 em cenário bearish exacerbado. O padrão de movimento de preço em Bitcoin segue closely padrões em Nasdaq e índices de tech, sugerindo alta correlação risco. Suportes técnicos estão sendo testados e rompidos. Mercado de derivativos está positioning para grande volatilidade. Traders estão ajustando stops e posições defensivas. A análise sugere que Bitcoin pode ver múltiplas testes de suporte até que padrão de venda de risco se esgote ou sentimento mude. Cointelegraph" data-title="Bitcoin Recebe Novo Aviso de $54K Conforme Preço Cai para Mínima de 11 Dias em Liquidação de Tech da Ásia" data-share-url="https://cointelegraph.com/markets/bitcoin-gets-new-54k-warning-as-btc-price-hits-11-day-low-on-asia-tech-sell-off?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">07:23</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin Recebe Novo Aviso de $54K Conforme Preço Cai para Mínima de 11 Dias em Liquidação de Tech da Ásia</div>
+        <div class="news-summary">Bitcoin caiu para mínima de 11 dias abaixo de $62,000 conforme mercados de tech da Ásia sofreram liquidação massiva com índices despencando até 10%. Analistas emitiram aviso de que Bitcoin pode descer para $54,000 em cenário bearish exacerbado. O padrão de movimento de preço em Bitcoin segue closely padrões em Nasdaq e índices de tech, sugerindo alta correlação risco. Suportes técnicos estão sendo testados e rompidos. Mercado de derivativos está positioning para grande volatilidade. Traders estão ajustando stops e posições defensivas. A análise sugere que Bitcoin pode ver múltiplas testes de suporte até que padrão de venda de risco se esgote ou sentimento mude.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-gets-new-54k-warning-as-btc-price-hits-11-day-low-on-asia-tech-sell-off?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ripple Conquista Aprovação Preliminar de MiCA do Luxemburgo Ripple asegurou licença preliminar de Provedor de Serviços de Ativos Crypto (CASP) da autoridade reguladora luxemburguesa antes do prazo crítico de 1º de julho de MiCA (Markets in Crypto Assets). A aprovação habilita Ripple a oferecer sistemas de pagamento com stablecoin a empresas europeias e expandir para funções mais amplas de crypto na UE. O timing é crítico porque muitas empresas ainda buscam conformidade MiCA antes do deadline. Ripple já está bem-posicionada para capturar demanda de empresas procurando parceiros regulados para cross-border payments e liquidação. A licença luxemburguesa abre caminho para futuro lançamento de stablecoin XRP em conformidade com MiCA. Análise de mercado sugere que aprovações MiCA de gigantes como Ripple criará competição entre provedores de stablecoins por licenças e clientes. Ripple agora está entre os primeiros a assegurar conformidade regulatória clara na UE. CoinDesk" data-title="Ripple Conquista Aprovação Preliminar de MiCA do Luxemburgo" data-share-url="https://www.coindesk.com/policy/2026/06/23/ripple-targets-eu-wins-preliminary-mica-approval-from-luxembourg-financial-regulator">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">07:17</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Ripple Conquista Aprovação Preliminar de MiCA do Luxemburgo</div>
+        <div class="news-summary">Ripple asegurou licença preliminar de Provedor de Serviços de Ativos Crypto (CASP) da autoridade reguladora luxemburguesa antes do prazo crítico de 1º de julho de MiCA (Markets in Crypto Assets). A aprovação habilita Ripple a oferecer sistemas de pagamento com stablecoin a empresas europeias e expandir para funções mais amplas de crypto na UE. O timing é crítico porque muitas empresas ainda buscam conformidade MiCA antes do deadline. Ripple já está bem-posicionada para capturar demanda de empresas procurando parceiros regulados para cross-border payments e liquidação. A licença luxemburguesa abre caminho para futuro lançamento de stablecoin XRP em conformidade com MiCA. Análise de mercado sugere que aprovações MiCA de gigantes como Ripple criará competição entre provedores de stablecoins por licenças e clientes. Ripple agora está entre os primeiros a assegurar conformidade regulatória clara na UE.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/06/23/ripple-targets-eu-wins-preliminary-mica-approval-from-luxembourg-financial-regulator" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="THORChain Retoma Negociação Mais de Um Mês Após Exploit de $10 Milhões THORChain, protocolo de liquidity descentralizado, retomou todas as atividades de rede após mais de um mês de shutdown causado por exploit de segurança que resultou em perda de $10 milhões. A protocolo implementou múltiplas atualizações de segurança e migração de vault para reparar vulnerabilidades que levaram ao roubo. A volta de THORChain é significativa porque o protocolo era crítico para swaps descentralizados de ativos cross-chain. O exploit havia prejudicado confiança do mercado, causando saída de liquidez. Retorno às operações sinaliza confiança da comunidade de que vulnerabilidades foram endereçadas. Liquidez está retornando gradualmente conforme usuários reintroduzem capital. THORChain enfrenta competição renovada de rivais que cresceram durante seu downtime. A volta será teste de capacidade de THORChain recuperar participação de mercado. Cointelegraph" data-title="THORChain Retoma Negociação Mais de Um Mês Após Exploit de $10 Milhões" data-share-url="https://cointelegraph.com/news/thorchain-resumes-trading-month-10m-exploit?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">23 jun 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">THORChain Retoma Negociação Mais de Um Mês Após Exploit de $10 Milhões</div>
+        <div class="news-summary">THORChain, protocolo de liquidity descentralizado, retomou todas as atividades de rede após mais de um mês de shutdown causado por exploit de segurança que resultou em perda de $10 milhões. A protocolo implementou múltiplas atualizações de segurança e migração de vault para reparar vulnerabilidades que levaram ao roubo. A volta de THORChain é significativa porque o protocolo era crítico para swaps descentralizados de ativos cross-chain. O exploit havia prejudicado confiança do mercado, causando saída de liquidez. Retorno às operações sinaliza confiança da comunidade de que vulnerabilidades foram endereçadas. Liquidez está retornando gradualmente conforme usuários reintroduzem capital. THORChain enfrenta competição renovada de rivais que cresceram durante seu downtime. A volta será teste de capacidade de THORChain recuperar participação de mercado.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/thorchain-resumes-trading-month-10m-exploit?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
