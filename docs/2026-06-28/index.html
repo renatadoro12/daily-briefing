@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">28 DE JUNHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 28 de junho marca uma escalada geopolítica significativa com tensões EUA-Irã atingindo novo pico, enquanto mercados globais enfrentam pressão de múltiplas frentes: uma possível bolha de IA ameaça o crescimento econômico segundo o BIS, Bitcoin cai abaixo de US$ 60 mil rumo a perdas trimestrais raras, e grandes players como ARK Invest e Michael Saylor apostam contrário ao mercado. A confluência de instabilidade militar, desinvestimento institucional em criptomoedas e rotação de capital para setores defensivos sinaliza um cenário de risco elevado e realocação estratégica de portfólios.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-06-27/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28" selected>2026-06-28</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Americanas Luta para Provar Transformação enquanto PF Investiga Escândalo Contábil A varejista Americanas continua enfrentando investigações da Polícia Federal sobre o escândalo contábil que eclodiu há quase três anos, enquanto sua nova gestão tenta demonstrar que a empresa já é uma organização completamente diferente e reformada. A estratégia de administração foca em operações menores mas lucrativos e reestruturação de governança, buscando restaurar confiança junto a credores e investidores. O contraste entre as investigações de crimes do passado e esforços presentes de transformação representa um desafio reputacional significativo. Analistas afirmam que a Americanas precisa demonstrar compliance robusto e rentabilidade sustentável para reverter danos à marca. O caso ilustra maior tendência de escrutínio regulatório sobre práticas corporativas no Brasil. A empresa mantém seus operações e continua negociando com fornecedores e credores para alongamento de prazos. InfoMoney" data-title="Americanas Luta para Provar Transformação enquanto PF Investiga Escândalo Contábil" data-share-url="https://www.infomoney.com.br/business/enquanto-a-pf-investiga-o-passado-americanas-tenta-provar-que-ja-e-outra-empresa/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">09:08</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Americanas Luta para Provar Transformação enquanto PF Investiga Escândalo Contábil</div>
+        <div class="news-summary">A varejista Americanas continua enfrentando investigações da Polícia Federal sobre o escândalo contábil que eclodiu há quase três anos, enquanto sua nova gestão tenta demonstrar que a empresa já é uma organização completamente diferente e reformada. A estratégia de administração foca em operações menores mas lucrativos e reestruturação de governança, buscando restaurar confiança junto a credores e investidores. O contraste entre as investigações de crimes do passado e esforços presentes de transformação representa um desafio reputacional significativo. Analistas afirmam que a Americanas precisa demonstrar compliance robusto e rentabilidade sustentável para reverter danos à marca. O caso ilustra maior tendência de escrutínio regulatório sobre práticas corporativas no Brasil. A empresa mantém seus operações e continua negociando com fornecedores e credores para alongamento de prazos.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/business/enquanto-a-pf-investiga-o-passado-americanas-tenta-provar-que-ja-e-outra-empresa/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Saúde Privada Gera 1 em Cada 5 Empregos Brasileiros; Desigualdade Salarial Persiste Um novo estudo revelou que o setor privado de saúde no Brasil agora emprega cerca de 4,3 milhões de trabalhadores formais, representando aproximadamente um em cada cinco empregos no país. O setor é um dos maiores geradores de postos de trabalho e mostra tendência acelerada de expansão. Contudo, a pesquisa destaca desigualdades salariais persistentes dentro do setor, com disparidades significativas entre cargos administrativos, de enfermagem e médicos. O envelhecimento populacional brasileiro deve acentuar ainda mais as contratações nos próximos anos, criando demanda crescente por profissionais de saúde. A dinâmica laboral reflete uma economia brasileira cada vez mais dependente de serviços, especialmente setor de saúde. Sindicatos pressionam por melhorias salariais e condições de trabalho. O relatório aponta para necessidade de políticas públicas que promovam equidade remuneratória. InfoMoney" data-title="Saúde Privada Gera 1 em Cada 5 Empregos Brasileiros; Desigualdade Salarial Persiste" data-share-url="https://www.infomoney.com.br/minhas-financas/saude-privada-gera-1-em-cada-5-empregos-do-pais-mas-desigualdade-salarial-persiste/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Saúde Privada Gera 1 em Cada 5 Empregos Brasileiros; Desigualdade Salarial Persiste</div>
+        <div class="news-summary">Um novo estudo revelou que o setor privado de saúde no Brasil agora emprega cerca de 4,3 milhões de trabalhadores formais, representando aproximadamente um em cada cinco empregos no país. O setor é um dos maiores geradores de postos de trabalho e mostra tendência acelerada de expansão. Contudo, a pesquisa destaca desigualdades salariais persistentes dentro do setor, com disparidades significativas entre cargos administrativos, de enfermagem e médicos. O envelhecimento populacional brasileiro deve acentuar ainda mais as contratações nos próximos anos, criando demanda crescente por profissionais de saúde. A dinâmica laboral reflete uma economia brasileira cada vez mais dependente de serviços, especialmente setor de saúde. Sindicatos pressionam por melhorias salariais e condições de trabalho. O relatório aponta para necessidade de políticas públicas que promovam equidade remuneratória.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/minhas-financas/saude-privada-gera-1-em-cada-5-empregos-do-pais-mas-desigualdade-salarial-persiste/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Trump Formaliza Acordo Bilionário de Mineração com Cazaquistão; Filhos Lucram O presidente Trump fechou um acordo bilateral de alto valor com o Cazaquistão envolvendo acesso a depósitos minerais estratégicos para um grupo de investidores americanos com laços diretos à administração presidencial e ao secretário de Comércio. O acordo reforça a estratégia de Washington de aprofundar vínculos com nações da Ásia Central como contrapeso ao poderio russo e chinês na região. O líder cazaque declarou publicamente que Trump foi enviado pelo céu, sinalizando alinhamento político crescente. A transação bilionária levanta questões sobre conflitos de interesse, já que membros da família do presidente estão posicionados para lucrar significativamente. O movimento consolida a influência americana em recursos críticos para tecnologia e defesa. Analistas veem a jogada como parte de uma estratégia maior de Trump de reposicionar alianças globais em favor dos interesses econômicos americanos. NYT &gt; World News" data-title="Trump Formaliza Acordo Bilionário de Mineração com Cazaquistão; Filhos Lucram" data-share-url="https://www.nytimes.com/2026/06/28/world/europe/trump-lutnick-sons-kazakhstan.html">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:57 / 06:39</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Trump Formaliza Acordo Bilionário de Mineração com Cazaquistão; Filhos Lucram</div>
+        <div class="news-summary">O presidente Trump fechou um acordo bilateral de alto valor com o Cazaquistão envolvendo acesso a depósitos minerais estratégicos para um grupo de investidores americanos com laços diretos à administração presidencial e ao secretário de Comércio. O acordo reforça a estratégia de Washington de aprofundar vínculos com nações da Ásia Central como contrapeso ao poderio russo e chinês na região. O líder cazaque declarou publicamente que Trump foi enviado pelo céu, sinalizando alinhamento político crescente. A transação bilionária levanta questões sobre conflitos de interesse, já que membros da família do presidente estão posicionados para lucrar significativamente. O movimento consolida a influência americana em recursos críticos para tecnologia e defesa. Analistas veem a jogada como parte de uma estratégia maior de Trump de reposicionar alianças globais em favor dos interesses econômicos americanos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/28/world/europe/trump-lutnick-sons-kazakhstan.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Guarda Revolucionária do Irã Confirma Ataques contra Alvos dos EUA no Kuwait e Bahrein A Guarda Revolucionária do Irã confirmou hoje uma série de ataques coordenados contra instalações dos EUA no Kuwait e Bahrein, marcando uma escalada significativa nas hostilidades entre os dois países. Os ataques ocorrem em contexto de crescente tensão regional, com os EUA e aliados do Golfo Pérsico relatando interceptação de múltiplos drones iranianos. O presidente Trump e a liderança iraniana trocaram ameaças diretas, com poucos sinais de desescalação no horizonte. A situação coloca em risco rotas comerciais críticas no Estreito de Ormuz e ameaça elevar preços de petróleo globalmente. Analistas alertam que a tensão poderia impactar mercados financeiros, combustíveis e cadeias de suprimento internacionais. A comunidade internacional observa com preocupação um possível aprofundamento do conflito sem mecanismos diplomáticos aparentes em funcionamento. NYT &gt; World News / InfoMoney" data-title="Guarda Revolucionária do Irã Confirma Ataques contra Alvos dos EUA no Kuwait e Bahrein" data-share-url="https://www.nytimes.com/live/2026/06/28/world/us-iran-strikes-hormuz">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:34 / 08:41</span>
+          <span class="news-source">NYT &gt; World News / InfoMoney</span>
+        </div>
+        <div class="news-title">Guarda Revolucionária do Irã Confirma Ataques contra Alvos dos EUA no Kuwait e Bahrein</div>
+        <div class="news-summary">A Guarda Revolucionária do Irã confirmou hoje uma série de ataques coordenados contra instalações dos EUA no Kuwait e Bahrein, marcando uma escalada significativa nas hostilidades entre os dois países. Os ataques ocorrem em contexto de crescente tensão regional, com os EUA e aliados do Golfo Pérsico relatando interceptação de múltiplos drones iranianos. O presidente Trump e a liderança iraniana trocaram ameaças diretas, com poucos sinais de desescalação no horizonte. A situação coloca em risco rotas comerciais críticas no Estreito de Ormuz e ameaça elevar preços de petróleo globalmente. Analistas alertam que a tensão poderia impactar mercados financeiros, combustíveis e cadeias de suprimento internacionais. A comunidade internacional observa com preocupação um possível aprofundamento do conflito sem mecanismos diplomáticos aparentes em funcionamento.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/06/28/world/us-iran-strikes-hormuz" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Como Polymarket Traders se Revoltaram sobre Uma Sílaba Tola em Mercado de Previsão Uma disputa acalorada eclodiu em Polymarket, plataforma de mercados de previsão, quando traders discordaram sobre a interpretação exata de uma única sílaba em um contrato que determinaria pagamentos multimilionários. A controvérsia ilustra a natureza precária dos mercados descentralizados onde semântica e linguagem podem criar assimetrias interpretativas entre participantes. O incidente gerou apelos por melhoria em clareza de contratação e mecanismos de resolução de disputas em mercados preditivos. Polymarket cresceu significativamente como plataforma para apostas sobre eventos políticos, econômicos e culturais. A querela também expõe o desafio mais amplo de como estruturar mercados descentralizados sem intermediários tradicionais. Reguladores observam com interesse, vendo tanto potencial quanto riscos em plataformas assim. O caso reforça importância de linguagem precisa em produtos financeiros, especialmente em crypto-nativos. NYT &gt; Business" data-title="Como Polymarket Traders se Revoltaram sobre Uma Sílaba Tola em Mercado de Previsão" data-share-url="https://www.nytimes.com/2026/06/28/business/donk-polymarket-prediction-markets.html">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:19</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Como Polymarket Traders se Revoltaram sobre Uma Sílaba Tola em Mercado de Previsão</div>
+        <div class="news-summary">Uma disputa acalorada eclodiu em Polymarket, plataforma de mercados de previsão, quando traders discordaram sobre a interpretação exata de uma única sílaba em um contrato que determinaria pagamentos multimilionários. A controvérsia ilustra a natureza precária dos mercados descentralizados onde semântica e linguagem podem criar assimetrias interpretativas entre participantes. O incidente gerou apelos por melhoria em clareza de contratação e mecanismos de resolução de disputas em mercados preditivos. Polymarket cresceu significativamente como plataforma para apostas sobre eventos políticos, econômicos e culturais. A querela também expõe o desafio mais amplo de como estruturar mercados descentralizados sem intermediários tradicionais. Reguladores observam com interesse, vendo tanto potencial quanto riscos em plataformas assim. O caso reforça importância de linguagem precisa em produtos financeiros, especialmente em crypto-nativos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/06/28/business/donk-polymarket-prediction-markets.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="AI Bust Representa Riscos de Efeito Cascata do Crescimento ao Crédito, Alerta BIS O Banco de Compensações Internacionais (BIS) alertou em seu relatório mais recente que uma possível bolha de inteligência artificial representa um dos maiores riscos para a prosperidade econômica global. O organismo identifica um potencial colapso do setor de IA como ameaça sistêmica capaz de gerar efeitos cascata em múltiplas frentes: desaceleração do crescimento, deterioração da qualidade do crédito e pressão adicional em mercados já estressados pela inflação e deficits fiscais. A análise do BIS sugere que investimentos maciços em IA podem estar desconectados dos retornos reais, criando bolha especulativa. As consequências poderiam afetar dinamicamente taxas de juros, spreads de crédito e confiança dos investidores. O aviso chega enquanto grandes tecnológicas enfrentam pressão para justificar spending bilionário em infraestrutura de IA. Mercados reagiram com cautela à análise, reforçando volatilidade em ações de IA e criptomoedas. Bloomberg Economics" data-title="AI Bust Representa Riscos de Efeito Cascata do Crescimento ao Crédito, Alerta BIS" data-share-url="https://www.bloomberg.com/news/articles/2026-06-28/ai-bust-risks-ripple-effects-from-growth-to-credit-bis-says">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">AI Bust Representa Riscos de Efeito Cascata do Crescimento ao Crédito, Alerta BIS</div>
+        <div class="news-summary">O Banco de Compensações Internacionais (BIS) alertou em seu relatório mais recente que uma possível bolha de inteligência artificial representa um dos maiores riscos para a prosperidade econômica global. O organismo identifica um potencial colapso do setor de IA como ameaça sistêmica capaz de gerar efeitos cascata em múltiplas frentes: desaceleração do crescimento, deterioração da qualidade do crédito e pressão adicional em mercados já estressados pela inflação e deficits fiscais. A análise do BIS sugere que investimentos maciços em IA podem estar desconectados dos retornos reais, criando bolha especulativa. As consequências poderiam afetar dinamicamente taxas de juros, spreads de crédito e confiança dos investidores. O aviso chega enquanto grandes tecnológicas enfrentam pressão para justificar spending bilionário em infraestrutura de IA. Mercados reagiram com cautela à análise, reforçando volatilidade em ações de IA e criptomoedas.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-28/ai-bust-risks-ripple-effects-from-growth-to-credit-bis-says" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Política Monetária do Japão Será 'Apropriada', Afirma Rascunho de Diretriz Governamental O governo japonês deverá consagrar em suas diretrizes de política básica a necessidade de condução apropriada da política monetária, segundo documento visto exclusivamente por Bloomberg. A declaração vaga reflete prudência deliberada em contexto de debate crescente sobre os próximos passos do Banco Central do Japão. O país enfrenta dilema clássico: inflação moderada mas persistente versus economia frágil que depende de estímulos. A escolha de linguagem ambígua permite flexibilidade futura do banco central sem comprometer o governo. Analistas interpretam o texto como tacitamente apoiando continuação de política acomodatícia. A posição contrasta com tendências globais de aperto monetário. Mercados de iene monitoram atentamente sinais do Banco Central. O comunicado será relevante para investidores globais em carry trades e posicionamento de moedas asiáticas. Bloomberg Economics" data-title="Política Monetária do Japão Será 'Apropriada', Afirma Rascunho de Diretriz Governamental" data-share-url="https://www.bloomberg.com/news/articles/2026-06-28/japan-policy-draft-backs-appropriate-monetary-policy">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">05:49</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Política Monetária do Japão Será 'Apropriada', Afirma Rascunho de Diretriz Governamental</div>
+        <div class="news-summary">O governo japonês deverá consagrar em suas diretrizes de política básica a necessidade de condução apropriada da política monetária, segundo documento visto exclusivamente por Bloomberg. A declaração vaga reflete prudência deliberada em contexto de debate crescente sobre os próximos passos do Banco Central do Japão. O país enfrenta dilema clássico: inflação moderada mas persistente versus economia frágil que depende de estímulos. A escolha de linguagem ambígua permite flexibilidade futura do banco central sem comprometer o governo. Analistas interpretam o texto como tacitamente apoiando continuação de política acomodatícia. A posição contrasta com tendências globais de aperto monetário. Mercados de iene monitoram atentamente sinais do Banco Central. O comunicado será relevante para investidores globais em carry trades e posicionamento de moedas asiáticas.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-28/japan-policy-draft-backs-appropriate-monetary-policy" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="China Declara Capacidade de Resistir a Congelamento Comercial com a UE Autoridades chinesas declararam através da agência estatal CCTV que o país está preparado para suportar uma possível deterioração ou até mesmo congelamento das relações econômicas e comerciais com a União Europeia. A declaração vem em contexto de tensões crescentes entre Pequim e Bruxelas sobre tarifas, práticas comerciais e direitos humanos. China sinaliza disposição de viver com isolamento comercial parcial, posicionando-se como economia resiliente e menos dependente de mercados ocidentais. A postura fortalece estratégia de Beijing de diversificação de parcerias comerciais para mercados emergentes e asiáticos. A mensagem é simultaneamente um ultimatum diplomático e uma preparação psicológica para consumidores e investidores chineses. Analistas veem o movimento como escalonamento retórico na guerra comercial sino-europeia. Mercados reagiram com cautela, com bolsas chinesas mostrando volatilidade. Bloomberg Economics" data-title="China Declara Capacidade de Resistir a Congelamento Comercial com a UE" data-share-url="https://www.bloomberg.com/news/articles/2026-06-28/china-says-it-can-withstand-eu-trade-freeze-cctv-account-says">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">04:47</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">China Declara Capacidade de Resistir a Congelamento Comercial com a UE</div>
+        <div class="news-summary">Autoridades chinesas declararam através da agência estatal CCTV que o país está preparado para suportar uma possível deterioração ou até mesmo congelamento das relações econômicas e comerciais com a União Europeia. A declaração vem em contexto de tensões crescentes entre Pequim e Bruxelas sobre tarifas, práticas comerciais e direitos humanos. China sinaliza disposição de viver com isolamento comercial parcial, posicionando-se como economia resiliente e menos dependente de mercados ocidentais. A postura fortalece estratégia de Beijing de diversificação de parcerias comerciais para mercados emergentes e asiáticos. A mensagem é simultaneamente um ultimatum diplomático e uma preparação psicológica para consumidores e investidores chineses. Analistas veem o movimento como escalonamento retórico na guerra comercial sino-europeia. Mercados reagiram com cautela, com bolsas chinesas mostrando volatilidade.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-28/china-says-it-can-withstand-eu-trade-freeze-cctv-account-says" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="A Missão de Nest para Corrigir seu Termostato The Verge documentou a saga histórica de Tony Fadell e Nest, explorando como um lendário criador de produtos ajudou a construir uma das marcas tech mais bem-sucedidas antes de sua aquisição pelo Google. A narrativa de Nest representa praticamente o mito perfeito do Vale do Silício: inovação elegante, execução impecável e impacto cultural duradouro. Nest revolucionou a categoria de termostatos inteligentes transformando produto commodity em hub de casa inteligente. O podcast examina decisões de design, desafios de manufatura e como Fadell e equipe navegaram pressões de mercado e concorrência. A história também toca em tensões pós-aquisição quando Google tentou integrar Nest em sua ecosistema. O episódio ressalta importância de visão clara de produto e excelência em execução. Nest permanece como exemplo de como IA e machine learning podem humanizar tecnologia doméstica. O caso oferece lições valiosas para startups de IoT e empresas de hardware. The Verge" data-title="A Missão de Nest para Corrigir seu Termostato" data-share-url="https://www.theverge.com/podcast/958735/nest-thermostat-version-history">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">09:02</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">A Missão de Nest para Corrigir seu Termostato</div>
+        <div class="news-summary">The Verge documentou a saga histórica de Tony Fadell e Nest, explorando como um lendário criador de produtos ajudou a construir uma das marcas tech mais bem-sucedidas antes de sua aquisição pelo Google. A narrativa de Nest representa praticamente o mito perfeito do Vale do Silício: inovação elegante, execução impecável e impacto cultural duradouro. Nest revolucionou a categoria de termostatos inteligentes transformando produto commodity em hub de casa inteligente. O podcast examina decisões de design, desafios de manufatura e como Fadell e equipe navegaram pressões de mercado e concorrência. A história também toca em tensões pós-aquisição quando Google tentou integrar Nest em sua ecosistema. O episódio ressalta importância de visão clara de produto e excelência em execução. Nest permanece como exemplo de como IA e machine learning podem humanizar tecnologia doméstica. O caso oferece lições valiosas para startups de IoT e empresas de hardware.</div>
+        <div class="news-link"><a href="https://www.theverge.com/podcast/958735/nest-thermostat-version-history" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Como IA Ajudou FBI a Investigar Ataque contra Jantar de Correspondentes da Casa Branca Uma firma especializada em investigações forenses alimentadas por IA reportou que sua plataforma foi utilizada pelo FBI em investigação urgente do tentativa de assassinato no White House Correspondents' Dinner. A tecnologia processou e analisou volume massivo de imagens, vídeos e metadados em velocidade impossível para humanos, acelerando significativamente identificação de suspeitos e reconstrução de eventos. O caso demonstra aplicação prática de IA em segurança pública de altíssima relevância. A firma de forense digitizada destacou capacidade de IA de processar múltiplas fontes de prova simultaneamente. O incidente reforça como órgãos de lei e ordem nos EUA estão adotando IA para investigações críticas. Questões sobre privacidade e vigilância permanecem, mas efetividade operacional é indiscutível. O episódio também torna público um ataque potencialmente grave contra figuras de mídia. Axios" data-title="Como IA Ajudou FBI a Investigar Ataque contra Jantar de Correspondentes da Casa Branca" data-share-url="https://www.axios.com/2026/06/28/ai-fbi-whcd-attack-investigation">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Como IA Ajudou FBI a Investigar Ataque contra Jantar de Correspondentes da Casa Branca</div>
+        <div class="news-summary">Uma firma especializada em investigações forenses alimentadas por IA reportou que sua plataforma foi utilizada pelo FBI em investigação urgente do tentativa de assassinato no White House Correspondents' Dinner. A tecnologia processou e analisou volume massivo de imagens, vídeos e metadados em velocidade impossível para humanos, acelerando significativamente identificação de suspeitos e reconstrução de eventos. O caso demonstra aplicação prática de IA em segurança pública de altíssima relevância. A firma de forense digitizada destacou capacidade de IA de processar múltiplas fontes de prova simultaneamente. O incidente reforça como órgãos de lei e ordem nos EUA estão adotando IA para investigações críticas. Questões sobre privacidade e vigilância permanecem, mas efetividade operacional é indiscutível. O episódio também torna público um ataque potencialmente grave contra figuras de mídia.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/06/28/ai-fbi-whcd-attack-investigation" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Streaming Sem Publicidade é Agora um Luxo, Não uma Norma The Verge analisou como modelo de negócio de streaming evoluiu radicalmente, com conteúdo sem anúncios tornando-se um serviço premium caro em vez de padrão. Plataformas como Netflix, Disney+ e Amazon Prime agora oferecem tiers publicitários como principal estratégia de monetização, forçando consumidores a pagar mais por experiência ad-free. A mudança reflete pressão de acionistas por rentabilidade e saturação de mercado de streaming. Analistas veem padrão onde cada plataforma tenta maximizar ARPU (receita média por usuário) através de tiering granular. Consumidores enfrentam proliferação de subscriptions pago cada vez mais caras. O fenômeno acelera retorno a pirataria e alternativas não oficiais. A estratégia também cria cisão entre consumidores ricos e pobres em acesso a conteúdo premium. O ecossistema de streaming, outrora visto como democratizador, está se tornando cada vez mais exclusivo. Reguladores monitoram concentração de conteúdo e poder de plataformas. The Verge" data-title="Streaming Sem Publicidade é Agora um Luxo, Não uma Norma" data-share-url="https://www.theverge.com/column/958379/streaming-industry-ads">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Streaming Sem Publicidade é Agora um Luxo, Não uma Norma</div>
+        <div class="news-summary">The Verge analisou como modelo de negócio de streaming evoluiu radicalmente, com conteúdo sem anúncios tornando-se um serviço premium caro em vez de padrão. Plataformas como Netflix, Disney+ e Amazon Prime agora oferecem tiers publicitários como principal estratégia de monetização, forçando consumidores a pagar mais por experiência ad-free. A mudança reflete pressão de acionistas por rentabilidade e saturação de mercado de streaming. Analistas veem padrão onde cada plataforma tenta maximizar ARPU (receita média por usuário) através de tiering granular. Consumidores enfrentam proliferação de subscriptions pago cada vez mais caras. O fenômeno acelera retorno a pirataria e alternativas não oficiais. A estratégia também cria cisão entre consumidores ricos e pobres em acesso a conteúdo premium. O ecossistema de streaming, outrora visto como democratizador, está se tornando cada vez mais exclusivo. Reguladores monitoram concentração de conteúdo e poder de plataformas.</div>
+        <div class="news-link"><a href="https://www.theverge.com/column/958379/streaming-industry-ads" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Europa Busca Exposição a IA em Fornecedores de Energia e Bancos, Não em Tech Pura Investidores europeus buscando exposição ao boom de IA estão criando estratégias criativas focadas em empresas de energia, infraestrutura e serviços financeiros que possibilitam a tecnologia, em vez de players de IA puros. A dinâmica reflete realidade econômica: IA requer quantidades massivas de eletricidade, refrigeração e capital, beneficiando utilities e bancos que financiam data centers. O fenômeno também revela gap europeu em empresas de IA nativas competitivas com players americanos e chineses. Investidores pragmaticamente alocam capital onde veem vantagem competitiva e fluxo de caixa. Utilities como Enel, EDF e bancos como Deutsche Bank e BBVA ganham interest de fundos especializados. A estratégia diversifica risco ao mesmo tempo que mantém exposição ao tema. Analistas veem como win-win: utilities obtêm capital e visibilidade, enquanto investidores ganham dividendos mais estáveis. Bloomberg Technology" data-title="Europa Busca Exposição a IA em Fornecedores de Energia e Bancos, Não em Tech Pura" data-share-url="https://www.bloomberg.com/news/articles/2026-06-28/europe-s-hunt-for-ai-stocks-leads-to-power-suppliers-and-banks">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Europa Busca Exposição a IA em Fornecedores de Energia e Bancos, Não em Tech Pura</div>
+        <div class="news-summary">Investidores europeus buscando exposição ao boom de IA estão criando estratégias criativas focadas em empresas de energia, infraestrutura e serviços financeiros que possibilitam a tecnologia, em vez de players de IA puros. A dinâmica reflete realidade econômica: IA requer quantidades massivas de eletricidade, refrigeração e capital, beneficiando utilities e bancos que financiam data centers. O fenômeno também revela gap europeu em empresas de IA nativas competitivas com players americanos e chineses. Investidores pragmaticamente alocam capital onde veem vantagem competitiva e fluxo de caixa. Utilities como Enel, EDF e bancos como Deutsche Bank e BBVA ganham interest de fundos especializados. A estratégia diversifica risco ao mesmo tempo que mantém exposição ao tema. Analistas veem como win-win: utilities obtêm capital e visibilidade, enquanto investidores ganham dividendos mais estáveis.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-28/europe-s-hunt-for-ai-stocks-leads-to-power-suppliers-and-banks" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Cate Blanchett Cria Ferramenta de Consentimento para Uso de Sua Imagem por IA A atriz Cate Blanchett lançou uma plataforma digital que permite aos públicos autorizar ou negar o uso de sua imagem e likeness por sistemas de IA, oferecendo granular controle sobre deep fakes e sínteses de voz. A ferramenta está disponível para usuários nos EUA e União Europeia, refletindo regulações mais rigorosas nesses territórios quanto a direitos de imagem. A iniciativa responde a preocupações legítimas sobre abuso de síntese e manipulação de celebridades por modelos generativos. Blanchett posiciona-se como defensora de direitos de artistas em era de IA. A plataforma funciona como registry descentralizado onde criadores registram preferências de consentimento. Outros celebridades e artistas provavelmente adotarão modelos similares. A abordagem ilustra como indústria criativa está se organizando para proteger patrimônio intelectual. Reguladores globais observam modelos como este para informar futuras legislações. InfoMoney" data-title="Cate Blanchett Cria Ferramenta de Consentimento para Uso de Sua Imagem por IA" data-share-url="https://www.infomoney.com.br/consumo/cate-blanchett-ferramenta-nivel-consentimento-uso-ia/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Cate Blanchett Cria Ferramenta de Consentimento para Uso de Sua Imagem por IA</div>
+        <div class="news-summary">A atriz Cate Blanchett lançou uma plataforma digital que permite aos públicos autorizar ou negar o uso de sua imagem e likeness por sistemas de IA, oferecendo granular controle sobre deep fakes e sínteses de voz. A ferramenta está disponível para usuários nos EUA e União Europeia, refletindo regulações mais rigorosas nesses territórios quanto a direitos de imagem. A iniciativa responde a preocupações legítimas sobre abuso de síntese e manipulação de celebridades por modelos generativos. Blanchett posiciona-se como defensora de direitos de artistas em era de IA. A plataforma funciona como registry descentralizado onde criadores registram preferências de consentimento. Outros celebridades e artistas provavelmente adotarão modelos similares. A abordagem ilustra como indústria criativa está se organizando para proteger patrimônio intelectual. Reguladores globais observam modelos como este para informar futuras legislações.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/consumo/cate-blanchett-ferramenta-nivel-consentimento-uso-ia/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Na Era da IA, Empresas Já Treinam Funcionários para Funções que Ainda Não Existem Grandes corporações estão antecipando transformação do mercado de trabalho pela IA ao treinar funcionários em habilidades e funções que ainda não existem formalmente ou que serão criadas nos próximos 2-3 anos. A estratégia reconhece que velocidade de mudança tecnológica supera ciclos tradicionais de recrutamento e treinamento. Empresas de tecnologia, finanças e manufatura lideram essa prática, investindo em programas de upskilling baseados em cenários futuros de trabalho com IA. Aprender tornou-se a habilidade mais valiosa em mercado moldado por IA acelerada. Funcionários participam de programas imersivos para desenvolver adaptabilidade e pensamento crítico. O fenômeno reflete ansiedade corporativa sobre talent shortage em competências emergentes. Sindicatos observam com preocupação, questionando se treinamento pré-vazio substitui garantias de emprego. Universidades também estão repensando currículos para alinhar a essas tendências. A dinâmica cria vantagem para grandes corporações versus pequenas. InfoMoney" data-title="Na Era da IA, Empresas Já Treinam Funcionários para Funções que Ainda Não Existem" data-share-url="https://www.infomoney.com.br/carreira/na-era-da-ia-empresas-ja-treinam-para-funcoes-que-ainda-nao-existem/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Na Era da IA, Empresas Já Treinam Funcionários para Funções que Ainda Não Existem</div>
+        <div class="news-summary">Grandes corporações estão antecipando transformação do mercado de trabalho pela IA ao treinar funcionários em habilidades e funções que ainda não existem formalmente ou que serão criadas nos próximos 2-3 anos. A estratégia reconhece que velocidade de mudança tecnológica supera ciclos tradicionais de recrutamento e treinamento. Empresas de tecnologia, finanças e manufatura lideram essa prática, investindo em programas de upskilling baseados em cenários futuros de trabalho com IA. Aprender tornou-se a habilidade mais valiosa em mercado moldado por IA acelerada. Funcionários participam de programas imersivos para desenvolver adaptabilidade e pensamento crítico. O fenômeno reflete ansiedade corporativa sobre talent shortage em competências emergentes. Sindicatos observam com preocupação, questionando se treinamento pré-vazio substitui garantias de emprego. Universidades também estão repensando currículos para alinhar a essas tendências. A dinâmica cria vantagem para grandes corporações versus pequenas.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/carreira/na-era-da-ia-empresas-ja-treinam-para-funcoes-que-ainda-nao-existem/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Suprema Corte Tem Semana Explosiva que Testará Poder de Trump A semana final do período termo da Suprema Corte dos EUA em 2026 moldou-se como particularmente consequente, com diversos casos pendentes carregando implicações maiores para o poder presidencial e direitos constitucionais. Decisões sobre cidadania por nascimento (birthright citizenship) e poderes executivos de Trump podem redefinir equilíbrio de poderes. A corte, com maioria conservadora, tem histórico de decisões favoráveis a presidência, gerando preocupação entre grupos de direitos civis. Analistas veem semana como teste crítico de quão longe a corte pode ir em expandir autoridade presidencial. As decisões provavelmente serão contestadas e podem se tornar questões centrais em próximas eleições. A cobertura mediática é intensa, refletindo importância constitucional dos casos. O momento marca ponto de inflexão na trajetória legal americana e poder relativo de diferentes ramos do governo. As decisões también terão impacto em dinâmica política democrática. Axios" data-title="Suprema Corte Tem Semana Explosiva que Testará Poder de Trump" data-share-url="https://www.axios.com/2026/06/28/supreme-court-trump-birthright-citizenship">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">06:10</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Suprema Corte Tem Semana Explosiva que Testará Poder de Trump</div>
+        <div class="news-summary">A semana final do período termo da Suprema Corte dos EUA em 2026 moldou-se como particularmente consequente, com diversos casos pendentes carregando implicações maiores para o poder presidencial e direitos constitucionais. Decisões sobre cidadania por nascimento (birthright citizenship) e poderes executivos de Trump podem redefinir equilíbrio de poderes. A corte, com maioria conservadora, tem histórico de decisões favoráveis a presidência, gerando preocupação entre grupos de direitos civis. Analistas veem semana como teste crítico de quão longe a corte pode ir em expandir autoridade presidencial. As decisões provavelmente serão contestadas e podem se tornar questões centrais em próximas eleições. A cobertura mediática é intensa, refletindo importância constitucional dos casos. O momento marca ponto de inflexão na trajetória legal americana e poder relativo de diferentes ramos do governo. As decisões también terão impacto em dinâmica política democrática.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/06/28/supreme-court-trump-birthright-citizenship" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Google Limita Uso de Gemini pela Meta Devido a Restrições de Capacidade Computacional Google implementou limitações no acesso de Meta Platforms ao seu modelo de IA Gemini porque o Facebook não consegue fornecer infraestrutura computacional suficiente para pleno aproveitamento, conforme reportado pelo Financial Times. A decisão marca um ponto de inflexão na cooperação entre duas gigantes tech e reflete competição crescente por recursos computacionais escassos e custosos. Meta esperava integração mais profunda de Gemini em seus produtos, mas restrições técnicas e de capacidade forçaram Google a limitar rollout. O episódio ilustra como a corrida de IA criou gargalo de infraestrutura que favorece empresas com maior poder de computação. Google preserva assim controle sobre distribuição de sua tecnologia. O movimento também sinaliza que parcerias em IA não são automáticas e que dependências tecnológicas podem ser instrumentalizadas. Analistas veem padrão de empresas tech buscando consolidar posições dominantes em IA. Bloomberg Technology" data-title="Google Limita Uso de Gemini pela Meta Devido a Restrições de Capacidade Computacional" data-share-url="https://www.bloomberg.com/news/articles/2026-06-28/google-caps-meta-s-use-of-gemini-ai-financial-times-reports">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Google Limita Uso de Gemini pela Meta Devido a Restrições de Capacidade Computacional</div>
+        <div class="news-summary">Google implementou limitações no acesso de Meta Platforms ao seu modelo de IA Gemini porque o Facebook não consegue fornecer infraestrutura computacional suficiente para pleno aproveitamento, conforme reportado pelo Financial Times. A decisão marca um ponto de inflexão na cooperação entre duas gigantes tech e reflete competição crescente por recursos computacionais escassos e custosos. Meta esperava integração mais profunda de Gemini em seus produtos, mas restrições técnicas e de capacidade forçaram Google a limitar rollout. O episódio ilustra como a corrida de IA criou gargalo de infraestrutura que favorece empresas com maior poder de computação. Google preserva assim controle sobre distribuição de sua tecnologia. O movimento também sinaliza que parcerias em IA não são automáticas e que dependências tecnológicas podem ser instrumentalizadas. Analistas veem padrão de empresas tech buscando consolidar posições dominantes em IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-06-28/google-caps-meta-s-use-of-gemini-ai-financial-times-reports" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fechadura Inteligente TMD: Solução de US$ 280 para Problema de US$ 60 The Verge revisou a fechadura inteligente TMD, um produto que exemplifica crescente tendência de over-engineering em categorias commoditizadas. O produto oferece acesso sem chave por US$ 280, significativamente mais caro que fechaduras tradicionais de US$ 60 que resolvem o mesmo problema. A revisão questiona se valor agregado justifica premium tão substancial. A fechadura utiliza tecnologia de IoT e conectividade para oferecer rastreamento e controle remoto, mas apresenta problemas de confiabilidade que sugerem imaturidade tecnológica. O produto ilustra perigo de adicionar complexidade tecnológica a objetos simples sem resolver problemas reais de consumidores. Analista conclui que maioria dos consumidores seria melhor servida por soluções mais simples e baratas. O episódio reflete fenômeno mais amplo de venture capital financiando produtos que não precisam ser tão complexos. A lição é que inovação genuína resolve problemas reais, não apenas adiciona tecnologia por si. The Verge" data-title="Fechadura Inteligente TMD: Solução de US$ 280 para Problema de US$ 60" data-share-url="https://www.theverge.com/tech/957603/tmd-smart-keyless-bike-lock-review">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">04:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Fechadura Inteligente TMD: Solução de US$ 280 para Problema de US$ 60</div>
+        <div class="news-summary">The Verge revisou a fechadura inteligente TMD, um produto que exemplifica crescente tendência de over-engineering em categorias commoditizadas. O produto oferece acesso sem chave por US$ 280, significativamente mais caro que fechaduras tradicionais de US$ 60 que resolvem o mesmo problema. A revisão questiona se valor agregado justifica premium tão substancial. A fechadura utiliza tecnologia de IoT e conectividade para oferecer rastreamento e controle remoto, mas apresenta problemas de confiabilidade que sugerem imaturidade tecnológica. O produto ilustra perigo de adicionar complexidade tecnológica a objetos simples sem resolver problemas reais de consumidores. Analista conclui que maioria dos consumidores seria melhor servida por soluções mais simples e baratas. O episódio reflete fenômeno mais amplo de venture capital financiando produtos que não precisam ser tão complexos. A lição é que inovação genuína resolve problemas reais, não apenas adiciona tecnologia por si.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/957603/tmd-smart-keyless-bike-lock-review" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Irã Impõe Coordenação com Guarda Revolucionária para Trânsito do Estreito de Ormuz O Irã instituiu novo requisito que qualquer tránsito através do estratégico Estreito de Ormuz deve ser coordenado com a Guarda Revolucionária Islâmica (IRGC), movimento que pode ter impactos dramáticos em preços de petróleo e consequentemente em mercados cripto. A medida é resposta à escalada militar com os EUA e busca exercer controle maior sobre rota de navegação crítica através da qual passa aproximadamente um terço do petróleo global. Se implementado rigorosamente, requisito pode desorganizar fluxos de energia globais, disparar volatilidade em oil futures, e transmitir pressão inflacionária para economias dependentes. Mercados cripto historicamente se comportam bem em cenários de incerteza geopolítica que depreciam moedas Fiat, já que Bitcoin é visto como hedge. A dinâmica pode beneficiar Bitcoin como reserve asset de proteção. Analistas monitoram atentamente desenvolvimento, já que qualquer bloqueio do Estreito de Ormuz teria consequências econômicas cataclísmicas. Crypto Briefing" data-title="Irã Impõe Coordenação com Guarda Revolucionária para Trânsito do Estreito de Ormuz" data-share-url="https://cryptobriefing.com/iran-irgc-strait-hormuz-transit-crypto/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">09:10</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Irã Impõe Coordenação com Guarda Revolucionária para Trânsito do Estreito de Ormuz</div>
+        <div class="news-summary">O Irã instituiu novo requisito que qualquer tránsito através do estratégico Estreito de Ormuz deve ser coordenado com a Guarda Revolucionária Islâmica (IRGC), movimento que pode ter impactos dramáticos em preços de petróleo e consequentemente em mercados cripto. A medida é resposta à escalada militar com os EUA e busca exercer controle maior sobre rota de navegação crítica através da qual passa aproximadamente um terço do petróleo global. Se implementado rigorosamente, requisito pode desorganizar fluxos de energia globais, disparar volatilidade em oil futures, e transmitir pressão inflacionária para economias dependentes. Mercados cripto historicamente se comportam bem em cenários de incerteza geopolítica que depreciam moedas Fiat, já que Bitcoin é visto como hedge. A dinâmica pode beneficiar Bitcoin como reserve asset de proteção. Analistas monitoram atentamente desenvolvimento, já que qualquer bloqueio do Estreito de Ormuz teria consequências econômicas cataclísmicas.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/iran-irgc-strait-hormuz-transit-crypto/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Binance Registra Mais de US$ 400 Milhões em Fluxos de Saída Semanais Conforme Prazo MiCA se Aproxima Dados de fluxo de exchange mostram que Binance registrou saídas líquidas superando US$ 400 milhões na semana passada, com timing que coincide com a aproximação do deadline regulatório de Markets in Crypto Assets (MiCA) da União Europeia. A plataforma anunciou suspensão de serviços em terras europeias para cumprir regulações mais rigorosas, disparando migração de usuários para rivais ou wallets privadas. Paradoxalmente, dados de migrações em massa não são evidentes, sugerindo que muitos usuários podem estar consolidando posições em vez de transferir ativamente para outras exchanges. A saída é significativa mas não catastrófica, indicando que Binance retém base de usuários core mesmo com restrições regionais. Outras plataformas como Kraken e Coinbase relatam interesse aumentado de usuários europeus. O cenário reflete nova realidade regulatória onde grandes exchanges precisam fazer escolhas regionais sobre compliance. A dinâmica pode fragmente mercado cripto globalmente. Cointelegraph / Crypto Briefing" data-title="Binance Registra Mais de US$ 400 Milhões em Fluxos de Saída Semanais Conforme Prazo MiCA se Aproxima" data-share-url="https://cointelegraph.com/news/binance-400m-weekly-net-outflows-mica-deadline-nears">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:51 / 09:00</span>
+          <span class="news-source">Cointelegraph / Crypto Briefing</span>
+        </div>
+        <div class="news-title">Binance Registra Mais de US$ 400 Milhões em Fluxos de Saída Semanais Conforme Prazo MiCA se Aproxima</div>
+        <div class="news-summary">Dados de fluxo de exchange mostram que Binance registrou saídas líquidas superando US$ 400 milhões na semana passada, com timing que coincide com a aproximação do deadline regulatório de Markets in Crypto Assets (MiCA) da União Europeia. A plataforma anunciou suspensão de serviços em terras europeias para cumprir regulações mais rigorosas, disparando migração de usuários para rivais ou wallets privadas. Paradoxalmente, dados de migrações em massa não são evidentes, sugerindo que muitos usuários podem estar consolidando posições em vez de transferir ativamente para outras exchanges. A saída é significativa mas não catastrófica, indicando que Binance retém base de usuários core mesmo com restrições regionais. Outras plataformas como Kraken e Coinbase relatam interesse aumentado de usuários europeus. O cenário reflete nova realidade regulatória onde grandes exchanges precisam fazer escolhas regionais sobre compliance. A dinâmica pode fragmente mercado cripto globalmente.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/binance-400m-weekly-net-outflows-mica-deadline-nears" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Michael Saylor Dá Indícios de Mais Compras de Bitcoin; Quer 'Mais Gráficos' Michael Saylor, magnata da tecnologia e chefe da MicroStrategy, sinalizou ontem disposição contínua de acumular mais Bitcoin apesar de prejuízos não realizados significativos em posições existentes. A declaração 'vamos precisar de mais gráficos' é típica do tom confiante de Saylor, que se posiciona como um dos maiores acumuladores institucionais de Bitcoin. A estratégia de Saylor de compra de longo prazo sem regard a volatilidade de curto prazo é contrária ao sentimento pessimista de mercado atual. MicroStrategy agora mantém um dos maiores holdings corporativos de Bitcoin, gerando retorno negativo no momento mas posicionando a empresa em possível recuperação posterior. O posicionamento de Saylor oferece contraste interessante com saídas de ETFs e rotação de capital que marcam o dia. Analistas veem Saylor como exemplo de 'smart money' comprando durante periodos de medo. Sua confiança pública pode influenciar percepção entre outros investidores institucionais. O movimento também reafirma tese de bitcoin como ativo de longo prazo. Crypto Briefing" data-title="Michael Saylor Dá Indícios de Mais Compras de Bitcoin; Quer 'Mais Gráficos'" data-share-url="https://cryptobriefing.com/saylor-hints-buying-more-bitcoin/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:51</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Michael Saylor Dá Indícios de Mais Compras de Bitcoin; Quer 'Mais Gráficos'</div>
+        <div class="news-summary">Michael Saylor, magnata da tecnologia e chefe da MicroStrategy, sinalizou ontem disposição contínua de acumular mais Bitcoin apesar de prejuízos não realizados significativos em posições existentes. A declaração 'vamos precisar de mais gráficos' é típica do tom confiante de Saylor, que se posiciona como um dos maiores acumuladores institucionais de Bitcoin. A estratégia de Saylor de compra de longo prazo sem regard a volatilidade de curto prazo é contrária ao sentimento pessimista de mercado atual. MicroStrategy agora mantém um dos maiores holdings corporativos de Bitcoin, gerando retorno negativo no momento mas posicionando a empresa em possível recuperação posterior. O posicionamento de Saylor oferece contraste interessante com saídas de ETFs e rotação de capital que marcam o dia. Analistas veem Saylor como exemplo de 'smart money' comprando durante periodos de medo. Sua confiança pública pode influenciar percepção entre outros investidores institucionais. O movimento também reafirma tese de bitcoin como ativo de longo prazo.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/saylor-hints-buying-more-bitcoin/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="ARK Invest Aumenta Exposição Cripto com Compras de COIN, CRCL e BLSH O fundo ARK Invest, conhecido por agressivos posicionamentos em tecnologia disruptiva, aumentou sua exposição ao setor cripto ao comprar ações de Coinbase (COIN), Circle (CRCL) e Blockchain (BLSH) durante recente período de downturn. A estratégia de 'comprar na queda' de Cathie Wood e sua equipe sinaliza confiança na recuperação de longo prazo do setor cripto. As compras ocorrem enquanto mercado está em sentimento pessimista, com Bitcoin abaixo de US$ 60 mil. ARK historicamente tem acertado em apostas contrárias durante market panics, gerando retornos supernormais. As três empresas selecionadas representam diferentes pilares do ecossistema cripto: exchange, fintech/stablecoin, e infraestrutura. Analistas veem movimento como validação da tese de que empresas cripto têm valor fundamental apesar da volatilidade de preço. A compra pode inspirar outros investidores institucionais a se posicionarem defensivamente. O timing estratégico de ARK contrasta com retails em capitulação. Crypto Briefing" data-title="ARK Invest Aumenta Exposição Cripto com Compras de COIN, CRCL e BLSH" data-share-url="https://cryptobriefing.com/ark-invest-buys-coin-crcl-blsh-shares/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:36</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">ARK Invest Aumenta Exposição Cripto com Compras de COIN, CRCL e BLSH</div>
+        <div class="news-summary">O fundo ARK Invest, conhecido por agressivos posicionamentos em tecnologia disruptiva, aumentou sua exposição ao setor cripto ao comprar ações de Coinbase (COIN), Circle (CRCL) e Blockchain (BLSH) durante recente período de downturn. A estratégia de 'comprar na queda' de Cathie Wood e sua equipe sinaliza confiança na recuperação de longo prazo do setor cripto. As compras ocorrem enquanto mercado está em sentimento pessimista, com Bitcoin abaixo de US$ 60 mil. ARK historicamente tem acertado em apostas contrárias durante market panics, gerando retornos supernormais. As três empresas selecionadas representam diferentes pilares do ecossistema cripto: exchange, fintech/stablecoin, e infraestrutura. Analistas veem movimento como validação da tese de que empresas cripto têm valor fundamental apesar da volatilidade de preço. A compra pode inspirar outros investidores institucionais a se posicionarem defensivamente. O timing estratégico de ARK contrasta com retails em capitulação.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/ark-invest-buys-coin-crcl-blsh-shares/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Copa do Mundo 2026 Bate Recorde de Attendance; Parcerias Cripto Reformulam Engajamento de Fãs A Copa do Mundo de 2026 atingiu recorde histórico de attendance, atraindo maior número de espectadores presenciais de qualquer edição anterior do torneio. Simultaneamente, integrações cripto em operações de merchandising, betting e fan engagement estão redefinindo como fãs interagem com evento. Plataformas de betting cripto reportam volume recorde de wagers durante os jogos, enquanto tokens fan-centric estão gerando engajamento significativo. A convergência de maior interesse de público com cripto adoption oferece oportunidade publicitária única para projetos de criptomoeda. Alguns analistas veem Copa 2026 como inflection point onde cripto começa a penetrar mainstream de forma durável através de esportes. As integrações evitam maioria de restricoes regulatórias porque são estruturadas como engagement tools, não apostas tradicionais. O fenômeno reflete adoção mais ampla de tecnologia blockchain em esportes profissionais. Embora números absolutos de cripto adoption ainda sejam pequenos relativamente ao attendance total, tendência é claramente upward. Crypto Briefing" data-title="Copa do Mundo 2026 Bate Recorde de Attendance; Parcerias Cripto Reformulam Engajamento de Fãs" data-share-url="https://cryptobriefing.com/2026-world-cup-attendance-record-crypto/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:28</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Copa do Mundo 2026 Bate Recorde de Attendance; Parcerias Cripto Reformulam Engajamento de Fãs</div>
+        <div class="news-summary">A Copa do Mundo de 2026 atingiu recorde histórico de attendance, atraindo maior número de espectadores presenciais de qualquer edição anterior do torneio. Simultaneamente, integrações cripto em operações de merchandising, betting e fan engagement estão redefinindo como fãs interagem com evento. Plataformas de betting cripto reportam volume recorde de wagers durante os jogos, enquanto tokens fan-centric estão gerando engajamento significativo. A convergência de maior interesse de público com cripto adoption oferece oportunidade publicitária única para projetos de criptomoeda. Alguns analistas veem Copa 2026 como inflection point onde cripto começa a penetrar mainstream de forma durável através de esportes. As integrações evitam maioria de restricoes regulatórias porque são estruturadas como engagement tools, não apostas tradicionais. O fenômeno reflete adoção mais ampla de tecnologia blockchain em esportes profissionais. Embora números absolutos de cripto adoption ainda sejam pequenos relativamente ao attendance total, tendência é claramente upward.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/2026-world-cup-attendance-record-crypto/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fundos Roubados de Humanity Protocol e Kelp DAO se Mesclam; Mesmo Atacante? Investigadores de segurança descobriram que fundos roubados em exploits separados de Humanity Protocol e Kelp DAO estão sendo comingados em endereços de carteira similares, sugerindo que um único atacante pode estar por trás de ambos os hacks. A descoberta levanta questões sobre coordenação criminal ou cópia de técnicas de exploração. Os dois protocolos implementam diferentes mecanismos de segurança, o que torna possibilidade de atacante único ainda mais preocupante, já que sugeriria expertise profunda. O volume total roubado ultrapassa dezenas de milhões de dólares em criptomoedas. Comunidade cripto está em alerta, com múltiplos projetos revisando código e auditando segurança. A dinâmica de ataques em cascata reflete crescente sofisticação de bad actors no espaço. Projetos afetados enfrentam pressão reputacional significativa. O episódio ilustra risco persistente de contratos inteligentes e importância de auditorias rigorosas. Governos e órgãos reguladores estão acompanhando de perto para informar futuras regulações de segurança. AMBCrypto" data-title="Fundos Roubados de Humanity Protocol e Kelp DAO se Mesclam; Mesmo Atacante?" data-share-url="https://ambcrypto.com/humanity-protocol-kelp-dao-stolen-funds-commingle-same-attacker/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:15</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Fundos Roubados de Humanity Protocol e Kelp DAO se Mesclam; Mesmo Atacante?</div>
+        <div class="news-summary">Investigadores de segurança descobriram que fundos roubados em exploits separados de Humanity Protocol e Kelp DAO estão sendo comingados em endereços de carteira similares, sugerindo que um único atacante pode estar por trás de ambos os hacks. A descoberta levanta questões sobre coordenação criminal ou cópia de técnicas de exploração. Os dois protocolos implementam diferentes mecanismos de segurança, o que torna possibilidade de atacante único ainda mais preocupante, já que sugeriria expertise profunda. O volume total roubado ultrapassa dezenas de milhões de dólares em criptomoedas. Comunidade cripto está em alerta, com múltiplos projetos revisando código e auditando segurança. A dinâmica de ataques em cascata reflete crescente sofisticação de bad actors no espaço. Projetos afetados enfrentam pressão reputacional significativa. O episódio ilustra risco persistente de contratos inteligentes e importância de auditorias rigorosas. Governos e órgãos reguladores estão acompanhando de perto para informar futuras regulações de segurança.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/humanity-protocol-kelp-dao-stolen-funds-commingle-same-attacker/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="ETFs Ethereum Registram Saídas de US$ 12,85 Milhões; Por Que Bulls de ETH Enfrentam Batalha Árdua ETFs de Ethereum experimentaram redemptions de US$ 12,85 milhões nas últimas sessões, sinalizando fraqueza na demanda por parte de investidores institucionais por exposição ao segundo maior cripto por market cap. A série de saídas reflete sentimento pessimista amplo e rotação de capital para ativos menos voláteis. Ethereum enfrenta headwinds técnicos e fundamental: competição de L2s está canibalizando volume, execução em upgrades pós-Dencun está abaixo de expectativas, e rentabilidade de staking está sob pressão. O desenho técnico de ETH também sofre com múltiplos downside risks: possível bearishness de grandes holders, inflação continuada de novos tokens via validadores. Analistas apontam que ETH historicamente underperforma Bitcoin em mercados de baixa, já que investors reduzem exposição a altcoins primeiro. A batalha de bulls passa por recuperação de utilidade na rede e evidência de crescimento de receitas. Sem catalisadores positivos claros, outflows podem continuar. Alguns argumentam que preço de ETH ainda está acima de fair value intrínseco. AMBCrypto" data-title="ETFs Ethereum Registram Saídas de US$ 12,85 Milhões; Por Que Bulls de ETH Enfrentam Batalha Árdua" data-share-url="https://ambcrypto.com/ethereum-etfs-see-12-85m-outflows-why-eth-bulls-face-an-uphill-battle/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">ETFs Ethereum Registram Saídas de US$ 12,85 Milhões; Por Que Bulls de ETH Enfrentam Batalha Árdua</div>
+        <div class="news-summary">ETFs de Ethereum experimentaram redemptions de US$ 12,85 milhões nas últimas sessões, sinalizando fraqueza na demanda por parte de investidores institucionais por exposição ao segundo maior cripto por market cap. A série de saídas reflete sentimento pessimista amplo e rotação de capital para ativos menos voláteis. Ethereum enfrenta headwinds técnicos e fundamental: competição de L2s está canibalizando volume, execução em upgrades pós-Dencun está abaixo de expectativas, e rentabilidade de staking está sob pressão. O desenho técnico de ETH também sofre com múltiplos downside risks: possível bearishness de grandes holders, inflação continuada de novos tokens via validadores. Analistas apontam que ETH historicamente underperforma Bitcoin em mercados de baixa, já que investors reduzem exposição a altcoins primeiro. A batalha de bulls passa por recuperação de utilidade na rede e evidência de crescimento de receitas. Sem catalisadores positivos claros, outflows podem continuar. Alguns argumentam que preço de ETH ainda está acima de fair value intrínseco.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/ethereum-etfs-see-12-85m-outflows-why-eth-bulls-face-an-uphill-battle/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Sharplink Adiciona US$ 62,4 Milhões em Ethereum Apesar de Demanda Fraca de ETH A entidade Sharplink adicionou aproximadamente US$ 62,4 milhões em Ethereum a suas reservas estratégicas, em movimento contrário à tendência geral de saída de capital do ativo. A compra ocorre simultaneamente com fluxos negativos generalizados em ETFs de ETH e redução de demanda institucional. Analistas especulam se estratégia de Sharplink pode replicar dinâmica bem-sucedida de Bitmine acumulando ETH durante períodos de fraqueza, posicionando-se para valorização futura. O acúmulo também pode sinalizar confiança interna na tecnologia ou visão de longo prazo apesar de pressão de curto prazo. CryptoQuant questionou a rationale econômica da estratégia, sugerindo que Sharplink pode estar cometendo erro tático. O episódio ilustra divergência entre mega holders estratégicos e investidores convencionais em visão sobre Ethereum. Se Sharplink estiver certa, suas compras representarão bargain em retrospecto. Se estiver errada, acúmulo adicional durante downturn pode ser imprudente. O comportamento é observado de perto por analistas de whale activities. AMBCrypto" data-title="Sharplink Adiciona US$ 62,4 Milhões em Ethereum Apesar de Demanda Fraca de ETH" data-share-url="https://ambcrypto.com/sharplink-adds-62-4m-in-ethereum-despite-eths-weak-demand-heres-why">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Sharplink Adiciona US$ 62,4 Milhões em Ethereum Apesar de Demanda Fraca de ETH</div>
+        <div class="news-summary">A entidade Sharplink adicionou aproximadamente US$ 62,4 milhões em Ethereum a suas reservas estratégicas, em movimento contrário à tendência geral de saída de capital do ativo. A compra ocorre simultaneamente com fluxos negativos generalizados em ETFs de ETH e redução de demanda institucional. Analistas especulam se estratégia de Sharplink pode replicar dinâmica bem-sucedida de Bitmine acumulando ETH durante períodos de fraqueza, posicionando-se para valorização futura. O acúmulo também pode sinalizar confiança interna na tecnologia ou visão de longo prazo apesar de pressão de curto prazo. CryptoQuant questionou a rationale econômica da estratégia, sugerindo que Sharplink pode estar cometendo erro tático. O episódio ilustra divergência entre mega holders estratégicos e investidores convencionais em visão sobre Ethereum. Se Sharplink estiver certa, suas compras representarão bargain em retrospecto. Se estiver errada, acúmulo adicional durante downturn pode ser imprudente. O comportamento é observado de perto por analistas de whale activities.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/sharplink-adds-62-4m-in-ethereum-despite-eths-weak-demand-heres-why" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercado Cripto em Bear Market Ainda Ativo? Rotação de Capital de US$ 20B Sugere que Sim Uma análise de fluxos de capital revela que aproximadamente US$ 20 bilhões estão sendo realocados de ativos cripto (especialmente Bitcoin e ETFs multi-cripto) para ações de IA e semiconductores. A rotação maciça sinaliza que investidores estão redefinindo composição de portfólio para temas que percebem como menos voláteis ou mais promissores. O fenômeno confirma diagnóstico pessimista: bear market em cripto pode não ter terminado, com capital fleindo para outras classes de ativos consideradas mais seguras. A coincidência com alerta do BIS sobre possível bolha de IA é irônica, já que capital está migrando para aquilo que reguladores consideram riscoso. Analistas veem padrão onde investidores retail e parte do institutional estão em fuga de risco. A rotação também reflete ganhos não realizados em ações de IA que investidores buscam concretizar. O movimento pode pressionar preços de cripto adicionalmente conforme liquidações em cascata ocorrem. O timing é significativo: estamos vendo pico de capital saindo de cripto justamente quando sentimento está mais negativo. AMBCrypto" data-title="Mercado Cripto em Bear Market Ainda Ativo? Rotação de Capital de US$ 20B Sugere que Sim" data-share-url="https://ambcrypto.com/crypto-bear-market-isnt-over-ais-20b-capital-rotation-says-so">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Mercado Cripto em Bear Market Ainda Ativo? Rotação de Capital de US$ 20B Sugere que Sim</div>
+        <div class="news-summary">Uma análise de fluxos de capital revela que aproximadamente US$ 20 bilhões estão sendo realocados de ativos cripto (especialmente Bitcoin e ETFs multi-cripto) para ações de IA e semiconductores. A rotação maciça sinaliza que investidores estão redefinindo composição de portfólio para temas que percebem como menos voláteis ou mais promissores. O fenômeno confirma diagnóstico pessimista: bear market em cripto pode não ter terminado, com capital fleindo para outras classes de ativos consideradas mais seguras. A coincidência com alerta do BIS sobre possível bolha de IA é irônica, já que capital está migrando para aquilo que reguladores consideram riscoso. Analistas veem padrão onde investidores retail e parte do institutional estão em fuga de risco. A rotação também reflete ganhos não realizados em ações de IA que investidores buscam concretizar. O movimento pode pressionar preços de cripto adicionalmente conforme liquidações em cascata ocorrem. O timing é significativo: estamos vendo pico de capital saindo de cripto justamente quando sentimento está mais negativo.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/crypto-bear-market-isnt-over-ais-20b-capital-rotation-says-so" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Por Que CEO de Coinbase Vê Tokenização como 'Win para Todos' O CEO de Coinbase expressou otimismo considerável sobre tokenização de ativos tradicionais, afirmando que o processo beneficiaria investidores, empresas e o ecossistema cripto simultaneamente. A posição reflete visão de longo prazo que blockchain pode revolucionar como ativos são mantidos, transferidos e negociados. Tokenização prometeria menor fricção em transações, settlement mais rápido e acesso democratizado a ativos previamente restritos. O CEO reconhece, contudo, que progresso regulatório ainda é lento e unclear, criando barreira significativa para adoção em massa. A narrativa de tokenização ganhou tração em 2024-2026 como potencial use case real de blockchain além de moeda especulativa. Instituições financeiras tradicionais começam a explorar tokenização, sinalizando legitimação gradual. Críticos apontam que promessas de tokenização têm sido repetidas há anos com pouco resultado prático. O CEO de Coinbase está apuntando a construir narrativa de criptomoedas como infraestrutura financeira real, não apenas especulação. AMBCrypto" data-title="Por Que CEO de Coinbase Vê Tokenização como 'Win para Todos'" data-share-url="https://ambcrypto.com/why-coinbase-ceo-views-tokenization-as-a-win-for-everyone/">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Por Que CEO de Coinbase Vê Tokenização como 'Win para Todos'</div>
+        <div class="news-summary">O CEO de Coinbase expressou otimismo considerável sobre tokenização de ativos tradicionais, afirmando que o processo beneficiaria investidores, empresas e o ecossistema cripto simultaneamente. A posição reflete visão de longo prazo que blockchain pode revolucionar como ativos são mantidos, transferidos e negociados. Tokenização prometeria menor fricção em transações, settlement mais rápido e acesso democratizado a ativos previamente restritos. O CEO reconhece, contudo, que progresso regulatório ainda é lento e unclear, criando barreira significativa para adoção em massa. A narrativa de tokenização ganhou tração em 2024-2026 como potencial use case real de blockchain além de moeda especulativa. Instituições financeiras tradicionais começam a explorar tokenização, sinalizando legitimação gradual. Críticos apontam que promessas de tokenização têm sido repetidas há anos com pouco resultado prático. O CEO de Coinbase está apuntando a construir narrativa de criptomoedas como infraestrutura financeira real, não apenas especulação.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/why-coinbase-ceo-views-tokenization-as-a-win-for-everyone/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Pandl de Grayscale Recomenda Venda de US$ 3 Bilhões em Bitcoin para Restaurar Confiança Zach Pandl, chefe de pesquisa de Grayscale, sugeriu publicamente que o fundo deveria vender US$ 3 bilhões em Bitcoin de suas reservas para cobrir obrigações de caixa e restaurar confiança de investidores na solidez financeira da organização. A recomendação é controversa em comunidade cripto, onde holdings de Bitcoin são frequentemente consideradas intocáveis. CryptoQuant contestou a lógica de Pandl, argumentando que venda em larga escala geraria sinais negativos de mercado e potencialmente deprimiria preço de Bitcoin ainda mais. A disputa ilustra tensões internas dentro de grandes gestoras de ativos cripto entre pressão de conformidade financeira e convicção de longo prazo em Bitcoin. Grayscale historicamente foi acumuladora agressiva de Bitcoin, mas agora enfrenta realidades de governess corporativa. A questão coloca em perspectiva dilema que todas as big crypto holdings enfrentam: se reter ou liquidar. Analistas veem movimento de Pandl como sinal de que até mesmo believers convictos enfrentam dúvidas quando pressão operacional aumenta. Cointelegraph" data-title="Pandl de Grayscale Recomenda Venda de US$ 3 Bilhões em Bitcoin para Restaurar Confiança" data-share-url="https://cointelegraph.com/news/grayscales-pandl-strategy-sells-3b-bitcoin-confidence">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">04:59</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Pandl de Grayscale Recomenda Venda de US$ 3 Bilhões em Bitcoin para Restaurar Confiança</div>
+        <div class="news-summary">Zach Pandl, chefe de pesquisa de Grayscale, sugeriu publicamente que o fundo deveria vender US$ 3 bilhões em Bitcoin de suas reservas para cobrir obrigações de caixa e restaurar confiança de investidores na solidez financeira da organização. A recomendação é controversa em comunidade cripto, onde holdings de Bitcoin são frequentemente consideradas intocáveis. CryptoQuant contestou a lógica de Pandl, argumentando que venda em larga escala geraria sinais negativos de mercado e potencialmente deprimiria preço de Bitcoin ainda mais. A disputa ilustra tensões internas dentro de grandes gestoras de ativos cripto entre pressão de conformidade financeira e convicção de longo prazo em Bitcoin. Grayscale historicamente foi acumuladora agressiva de Bitcoin, mas agora enfrenta realidades de governess corporativa. A questão coloca em perspectiva dilema que todas as big crypto holdings enfrentam: se reter ou liquidar. Analistas veem movimento de Pandl como sinal de que até mesmo believers convictos enfrentam dúvidas quando pressão operacional aumenta.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/grayscales-pandl-strategy-sells-3b-bitcoin-confidence" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin Cai Abaixo de US$ 60 Mil, Rumo a Raro Prejuízo Trimestral Consecutivo Bitcoin caiu abaixo da marca psicológica de US$ 60 mil nas últimas horas, consolidando uma performance negativa que coloca o ativo em trilha para registrar perdas em dois trimestres consecutivos — um cenário raro na história de dez anos da criptomoeda. O token está em baixa de aproximadamente 7% apenas na semana, com altcoins sofrendo quedas ainda mais acentuadas. A deterioração reflete pressão macro maior: incerteza sobre inflação global, possível bolha de IA e rotação de capital para ativos menos voláteis. Dados de fluxo mostram saídas líquidas significativas de exchanges, sugerindo capitulação de investidores. ETFs de Bitcoin e Ethereum também registram redemptions crescentes. O cenário coloca em xeque narrativa de Bitcoin como ativo de proteção, já que correlação com ações tem aumentado. Analistas advertem que suportes técnicos criticamente baixos podem gerar momentum adicional de baixa. O fim do segundo trimestre em vermelho contrasta fortemente com otimismo que prevalecia no início de 2026. CoinDesk" data-title="Bitcoin Cai Abaixo de US$ 60 Mil, Rumo a Raro Prejuízo Trimestral Consecutivo" data-share-url="https://www.coindesk.com/markets/2026/06/28/bitcoin-falls-below-usd60-000-on-track-for-a-rare-back-to-back-quarterly-loss">
+        <div class="news-meta">
+          <span class="news-date">28 jun 2026</span>
+          <span class="news-time">04:10</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin Cai Abaixo de US$ 60 Mil, Rumo a Raro Prejuízo Trimestral Consecutivo</div>
+        <div class="news-summary">Bitcoin caiu abaixo da marca psicológica de US$ 60 mil nas últimas horas, consolidando uma performance negativa que coloca o ativo em trilha para registrar perdas em dois trimestres consecutivos — um cenário raro na história de dez anos da criptomoeda. O token está em baixa de aproximadamente 7% apenas na semana, com altcoins sofrendo quedas ainda mais acentuadas. A deterioração reflete pressão macro maior: incerteza sobre inflação global, possível bolha de IA e rotação de capital para ativos menos voláteis. Dados de fluxo mostram saídas líquidas significativas de exchanges, sugerindo capitulação de investidores. ETFs de Bitcoin e Ethereum também registram redemptions crescentes. O cenário coloca em xeque narrativa de Bitcoin como ativo de proteção, já que correlação com ações tem aumentado. Analistas advertem que suportes técnicos criticamente baixos podem gerar momentum adicional de baixa. O fim do segundo trimestre em vermelho contrasta fortemente com otimismo que prevalecia no início de 2026.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/06/28/bitcoin-falls-below-usd60-000-on-track-for-a-rare-back-to-back-quarterly-loss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
