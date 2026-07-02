@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">2 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">Enquanto a Rússia intensifica ataques contra a Ucrânia e tensões geopolíticas se acirram no Oriente Médio, o mercado de trabalho americano mostra sinais de desaceleração com apenas 57 mil empregos criados em junho, pressionando o Fed a reconsiderar sua postura sobre inflação. A IA emerge como o grande divisor de águas econômico — gerando demissões em massa no setor financeiro e tecnológico, ao mesmo tempo que empresas como OpenAI, SoftBank e Meta apostam bilhões em infraestrutura de computação, refletindo uma corrida global por domínio tecnológico. Bitcoin e criptomoedas reagem positivamente aos sinais dovish do Fed, enquanto instituições tradicionais como Standard Chartered e Metaplanet intensificam a adoção de ativos digitais como reserva de valor.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-07-01/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02" selected>2026-07-02</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Rússia intensifica bombardeios contra Kiev com ataques mortais Autoridades locais confirmaram que pelo menos 18 pessoas foram mortas em ataques russos contra a capital ucraniana Kiev nesta quarta-feira. O presidente Volodymyr Zelensky havia alertado previamente sobre preparativos russos para um 'ataque massivo' nas horas anteriores ao bombardeio. Os ataques atingiram infraestrutura civil e áreas residenciais, refletindo a estratégia contínua da Rússia de pressionar militarmente a Ucrânia mesmo após anos de conflito. Os impactos são significativos não apenas em termos humanitários, mas também geopolíticos, sinalizando que Moscou mantém capacidade ofensiva robusta apesar das perdas acumuladas. O evento reforça a importância do apoio ocidental contínuo à Ucrânia e questiona a possibilidade de negociações de paz em curto prazo. As consequências incluem maior mobilização de recursos de defesa aérea, possível aumento de pedidos de armas ao Ocidente e reafirmação do status de guerra de longa duração. NYT - World News" data-title="Rússia intensifica bombardeios contra Kiev com ataques mortais" data-share-url="https://www.nytimes.com/live/2026/07/02/world/ukraine-kyiv-russia-attack">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">09:45</span>
+          <span class="news-source">NYT - World News</span>
+        </div>
+        <div class="news-title">Rússia intensifica bombardeios contra Kiev com ataques mortais</div>
+        <div class="news-summary">Autoridades locais confirmaram que pelo menos 18 pessoas foram mortas em ataques russos contra a capital ucraniana Kiev nesta quarta-feira. O presidente Volodymyr Zelensky havia alertado previamente sobre preparativos russos para um 'ataque massivo' nas horas anteriores ao bombardeio. Os ataques atingiram infraestrutura civil e áreas residenciais, refletindo a estratégia contínua da Rússia de pressionar militarmente a Ucrânia mesmo após anos de conflito. Os impactos são significativos não apenas em termos humanitários, mas também geopolíticos, sinalizando que Moscou mantém capacidade ofensiva robusta apesar das perdas acumuladas. O evento reforça a importância do apoio ocidental contínuo à Ucrânia e questiona a possibilidade de negociações de paz em curto prazo. As consequências incluem maior mobilização de recursos de defesa aérea, possível aumento de pedidos de armas ao Ocidente e reafirmação do status de guerra de longa duração.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/07/02/world/ukraine-kyiv-russia-attack" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Contratações nos EUA desaceleram dramaticamente em junho com apenas 57 mil empregos O relatório de emprego de junho dos EUA divulgado esta manhã revelou que apenas 57 mil novas vagas foram criadas, bem abaixo das expectativas de mercado de cerca de 200 mil postos. Apesar da desaceleração na criação de empregos, a taxa de desemprego caiu ligeiramente, um sinal misto que intriga analistas. Os dados indicam possível esgotamento do mercado de trabalho americano após o rally de contratações no início de 2026. O mercado interpretou o número como dovish para o Federal Reserve, reduzindo expectativas de aumentos de taxa de juros no curto prazo. A notícia gerou movimento imediato em ativos de risco, com expectativa de que o Fed pause ou até considere cortes de taxa ainda em 2026. As consequências econômicas incluem pressão menor sobre inflação, possível suporte a valuations de ativos de risco, mas também sinais preocupantes sobre saúde do crescimento econômico americano e potencial recessão futura. Bloomberg Economics / CoinDesk" data-title="Contratações nos EUA desaceleram dramaticamente em junho com apenas 57 mil empregos" data-share-url="https://www.coindesk.com/markets/2026/07/02/u-s-payroll-growth-slowed-sharply-in-june-adding-only-57-000-jobs">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">09:37</span>
+          <span class="news-source">Bloomberg Economics / CoinDesk</span>
+        </div>
+        <div class="news-title">Contratações nos EUA desaceleram dramaticamente em junho com apenas 57 mil empregos</div>
+        <div class="news-summary">O relatório de emprego de junho dos EUA divulgado esta manhã revelou que apenas 57 mil novas vagas foram criadas, bem abaixo das expectativas de mercado de cerca de 200 mil postos. Apesar da desaceleração na criação de empregos, a taxa de desemprego caiu ligeiramente, um sinal misto que intriga analistas. Os dados indicam possível esgotamento do mercado de trabalho americano após o rally de contratações no início de 2026. O mercado interpretou o número como dovish para o Federal Reserve, reduzindo expectativas de aumentos de taxa de juros no curto prazo. A notícia gerou movimento imediato em ativos de risco, com expectativa de que o Fed pause ou até considere cortes de taxa ainda em 2026. As consequências econômicas incluem pressão menor sobre inflação, possível suporte a valuations de ativos de risco, mas também sinais preocupantes sobre saúde do crescimento econômico americano e potencial recessão futura.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/02/u-s-payroll-growth-slowed-sharply-in-june-adding-only-57-000-jobs" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Mercado de trabalho pressiona o Federal Reserve a reconsiderar postura sobre taxas de juros Wall Street e Washington estão em alerta máximo sobre a saúde do mercado de trabalho americano, que mostra sinais conflitantes de força e fraqueza simultaneamente. Enquanto alguns indicadores sugerem mercado de trabalho robusto com demanda por trabalhadores, outros apontam desaceleração na contratação e aumento de desemprego entre grupos específicos. O Federal Reserve, liderado pelo novo presidente Kevin Warsh, enfrenta dilema de policy: manter postura hawkish sobre taxas de juros para controlar qualquer pressão inflacionária residual, ou pivotar para postura mais dovish ante sinais de fraqueza no mercado real. O comunicado recente de Warsh apontava otimismo sobre o impacto produtivo da IA na economia, sugerindo que o Fed pode ter espaço para não apertar política monetária. As implicações incluem volatilidade continuada em mercados de renda fixa, possível movimentação em treasuries americanas, e impacto significativo nos planos de investimento corporativo que dependem de clareza sobre trajetória de taxas. NYT - Business" data-title="Mercado de trabalho pressiona o Federal Reserve a reconsiderar postura sobre taxas de juros" data-share-url="https://www.nytimes.com/2026/07/02/business/dealbook/jobs-fed-rates-wall-street.html">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">NYT - Business</span>
+        </div>
+        <div class="news-title">Mercado de trabalho pressiona o Federal Reserve a reconsiderar postura sobre taxas de juros</div>
+        <div class="news-summary">Wall Street e Washington estão em alerta máximo sobre a saúde do mercado de trabalho americano, que mostra sinais conflitantes de força e fraqueza simultaneamente. Enquanto alguns indicadores sugerem mercado de trabalho robusto com demanda por trabalhadores, outros apontam desaceleração na contratação e aumento de desemprego entre grupos específicos. O Federal Reserve, liderado pelo novo presidente Kevin Warsh, enfrenta dilema de policy: manter postura hawkish sobre taxas de juros para controlar qualquer pressão inflacionária residual, ou pivotar para postura mais dovish ante sinais de fraqueza no mercado real. O comunicado recente de Warsh apontava otimismo sobre o impacto produtivo da IA na economia, sugerindo que o Fed pode ter espaço para não apertar política monetária. As implicações incluem volatilidade continuada em mercados de renda fixa, possível movimentação em treasuries americanas, e impacto significativo nos planos de investimento corporativo que dependem de clareza sobre trajetória de taxas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/02/business/dealbook/jobs-fed-rates-wall-street.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Escassez de gasolina russa começa a se espalhar pela Ásia Central A crise de fornecimento de gasolina na Rússia, causada por danos a refinarias durante o conflito ucraniano e sanções ocidentais, está começando a se estender para países da Ásia Central que historicamente dependiam de exportações russas. Países como Cazaquistão, Quirguistão e Tajiquistão têm capacidade limitada de refino doméstico e há anos contam com importações russas baratas. A escassez russa está forçando esses países a buscar alternativas de fornecimento em mercados internacionais mais caros, impactando seus orçamentos e inflação interna. O fenômeno demonstra como as sanções ao setor energético russo estão criando efeitos colaterais econômicos em toda a região eurasiana. A Rússia está priorizando sua própria demanda interna, deixando menos combustível disponível para exportação, criando pressão nos preços globais de energia. As implicações incluem potencial instabilidade política na Ásia Central, aumento de inflação nesses países, possível aproximação deles com fornecedores alternativos como Irã ou países do Golfo, e impacto no comércio regional. Bloomberg Economics" data-title="Escassez de gasolina russa começa a se espalhar pela Ásia Central" data-share-url="https://www.bloomberg.com/news/articles/2026-07-02/russian-gasoline-shortage-begins-to-spill-into-central-asia">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:16</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Escassez de gasolina russa começa a se espalhar pela Ásia Central</div>
+        <div class="news-summary">A crise de fornecimento de gasolina na Rússia, causada por danos a refinarias durante o conflito ucraniano e sanções ocidentais, está começando a se estender para países da Ásia Central que historicamente dependiam de exportações russas. Países como Cazaquistão, Quirguistão e Tajiquistão têm capacidade limitada de refino doméstico e há anos contam com importações russas baratas. A escassez russa está forçando esses países a buscar alternativas de fornecimento em mercados internacionais mais caros, impactando seus orçamentos e inflação interna. O fenômeno demonstra como as sanções ao setor energético russo estão criando efeitos colaterais econômicos em toda a região eurasiana. A Rússia está priorizando sua própria demanda interna, deixando menos combustível disponível para exportação, criando pressão nos preços globais de energia. As implicações incluem potencial instabilidade política na Ásia Central, aumento de inflação nesses países, possível aproximação deles com fornecedores alternativos como Irã ou países do Golfo, e impacto no comércio regional.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-02/russian-gasoline-shortage-begins-to-spill-into-central-asia" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Indicador de inadimplência de empréstimos ao consumidor britânico atinge máximo desde 2009 Um índice que mede a inadimplência de britânicos em cartões de crédito e outros empréstimos não-garantidos atingiu seu nível mais alto desde a crise financeira de 2008-2009. O dado sugere deterioração significativa na saúde financeira dos consumidores britânicos, que enfrentam pressão de juros altos, inflação persistente e custo de vida elevado. O Bank of England mantém taxas de juros em seu maior nível em 16 anos para combater inflação, o que aumenta o custo de endividamento para famílias britânicas. A tendência de inadimplência crescente é um sinal precoce de possível desaceleração econômica no Reino Unido, já que consumo representa cerca de 60% do PIB britânico. O fenômeno pode pressionar o governo a reconsiderar sua política monetária e abrir espaço para cortes de taxa mais cedo do que esperado. As consequências incluem menor crescimento do consumo, impacto em varejistas, possível aumento de provisões para perdas em bancos, maior pressão social sobre política de austeridade e potencial desaceleração econômica mais acentuada que o esperado. Bloomberg Economics" data-title="Indicador de inadimplência de empréstimos ao consumidor britânico atinge máximo desde 2009" data-share-url="https://www.bloomberg.com/news/articles/2026-07-02/uk-consumer-loan-default-gauge-jumps-to-highest-since-2009">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:02</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Indicador de inadimplência de empréstimos ao consumidor britânico atinge máximo desde 2009</div>
+        <div class="news-summary">Um índice que mede a inadimplência de britânicos em cartões de crédito e outros empréstimos não-garantidos atingiu seu nível mais alto desde a crise financeira de 2008-2009. O dado sugere deterioração significativa na saúde financeira dos consumidores britânicos, que enfrentam pressão de juros altos, inflação persistente e custo de vida elevado. O Bank of England mantém taxas de juros em seu maior nível em 16 anos para combater inflação, o que aumenta o custo de endividamento para famílias britânicas. A tendência de inadimplência crescente é um sinal precoce de possível desaceleração econômica no Reino Unido, já que consumo representa cerca de 60% do PIB britânico. O fenômeno pode pressionar o governo a reconsiderar sua política monetária e abrir espaço para cortes de taxa mais cedo do que esperado. As consequências incluem menor crescimento do consumo, impacto em varejistas, possível aumento de provisões para perdas em bancos, maior pressão social sobre política de austeridade e potencial desaceleração econômica mais acentuada que o esperado.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-02/uk-consumer-loan-default-gauge-jumps-to-highest-since-2009" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Google condenado a pagar multa de 4,1 bilhões de euros por abuso antitruste com Android O Tribunal de Justiça da União Europeia confirmou decisão anterior que condena Google a pagar 4,1 bilhões de euros (aproximadamente 4,7 bilhões de dólares) por abuso de sua posição dominante no Android para bloquear concorrentes. A corte europeia rejeitou todos os argumentos da empresa de que o sistema operacional permanece aberto e competitivo. A decisão encerra uma luta legal de anos e reafirma o compromisso da UE em regular big tech e evitar práticas anticompetitivas. Google argumentou que o julgamento falha em reconhecer seus investimentos significativos para manter Android aberto, mas a corte discordou, citando evidências de como a empresa vinculava serviços essenciais como Google Play ao sistema operacional. A multa é a segunda maior já aplicada à Google pela UE, após a sanção de 2.42 bilhões em 2017. As consequências incluem possível necessidade de reestruturação do modelo de negócio do Android, pressão regulatória aumentada sobre outras plataformas Google, e fortalecimento do precedente regulatório europeu que pode inspirar ações similares globalmente. BBC News / Bloomberg Technology" data-title="Google condenado a pagar multa de 4,1 bilhões de euros por abuso antitruste com Android" data-share-url="https://www.bbc.co.uk/news/articles/cvgj0pp5p62o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">06:46</span>
+          <span class="news-source">BBC News / Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Google condenado a pagar multa de 4,1 bilhões de euros por abuso antitruste com Android</div>
+        <div class="news-summary">O Tribunal de Justiça da União Europeia confirmou decisão anterior que condena Google a pagar 4,1 bilhões de euros (aproximadamente 4,7 bilhões de dólares) por abuso de sua posição dominante no Android para bloquear concorrentes. A corte europeia rejeitou todos os argumentos da empresa de que o sistema operacional permanece aberto e competitivo. A decisão encerra uma luta legal de anos e reafirma o compromisso da UE em regular big tech e evitar práticas anticompetitivas. Google argumentou que o julgamento falha em reconhecer seus investimentos significativos para manter Android aberto, mas a corte discordou, citando evidências de como a empresa vinculava serviços essenciais como Google Play ao sistema operacional. A multa é a segunda maior já aplicada à Google pela UE, após a sanção de 2.42 bilhões em 2017. As consequências incluem possível necessidade de reestruturação do modelo de negócio do Android, pressão regulatória aumentada sobre outras plataformas Google, e fortalecimento do precedente regulatório europeu que pode inspirar ações similares globalmente.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cvgj0pp5p62o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="IA está reformulando a economia, mas medir seu impacto permanece desafiador Economistas e pesquisadores enfrentam dificuldade crescente em quantificar o impacto real da inteligência artificial na economia americana e global. Alguns dados sugerem que IA já está causando perdas de empregos significativas em certos setores, particularmente em processamento administrativo e atendimento ao cliente. Outros indicadores mostram o oposto — aumento em contratações, produtividade e criação de novas categorias de empregos. A discrepância reflete realidades regionais diferentes, variações setoriais e possível defasagem entre implementação de tecnologia e coleta de dados estatísticos. Metodologias tradicionais de medição econômica não foram desenvolvidas para rastrear tecnologias tão disruptivas quanto IA generativa. O Federal Reserve e órgãos de estatística estão pressurizado a desenvolver novas métricas e metodologias. As implicações incluem incerteza sobre real trajetória de inflação e desemprego, dificuldade para policy makers definirem adequadamente política monetária e fiscal, e possível subestimação de impactos negativos ou positivos da IA sobre o mercado de trabalho. NYT - Business" data-title="IA está reformulando a economia, mas medir seu impacto permanece desafiador" data-share-url="https://www.nytimes.com/2026/07/02/business/economy/ai-economy-data.html">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">06:03</span>
+          <span class="news-source">NYT - Business</span>
+        </div>
+        <div class="news-title">IA está reformulando a economia, mas medir seu impacto permanece desafiador</div>
+        <div class="news-summary">Economistas e pesquisadores enfrentam dificuldade crescente em quantificar o impacto real da inteligência artificial na economia americana e global. Alguns dados sugerem que IA já está causando perdas de empregos significativas em certos setores, particularmente em processamento administrativo e atendimento ao cliente. Outros indicadores mostram o oposto — aumento em contratações, produtividade e criação de novas categorias de empregos. A discrepância reflete realidades regionais diferentes, variações setoriais e possível defasagem entre implementação de tecnologia e coleta de dados estatísticos. Metodologias tradicionais de medição econômica não foram desenvolvidas para rastrear tecnologias tão disruptivas quanto IA generativa. O Federal Reserve e órgãos de estatística estão pressurizado a desenvolver novas métricas e metodologias. As implicações incluem incerteza sobre real trajetória de inflação e desemprego, dificuldade para policy makers definirem adequadamente política monetária e fiscal, e possível subestimação de impactos negativos ou positivos da IA sobre o mercado de trabalho.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/02/business/economy/ai-economy-data.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Drones russos sobre a Europa levantam preocupações com atividades de reconhecimento Um novo estudo apoiado por analistas e líderes políticos revela que voos frequentes de drones russos sobre ativos militares da OTAN marcam uma campanha sistemática de sondagem de defesas do bloco ocidental. Os incidentes ocorrem regularmente em espaço aéreo europeu, particularmente sobre bases militares estratégicas na Polônia, Romênia e Bálticos. A campanha parece estar mapeando vulnerabilidades de defesa aérea, padrões de resposta e capacidades de detecção da OTAN. Especialistas interpretam a atividade como preparação para possíveis operações futuras, seja para escalonamento do conflito ucraniano ou para outras ameaças geopolíticas na região. O fenômeno escalou significativamente desde 2024 e continua a aumentar em frequência e sofisticação. As implicações incluem pressão para modernização de sistemas de defesa da OTAN, maior gasto militar europeu e potencial para resposta militar direta caso os drones penetrem em território OTAN ou ataquem infraestrutura crítica. NYT - World News" data-title="Drones russos sobre a Europa levantam preocupações com atividades de reconhecimento" data-share-url="https://www.nytimes.com/2026/07/02/world/europe/drone-incursions-europe-russia.html">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">05:30</span>
+          <span class="news-source">NYT - World News</span>
+        </div>
+        <div class="news-title">Drones russos sobre a Europa levantam preocupações com atividades de reconhecimento</div>
+        <div class="news-summary">Um novo estudo apoiado por analistas e líderes políticos revela que voos frequentes de drones russos sobre ativos militares da OTAN marcam uma campanha sistemática de sondagem de defesas do bloco ocidental. Os incidentes ocorrem regularmente em espaço aéreo europeu, particularmente sobre bases militares estratégicas na Polônia, Romênia e Bálticos. A campanha parece estar mapeando vulnerabilidades de defesa aérea, padrões de resposta e capacidades de detecção da OTAN. Especialistas interpretam a atividade como preparação para possíveis operações futuras, seja para escalonamento do conflito ucraniano ou para outras ameaças geopolíticas na região. O fenômeno escalou significativamente desde 2024 e continua a aumentar em frequência e sofisticação. As implicações incluem pressão para modernização de sistemas de defesa da OTAN, maior gasto militar europeu e potencial para resposta militar direta caso os drones penetrem em território OTAN ou ataquem infraestrutura crítica.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/02/world/europe/drone-incursions-europe-russia.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ações de IA sul-coreana em rota levam índices emergentes a mínima de três semanas Desperta global de ações de semicondutores e IA sul-coreanas após preocupações renovadas com competição de chips puxou índices de ações emergentes para mínima de três semanas nesta quarta-feira. O Kospi caiu 7,9% em um dos piores dias do ano para mercado sul-coreano. Grandes players como Samsung e SK Hynix sofreram vendas pesadas após preocupações sobre demanda de chips especializados para IA. Analistas citam competição de chip AI chinesa, desaceleração possível em demanda de datacenter, e preocupações sobre valuation exagerada de fabricantes de chips para IA. O contagion para mercados emergentes reflete o peso significativo que IA e semicondutores têm em ativos emergentes, particularmente Ásia. As implicações incluem potencial volatilidade continuada em ações de semicondutores, impacto em valuations de tech globalmente, possível rotação de capital de mercados emergentes para USA, pressão em crescimento de economia sul-coreana que depende muito de exports de chips. Bloomberg Technology" data-title="Ações de IA sul-coreana em rota levam índices emergentes a mínima de três semanas" data-share-url="https://www.bloomberg.com/news/articles/2026-07-02/south-korean-ai-rout-drags-emerging-stocks-to-three-week-low">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">09:27</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Ações de IA sul-coreana em rota levam índices emergentes a mínima de três semanas</div>
+        <div class="news-summary">Desperta global de ações de semicondutores e IA sul-coreanas após preocupações renovadas com competição de chips puxou índices de ações emergentes para mínima de três semanas nesta quarta-feira. O Kospi caiu 7,9% em um dos piores dias do ano para mercado sul-coreano. Grandes players como Samsung e SK Hynix sofreram vendas pesadas após preocupações sobre demanda de chips especializados para IA. Analistas citam competição de chip AI chinesa, desaceleração possível em demanda de datacenter, e preocupações sobre valuation exagerada de fabricantes de chips para IA. O contagion para mercados emergentes reflete o peso significativo que IA e semicondutores têm em ativos emergentes, particularmente Ásia. As implicações incluem potencial volatilidade continuada em ações de semicondutores, impacto em valuations de tech globalmente, possível rotação de capital de mercados emergentes para USA, pressão em crescimento de economia sul-coreana que depende muito de exports de chips.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-02/south-korean-ai-rout-drags-emerging-stocks-to-three-week-low" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Sociedade de São Pio X é excomungada pelo Vaticano em primeira grande crise do Papa Leão O Vaticano anunciou excomunhão da Sociedade de São Pio X em primeiro grande conflito eclesiástico da administração de Papa Leão XIV. O movimento contra a organização traditionalist segue sua decisão de desafiar o papa consagrando novos bispos contra suas directives explícitas. A excomunhão representa ruptura significativa entre Roma e movimento traditionalist que há décadas busca preservar missa em latim e teologia pré-Concílio Vaticano II. A Sociedade de São Pio X é maior organização independente de traditionalism católico global. O Papa Leão tentou diálogo inicialmente mas sua autoridade foi desafiada quando a sociedade procedeu com consagrações não autorizadas. A excomunhão sinaliza que novo papa está disposto a agir com firmeza contra desafios à autoridade papal. As implicações incluem maior fragmentação dentro da Igreja Católica, possível enfraquecimento de autoridade papal, pressão do movimento traditionalist para desafiar outras directives do Vaticano, e divisão dentro do catolicismo global que reflete desacordos sobre modernização da Igreja. NYT - World News" data-title="Sociedade de São Pio X é excomungada pelo Vaticano em primeira grande crise do Papa Leão" data-share-url="https://www.nytimes.com/2026/07/02/world/europe/vatican-society-st-pius-excommunication.html">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">09:21</span>
+          <span class="news-source">NYT - World News</span>
+        </div>
+        <div class="news-title">Sociedade de São Pio X é excomungada pelo Vaticano em primeira grande crise do Papa Leão</div>
+        <div class="news-summary">O Vaticano anunciou excomunhão da Sociedade de São Pio X em primeiro grande conflito eclesiástico da administração de Papa Leão XIV. O movimento contra a organização traditionalist segue sua decisão de desafiar o papa consagrando novos bispos contra suas directives explícitas. A excomunhão representa ruptura significativa entre Roma e movimento traditionalist que há décadas busca preservar missa em latim e teologia pré-Concílio Vaticano II. A Sociedade de São Pio X é maior organização independente de traditionalism católico global. O Papa Leão tentou diálogo inicialmente mas sua autoridade foi desafiada quando a sociedade procedeu com consagrações não autorizadas. A excomunhão sinaliza que novo papa está disposto a agir com firmeza contra desafios à autoridade papal. As implicações incluem maior fragmentação dentro da Igreja Católica, possível enfraquecimento de autoridade papal, pressão do movimento traditionalist para desafiar outras directives do Vaticano, e divisão dentro do catolicismo global que reflete desacordos sobre modernização da Igreja.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/02/world/europe/vatican-society-st-pius-excommunication.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Startup oferece solução para problema de pensamento de grupo em modelos de linguagem Uma startup emergente identificou e propõe solução para fenômeno crescente de convergência de opiniões (groupthink) em modelos de linguagem grandes. Quando múltiplos LLMs são treinados em dados similares e usando arquiteturas similares, tendem a produzir respostas muito similares, reduzindo diversidade de perspectivas. A startup desenvolveu técnica que promove maior diversidade de saídas enquanto mantém qualidade e acurácia. O problema é particularmente relevante em contextos corporativos onde diferentes modelos são usados para tomar decisões, análise de risco e planejamento estratégico. Se todos os modelos convergem para mesma resposta, aumenta risco de decisões não otimais quando essa resposta está errada. A solução da startup envolve modificar processo de treinamento e interferência para injetar deliberadamente mais variação. O desenvolvimento reflete maturação do campo de IA em reconhecer limites de abordagens padrão. As implicações incluem melhor tomada de decisão corporativa com IA, redução de risco de herding behavior, maior aplicabilidade de LLMs em contextos críticos, possível adoção generalizada da tecnologia pela indústria. MIT Technology Review" data-title="Startup oferece solução para problema de pensamento de grupo em modelos de linguagem" data-share-url="https://www.technologyreview.com/2026/07/02/1140027/the-download-ai-groupthink-llms/">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">09:10</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Startup oferece solução para problema de pensamento de grupo em modelos de linguagem</div>
+        <div class="news-summary">Uma startup emergente identificou e propõe solução para fenômeno crescente de convergência de opiniões (groupthink) em modelos de linguagem grandes. Quando múltiplos LLMs são treinados em dados similares e usando arquiteturas similares, tendem a produzir respostas muito similares, reduzindo diversidade de perspectivas. A startup desenvolveu técnica que promove maior diversidade de saídas enquanto mantém qualidade e acurácia. O problema é particularmente relevante em contextos corporativos onde diferentes modelos são usados para tomar decisões, análise de risco e planejamento estratégico. Se todos os modelos convergem para mesma resposta, aumenta risco de decisões não otimais quando essa resposta está errada. A solução da startup envolve modificar processo de treinamento e interferência para injetar deliberadamente mais variação. O desenvolvimento reflete maturação do campo de IA em reconhecer limites de abordagens padrão. As implicações incluem melhor tomada de decisão corporativa com IA, redução de risco de herding behavior, maior aplicabilidade de LLMs em contextos críticos, possível adoção generalizada da tecnologia pela indústria.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/07/02/1140027/the-download-ai-groupthink-llms/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Robinhood apresenta Robinhood Chain e expande com IA e derivativos cripto Corretora Robinhood anunciou o lançamento de Robinhood Chain, sua própria blockchain, como parte de estratégia de expansão para Reino Unido e Europa. A empresa também está integrating IA generativa e oferecendo perpetual futures cripto (derivativos) como novos produtos. O objetivo é oferecer plataforma integrada para trading de ações, criptomoedas, e derivativos com IA assistida. Robinhood vê oportunidade de expandir para mercados europeus onde regulação é diferente dos EUA e demanda por trading ativo de cripto é alta. A Robinhood Chain permitirá custódia nativa de ativos cripto na plataforma. O mercado respondeu positivamente, com ações de HOOD subindo 8% e partner de DEX perpétuo subindo ainda mais. A estratégia posiciona Robinhood como bridge entre retail trading tradicional e cripto nativo. As implicações incluem maior integração cripto em plataforma mainstream de retail trading, competição com exchanges cripto puras, possível aumento de adoção cripto entre usuários Robinhood existentes, e teste de viabilidade de blockchain proprietário para corretora. Decrypt" data-title="Robinhood apresenta Robinhood Chain e expande com IA e derivativos cripto" data-share-url="https://decrypt.co/372667/morning-minute-robinhood-debuts-robinhood-chain">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">09:06</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Robinhood apresenta Robinhood Chain e expande com IA e derivativos cripto</div>
+        <div class="news-summary">Corretora Robinhood anunciou o lançamento de Robinhood Chain, sua própria blockchain, como parte de estratégia de expansão para Reino Unido e Europa. A empresa também está integrating IA generativa e oferecendo perpetual futures cripto (derivativos) como novos produtos. O objetivo é oferecer plataforma integrada para trading de ações, criptomoedas, e derivativos com IA assistida. Robinhood vê oportunidade de expandir para mercados europeus onde regulação é diferente dos EUA e demanda por trading ativo de cripto é alta. A Robinhood Chain permitirá custódia nativa de ativos cripto na plataforma. O mercado respondeu positivamente, com ações de HOOD subindo 8% e partner de DEX perpétuo subindo ainda mais. A estratégia posiciona Robinhood como bridge entre retail trading tradicional e cripto nativo. As implicações incluem maior integração cripto em plataforma mainstream de retail trading, competição com exchanges cripto puras, possível aumento de adoção cripto entre usuários Robinhood existentes, e teste de viabilidade de blockchain proprietário para corretora.</div>
+        <div class="news-link"><a href="https://decrypt.co/372667/morning-minute-robinhood-debuts-robinhood-chain" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta avalia oferecer serviço de computação em nuvem para monetizar gastos em IA Meta está considerando lançar serviço de computação em nuvem para empresas como forma de monetizar seus gastos monumentais em infraestrutura de IA. A empresa investiu mais de 65 bilhões de dólares em capex nos últimos dois anos, principalmente em data centers e infraestrutura de computação para treinar e rodar modelos de IA. Com renda publicitária pressionada e retorno em IA ainda incerto, Meta busca novas streams de receita. Oferecer capacidade de computação excedente ou dedicada a terceiros é estratégia já usada por Microsoft, AWS e Google. Meta possui expertise em otimizar computação em larga escala e infraestrutura proprietária que poderia servir startups e empresas de IA. O plano incluiria possível mão de obra de engenharia especializada em customização. As implicações incluem nova fonte de receita material para Meta após anos de foco em publicidade, possível competição indireta com cloud giants, oportunidade para startups acessarem infraestrutura Meta otimizada, e potencial para meta rentabilizar parte de seus gastos colossais em IA. Bloomberg Technology" data-title="Meta avalia oferecer serviço de computação em nuvem para monetizar gastos em IA" data-share-url="https://www.bloomberg.com/news/newsletters/2026-07-02/meta-considers-cloud-business-to-make-money-from-ai-capacity">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">08:02</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Meta avalia oferecer serviço de computação em nuvem para monetizar gastos em IA</div>
+        <div class="news-summary">Meta está considerando lançar serviço de computação em nuvem para empresas como forma de monetizar seus gastos monumentais em infraestrutura de IA. A empresa investiu mais de 65 bilhões de dólares em capex nos últimos dois anos, principalmente em data centers e infraestrutura de computação para treinar e rodar modelos de IA. Com renda publicitária pressionada e retorno em IA ainda incerto, Meta busca novas streams de receita. Oferecer capacidade de computação excedente ou dedicada a terceiros é estratégia já usada por Microsoft, AWS e Google. Meta possui expertise em otimizar computação em larga escala e infraestrutura proprietária que poderia servir startups e empresas de IA. O plano incluiria possível mão de obra de engenharia especializada em customização. As implicações incluem nova fonte de receita material para Meta após anos de foco em publicidade, possível competição indireta com cloud giants, oportunidade para startups acessarem infraestrutura Meta otimizada, e potencial para meta rentabilizar parte de seus gastos colossais em IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/newsletters/2026-07-02/meta-considers-cloud-business-to-make-money-from-ai-capacity" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Skyroot Aerospace da Índia planeja primeiro lançamento de foguete privado em julho Skyroot Aerospace anunciou que está se preparando para o lançamento de debut de seu foguete Vikram-1, marcando o primeiro foguete orbital projetado e desenvolvido integralmente pelo setor privado indiano. O lançamento está programado para este mês de julho. O Vikram-1 é foguete pequeno projetado para levar satélites de pequeno porte a órbita, atendendo demanda crescente de startups de satélites por lançadores dedidados baratos. Skyroot recebeu financiamento significativo e apoio regulatório do governo indiano como parte de estratégia de desenvolver ecossistema espacial privado indiano. O sucesso do lançamento posicionaria Skyroot como primeiro player privado indiano bem-sucedido em espaço orbital, após tentativas de outros players. O evento tem implicações importantes para cadeia de suprimentos aeroespacial indiano e atração de talentos e investimento para setor. As consequências incluem validação de modelo de private space na Índia, potencial para mais startups espaciais indianas, redução de dependência de lançadores internacionais, oportunidade de competir globalmente em segmento de pequenos lançadores, e reforço de posição da Índia em economia espacial global. Bloomberg Technology" data-title="Skyroot Aerospace da Índia planeja primeiro lançamento de foguete privado em julho" data-share-url="https://www.bloomberg.com/news/articles/2026-07-02/skyroot-plans-india-s-first-private-sector-rocket-launch-in-july">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:57</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Skyroot Aerospace da Índia planeja primeiro lançamento de foguete privado em julho</div>
+        <div class="news-summary">Skyroot Aerospace anunciou que está se preparando para o lançamento de debut de seu foguete Vikram-1, marcando o primeiro foguete orbital projetado e desenvolvido integralmente pelo setor privado indiano. O lançamento está programado para este mês de julho. O Vikram-1 é foguete pequeno projetado para levar satélites de pequeno porte a órbita, atendendo demanda crescente de startups de satélites por lançadores dedidados baratos. Skyroot recebeu financiamento significativo e apoio regulatório do governo indiano como parte de estratégia de desenvolver ecossistema espacial privado indiano. O sucesso do lançamento posicionaria Skyroot como primeiro player privado indiano bem-sucedido em espaço orbital, após tentativas de outros players. O evento tem implicações importantes para cadeia de suprimentos aeroespacial indiano e atração de talentos e investimento para setor. As consequências incluem validação de modelo de private space na Índia, potencial para mais startups espaciais indianas, redução de dependência de lançadores internacionais, oportunidade de competir globalmente em segmento de pequenos lançadores, e reforço de posição da Índia em economia espacial global.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-02/skyroot-plans-india-s-first-private-sector-rocket-launch-in-july" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Setor de finanças e tecnologia corta 28 mil empregos mensalmente com avanço da IA Análise de dados de mercado de trabalho revela que finanças e tecnologia estão cortando aproximadamente 28 mil empregos por mês enquanto empresas implementam soluções de IA para automatizar funções administrativas, processamento de dados e suporte ao cliente. O ritmo de perda de emprego acelerou significativamente nos últimos trimestres, com empresas tomando decisão consciente de não repor posições de trabalhadores que saem ou pedem demissão. Sinais de desaceleração incluem redução de ofertas de emprego em plataformas de recrutamento, congelamento de salários e cancelamento de programas de trainee. Setores mais afetados incluem processamento de back office em bancos, call centers de atendimento ao cliente, e funções administrativas em fintechs. A tendência é mais pronunciada entre empresas que conseguem implementar IA rapidamente. Pesquisadores observam que não há evidência clara de criação de novas categorias de emprego que compense as perdas. As implicações incluem pressão social e política sobre regulação de IA, possível aceleração de desemprego estrutural, demanda por retraining de trabalhadores, risco de instabilidade social, e questões sobre se os ganhos de produtividade de IA serão compartilhados com workforce ou concentrados em capital/acionistas. Bloomberg Technology" data-title="Setor de finanças e tecnologia corta 28 mil empregos mensalmente com avanço da IA" data-share-url="https://www.bloomberg.com/news/newsletters/2026-07-02/ai-job-cuts-emerging-first-in-finance-and-tech">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:30</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Setor de finanças e tecnologia corta 28 mil empregos mensalmente com avanço da IA</div>
+        <div class="news-summary">Análise de dados de mercado de trabalho revela que finanças e tecnologia estão cortando aproximadamente 28 mil empregos por mês enquanto empresas implementam soluções de IA para automatizar funções administrativas, processamento de dados e suporte ao cliente. O ritmo de perda de emprego acelerou significativamente nos últimos trimestres, com empresas tomando decisão consciente de não repor posições de trabalhadores que saem ou pedem demissão. Sinais de desaceleração incluem redução de ofertas de emprego em plataformas de recrutamento, congelamento de salários e cancelamento de programas de trainee. Setores mais afetados incluem processamento de back office em bancos, call centers de atendimento ao cliente, e funções administrativas em fintechs. A tendência é mais pronunciada entre empresas que conseguem implementar IA rapidamente. Pesquisadores observam que não há evidência clara de criação de novas categorias de emprego que compense as perdas. As implicações incluem pressão social e política sobre regulação de IA, possível aceleração de desemprego estrutural, demanda por retraining de trabalhadores, risco de instabilidade social, e questões sobre se os ganhos de produtividade de IA serão compartilhados com workforce ou concentrados em capital/acionistas.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/newsletters/2026-07-02/ai-job-cuts-emerging-first-in-finance-and-tech" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI propõe dar 5% de participação ao governo dos EUA em discussões com Trump OpenAI iniciou discussões preliminares com a administração Trump para oferecer 5% de participação acionária ao governo dos EUA, segundo reportagem do Financial Times. A proposta visa apaziguar tensões políticas crescentes com o governo americano e fornecer ao público americano uma participação financeira no boom da IA. A estratégia reflete preocupações crescentes sobre regulação governamental agressiva do setor de IA e tentativa de criar alinhamento entre interesses públicos e privados. Executivos de OpenAI argumentam que dar participação ao governo cria incentivo para proteger sucesso da empresa e reduz pressão política por regulação mais restritiva. O governo poderia obter retornos financeiros significativos se a empresa atingir sua valuation esperada de trilhões de dólares. As implicações incluem possível modelo de parceria governo-indústria em tecnologia crítica, redução de pressão regulatória imediata, potencial conflito de interesses se governo lucrar com sucesso da OpenAI, e novo precedente para relação entre governos e big tech. Financial Times / Bloomberg Technology" data-title="OpenAI propõe dar 5% de participação ao governo dos EUA em discussões com Trump" data-share-url="https://www.bloomberg.com/news/videos/2026-07-02/openai-proposes-giving-5-stake-to-us-government-ft-video">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:23</span>
+          <span class="news-source">Financial Times / Bloomberg Technology</span>
+        </div>
+        <div class="news-title">OpenAI propõe dar 5% de participação ao governo dos EUA em discussões com Trump</div>
+        <div class="news-summary">OpenAI iniciou discussões preliminares com a administração Trump para oferecer 5% de participação acionária ao governo dos EUA, segundo reportagem do Financial Times. A proposta visa apaziguar tensões políticas crescentes com o governo americano e fornecer ao público americano uma participação financeira no boom da IA. A estratégia reflete preocupações crescentes sobre regulação governamental agressiva do setor de IA e tentativa de criar alinhamento entre interesses públicos e privados. Executivos de OpenAI argumentam que dar participação ao governo cria incentivo para proteger sucesso da empresa e reduz pressão política por regulação mais restritiva. O governo poderia obter retornos financeiros significativos se a empresa atingir sua valuation esperada de trilhões de dólares. As implicações incluem possível modelo de parceria governo-indústria em tecnologia crítica, redução de pressão regulatória imediata, potencial conflito de interesses se governo lucrar com sucesso da OpenAI, e novo precedente para relação entre governos e big tech.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/videos/2026-07-02/openai-proposes-giving-5-stake-to-us-government-ft-video" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Amazon tem satélites suficientes para lançar concorrente do Starlink Amazon anunciou que completou o lançamento de satélites suficientes para sua constelação Kuiper em órbita terrestre baixa, atingindo o ponto de inflexão necessário para iniciar o serviço comercial de internet de banda larga. A empresa agora tem centenas de satélites operacionais e está pronta para competir diretamente com Starlink de Elon Musk. O projeto Kuiper representa investimento de mais de 10 bilhões de dólares por parte da Amazon em infraestrutura de conectividade global. O lançamento do serviço comercial está previsto para os próximos meses, oferecendo internet de alta velocidade para áreas rurais e remotas com cobertura limitada. Amazon está em negociações com autoridades regulatórias em múltiplos países para licenciamento do serviço. As consequências incluem competição intensificada no mercado de internet via satélite, possível queda de preços para consumidores finais, redução da dominância de Starlink em segmento de mega-constelações de satélites, e oportunidades de conectividade para regiões subservidas globalmente. The Verge" data-title="Amazon tem satélites suficientes para lançar concorrente do Starlink" data-share-url="https://www.theverge.com/science/960563/amazon-leo-service-tipping-point">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">06:13</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Amazon tem satélites suficientes para lançar concorrente do Starlink</div>
+        <div class="news-summary">Amazon anunciou que completou o lançamento de satélites suficientes para sua constelação Kuiper em órbita terrestre baixa, atingindo o ponto de inflexão necessário para iniciar o serviço comercial de internet de banda larga. A empresa agora tem centenas de satélites operacionais e está pronta para competir diretamente com Starlink de Elon Musk. O projeto Kuiper representa investimento de mais de 10 bilhões de dólares por parte da Amazon em infraestrutura de conectividade global. O lançamento do serviço comercial está previsto para os próximos meses, oferecendo internet de alta velocidade para áreas rurais e remotas com cobertura limitada. Amazon está em negociações com autoridades regulatórias em múltiplos países para licenciamento do serviço. As consequências incluem competição intensificada no mercado de internet via satélite, possível queda de preços para consumidores finais, redução da dominância de Starlink em segmento de mega-constelações de satélites, e oportunidades de conectividade para regiões subservidas globalmente.</div>
+        <div class="news-link"><a href="https://www.theverge.com/science/960563/amazon-leo-service-tipping-point" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="SpaceX valuation de 2,2 trilhões de dólares enfrentará teste com debut de analistas Investidores em SpaceX enfrentarão escrutínio aumentado sobre valuation da empresa de 2,2 trilhões de dólares estabelecida após seu IPO recorde no mês passado. Até agora, investidores vêm operando basicamente às cegas, com acesso limitado a projeções financeiras e análises formais sobre perspectivas de negócio. Bancos de investimento estão começando a publicar research e coverage sobre SpaceX, o que trará primeira avaliação independente rigorosa sobre sustentabilidade de sua valuation ultra-alta. Analistas examinarão cronograma de lucratividade de Starlink, perspectivas de Starship para turismo espacial e carga, e potencial de mercado para serviços de lançamento para militares e governo. A valuation reflete expectativas de crescimento exponencial em próxima década, mas mercado pode questionar otimismo dos founders. Debate pode pressionar preço da ação em curto prazo até que consenso sobre valuation justa seja estabelecido. As implicações incluem possível volatilidade em preço de SpaceX, reavaliação de projeções de receita Starlink, pressão para fornecer guidance financeira mais clara, e teste de quão premium o mercado está disposto a pagar por visão visionária de Elon Musk. Bloomberg Technology" data-title="SpaceX valuation de 2,2 trilhões de dólares enfrentará teste com debut de analistas" data-share-url="https://www.bloomberg.com/news/articles/2026-07-02/spacex-analyst-debut-set-to-test-2-2-trillion-valuation">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">05:41</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">SpaceX valuation de 2,2 trilhões de dólares enfrentará teste com debut de analistas</div>
+        <div class="news-summary">Investidores em SpaceX enfrentarão escrutínio aumentado sobre valuation da empresa de 2,2 trilhões de dólares estabelecida após seu IPO recorde no mês passado. Até agora, investidores vêm operando basicamente às cegas, com acesso limitado a projeções financeiras e análises formais sobre perspectivas de negócio. Bancos de investimento estão começando a publicar research e coverage sobre SpaceX, o que trará primeira avaliação independente rigorosa sobre sustentabilidade de sua valuation ultra-alta. Analistas examinarão cronograma de lucratividade de Starlink, perspectivas de Starship para turismo espacial e carga, e potencial de mercado para serviços de lançamento para militares e governo. A valuation reflete expectativas de crescimento exponencial em próxima década, mas mercado pode questionar otimismo dos founders. Debate pode pressionar preço da ação em curto prazo até que consenso sobre valuation justa seja estabelecido. As implicações incluem possível volatilidade em preço de SpaceX, reavaliação de projeções de receita Starlink, pressão para fornecer guidance financeira mais clara, e teste de quão premium o mercado está disposto a pagar por visão visionária de Elon Musk.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-02/spacex-analyst-debut-set-to-test-2-2-trillion-valuation" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="SAP reduz contratações e viagens para financiar 'significativo' avanço em IA SAP, maior empresa de software europeia, anunciou que está reduzindo contratações e despesas com viagens corporativas para liberar recursos financeiros e de engenharia para seu ambicioso programa de investimento em inteligência artificial. A empresa reconhece que IA é fator competitivo crítico em software empresarial e está redirecionando seus esforços organizacionais. Os cortes orçamentários não refletem problemas financeiros da SAP, mas sim reposicionamento estratégico consciente. A empresa planeja investir economias em desenvolvimento de funcionalidades de IA para suas suítes de software ERP e supply chain. Esta mudança reflete tendência maior em big tech de priorizar IA como o próximo grande salto produtivo. SAP compete com Salesforce, Oracle e Microsoft em software empresarial, e todos estão fazendo pivôs similares para IA. As implicações incluem possível deterioração de experiência de funcionário na SAP (menos viagens, menos contratações), risco de perder talentos para competidores que não fazem mesmos cortes, oportunidade de acelerar roadmap de IA empresarial, e potencial para obter market share em segmento de IA for enterprise. Bloomberg Technology" data-title="SAP reduz contratações e viagens para financiar 'significativo' avanço em IA" data-share-url="https://www.bloomberg.com/news/articles/2026-07-02/sap-restricts-hiring-travel-to-fund-significant-ai-push">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">04:45</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">SAP reduz contratações e viagens para financiar 'significativo' avanço em IA</div>
+        <div class="news-summary">SAP, maior empresa de software europeia, anunciou que está reduzindo contratações e despesas com viagens corporativas para liberar recursos financeiros e de engenharia para seu ambicioso programa de investimento em inteligência artificial. A empresa reconhece que IA é fator competitivo crítico em software empresarial e está redirecionando seus esforços organizacionais. Os cortes orçamentários não refletem problemas financeiros da SAP, mas sim reposicionamento estratégico consciente. A empresa planeja investir economias em desenvolvimento de funcionalidades de IA para suas suítes de software ERP e supply chain. Esta mudança reflete tendência maior em big tech de priorizar IA como o próximo grande salto produtivo. SAP compete com Salesforce, Oracle e Microsoft em software empresarial, e todos estão fazendo pivôs similares para IA. As implicações incluem possível deterioração de experiência de funcionário na SAP (menos viagens, menos contratações), risco de perder talentos para competidores que não fazem mesmos cortes, oportunidade de acelerar roadmap de IA empresarial, e potencial para obter market share em segmento de IA for enterprise.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-02/sap-restricts-hiring-travel-to-fund-significant-ai-push" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="SoftBank planeja oferecer computação de IA nos EUA em escala de 10 gigawatts SoftBank Group anunciou seu lançamento de unidade de computação em nuvem dedicada a IA, planejando oferecer recursos de computação aos empresas americanas a partir do próximo ano fiscal com capacidade alvo de 10 gigawatts. A empresa está construindo pipeline crescente de data centers em locais estratégicos dos EUA para suportar demanda explosiva por computação de IA. SoftBank combinará expertise de seu braço telecom com infraestrutura de data center para oferecer serviço integrado. A estratégia reconhece que acesso a computação de IA de alta performance é novo gargalo crítico para empresas americanas competindo globalmente. SoftBank busca competir com ofertas de AWS, Google Cloud e Microsoft Azure que já dominam mercado de nuvem. As implicações incluem diversificação da renda de SoftBank além de investimentos de private equity, oportunidade para startups de IA acessarem computação menos cara, possível redução de dominância das big 3 de nuvem em segmento de IA, e reforço de posição de SoftBank como player global em infraestrutura tecnológica. Bloomberg Technology" data-title="SoftBank planeja oferecer computação de IA nos EUA em escala de 10 gigawatts" data-share-url="https://www.bloomberg.com/news/articles/2026-07-02/softbank-launches-ai-cloud-unit-with-plans-to-tap-10-gigawatt-capacity">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">04:31</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">SoftBank planeja oferecer computação de IA nos EUA em escala de 10 gigawatts</div>
+        <div class="news-summary">SoftBank Group anunciou seu lançamento de unidade de computação em nuvem dedicada a IA, planejando oferecer recursos de computação aos empresas americanas a partir do próximo ano fiscal com capacidade alvo de 10 gigawatts. A empresa está construindo pipeline crescente de data centers em locais estratégicos dos EUA para suportar demanda explosiva por computação de IA. SoftBank combinará expertise de seu braço telecom com infraestrutura de data center para oferecer serviço integrado. A estratégia reconhece que acesso a computação de IA de alta performance é novo gargalo crítico para empresas americanas competindo globalmente. SoftBank busca competir com ofertas de AWS, Google Cloud e Microsoft Azure que já dominam mercado de nuvem. As implicações incluem diversificação da renda de SoftBank além de investimentos de private equity, oportunidade para startups de IA acessarem computação menos cara, possível redução de dominância das big 3 de nuvem em segmento de IA, e reforço de posição de SoftBank como player global em infraestrutura tecnológica.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-02/softbank-launches-ai-cloud-unit-with-plans-to-tap-10-gigawatt-capacity" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Europa repensa quadro regulatório de cripto MiCA três anos após implementação Reguladores europeus abriram processo de revisão do MiCA (Mercados de Criptomercadorias), o framework regulatório de cripto do bloco implementado há três anos. A revisão conhecida como MiCA 2.0 será discutida através de consulta pública que se encerra aproximadamente em setembro. O MiCA foi primeira regulação cripto abrangente do mundo e se tornou modelo para outras jurisdições, mas três anos de experiência revelaram gaps e necessidade de refinamentos. Reguladores estão examinando como o regulamento impactou inovação cripto europeia comparado a jurisdições rival como EUA, Singapore e Dubai. Tópicos sob revisão provavelmente incluem definições de stablecoin, requisitos de capital mínimo, e conformidade de exchanges descentralizadas. O timing da revisão é crítico enquanto cripto continua sendo foco regulatório global. As implicações incluem possível endurecimento ou flexibilização de regras dependendo de feedback, impacto em competitividade de cripto europeia globalmente, possível harmonização com regulação americana se ambas jurisdições convergirem, e oportunidade para corrigir problemas de desenho do MiCA inicial. CoinDesk" data-title="Europa repensa quadro regulatório de cripto MiCA três anos após implementação" data-share-url="https://www.coindesk.com/policy/2026/07/02/three-years-after-mica-became-law-europe-s-crypto-framework-is-undergoing-a-rethink">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">08:55</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Europa repensa quadro regulatório de cripto MiCA três anos após implementação</div>
+        <div class="news-summary">Reguladores europeus abriram processo de revisão do MiCA (Mercados de Criptomercadorias), o framework regulatório de cripto do bloco implementado há três anos. A revisão conhecida como MiCA 2.0 será discutida através de consulta pública que se encerra aproximadamente em setembro. O MiCA foi primeira regulação cripto abrangente do mundo e se tornou modelo para outras jurisdições, mas três anos de experiência revelaram gaps e necessidade de refinamentos. Reguladores estão examinando como o regulamento impactou inovação cripto europeia comparado a jurisdições rival como EUA, Singapore e Dubai. Tópicos sob revisão provavelmente incluem definições de stablecoin, requisitos de capital mínimo, e conformidade de exchanges descentralizadas. O timing da revisão é crítico enquanto cripto continua sendo foco regulatório global. As implicações incluem possível endurecimento ou flexibilização de regras dependendo de feedback, impacto em competitividade de cripto europeia globalmente, possível harmonização com regulação americana se ambas jurisdições convergirem, e oportunidade para corrigir problemas de desenho do MiCA inicial.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/02/three-years-after-mica-became-law-europe-s-crypto-framework-is-undergoing-a-rethink" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Comentários dovish de Warsh preparam cenário para dados de emprego dos EUA provocarem rally de Bitcoin e ouro Presidente do Federal Reserve Kevin Warsh fez comentários otimistas sobre economia dos EUA e impacto produtivo de IA, preparando cenário para dados de emprego de junho dos EUA deflagrarem rally em ativos safe-haven como Bitcoin e ouro. Warsh indicou que banco central tem confiança de que inflação está under control, reduzindo pressão para aperto adicional de política. Se dados de emprego virem fracos como esperado (57 mil vs expectativa de 200 mil), a combinação de sinal dovish + dados fracos de emprego poderia desencadear rali robusto em cripto e ouro. Mercado de futuros já estava pressionando para expectativas de corte de taxa ainda em 2026 antes do discurso. A dinâmica cria opportunity para rally se dados confirmarem sinais dovish. As implicações incluem potencial para Bitcoin testar níveis mais altos, aumento de apetite por risco se Fed confirmar pausa, possível rotação de capital para ativos de risco, e validação de narração de that cripto beneficia de ambiente de taxa baixa. CoinDesk" data-title="Comentários dovish de Warsh preparam cenário para dados de emprego dos EUA provocarem rally de Bitcoin e ouro" data-share-url="https://www.coindesk.com/daybook-us/2026-07/02/warsh-s-comments-set-the-stage-for-u-s-jobs-data-to-ignite-bitcoin-gold-rally">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">08:47</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Comentários dovish de Warsh preparam cenário para dados de emprego dos EUA provocarem rally de Bitcoin e ouro</div>
+        <div class="news-summary">Presidente do Federal Reserve Kevin Warsh fez comentários otimistas sobre economia dos EUA e impacto produtivo de IA, preparando cenário para dados de emprego de junho dos EUA deflagrarem rally em ativos safe-haven como Bitcoin e ouro. Warsh indicou que banco central tem confiança de que inflação está under control, reduzindo pressão para aperto adicional de política. Se dados de emprego virem fracos como esperado (57 mil vs expectativa de 200 mil), a combinação de sinal dovish + dados fracos de emprego poderia desencadear rali robusto em cripto e ouro. Mercado de futuros já estava pressionando para expectativas de corte de taxa ainda em 2026 antes do discurso. A dinâmica cria opportunity para rally se dados confirmarem sinais dovish. As implicações incluem potencial para Bitcoin testar níveis mais altos, aumento de apetite por risco se Fed confirmar pausa, possível rotação de capital para ativos de risco, e validação de narração de that cripto beneficia de ambiente de taxa baixa.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/daybook-us/2026-07/02/warsh-s-comments-set-the-stage-for-u-s-jobs-data-to-ignite-bitcoin-gold-rally" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Standard Chartered e Circle trazem cunhagem de USDC para rails bancários Standard Chartered e Circle anunciaram parceria para permitir cunhagem e resgate de USDC (stablecoin do Circle) diretamente em rails bancários tradicionais. A iniciativa começa no Dubai DIFC (Dubai International Financial Centre) com planos de expansão global. O acordo permite que instituições tradicionais cunhem USDC usando moedas fiat depositadas em contas bancárias da Standard Chartered, reduzindo atrito e risco. A parceria marca grande validação institucional de stablecoins como ferramenta de pagamento global legítima. Significado para Circle é enorme: traz USDC para alcance de bancos globais, aumentando potencial para adoção institucional massiva. Standard Chartered obtém exposure a cripto e pagamentos cripto sem assumir risco de custódia ou trading. O modelo de banco-led stablecoin está emergindo como novo padrão em setor. As implicações incluem aceleração massiva de adoção de cripto por instituições financeiras tradicionais, redução de premium de price em USDC vs fiat, potencial para USDC competir com moedas fiat em cross-border payments, e validação de modelo de stablecoin bancário como futuro de cripto institucional. Cointelegraph" data-title="Standard Chartered e Circle trazem cunhagem de USDC para rails bancários" data-share-url="https://cointelegraph.com/news/standard-chartered-circle-usdc-minting-banking-rails?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">08:41</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Standard Chartered e Circle trazem cunhagem de USDC para rails bancários</div>
+        <div class="news-summary">Standard Chartered e Circle anunciaram parceria para permitir cunhagem e resgate de USDC (stablecoin do Circle) diretamente em rails bancários tradicionais. A iniciativa começa no Dubai DIFC (Dubai International Financial Centre) com planos de expansão global. O acordo permite que instituições tradicionais cunhem USDC usando moedas fiat depositadas em contas bancárias da Standard Chartered, reduzindo atrito e risco. A parceria marca grande validação institucional de stablecoins como ferramenta de pagamento global legítima. Significado para Circle é enorme: traz USDC para alcance de bancos globais, aumentando potencial para adoção institucional massiva. Standard Chartered obtém exposure a cripto e pagamentos cripto sem assumir risco de custódia ou trading. O modelo de banco-led stablecoin está emergindo como novo padrão em setor. As implicações incluem aceleração massiva de adoção de cripto por instituições financeiras tradicionais, redução de premium de price em USDC vs fiat, potencial para USDC competir com moedas fiat em cross-border payments, e validação de modelo de stablecoin bancário como futuro de cripto institucional.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/standard-chartered-circle-usdc-minting-banking-rails?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Tokens menores lideram rally enquanto Bitcoin e Sol se recuperam com 'primeiro bounce real' do sell-off Altcoins e tokens especulativos menores lideraram ganhos nesta quarta-feira, superando ganhos de Bitcoin e Solana, sugerindo que apetite por risco está retornando ao mercado cripto. Tokens como Memecore (M) e Audiera (BEAT) subiram dezenas de por cento em uma das primeiras recuperações significativas do recente sell-off que puxou mercado cripto para baixo. Bitcoin ganhou 4% estável enquanto Solana subiu mais, indicando rotação de capital de ativos core para ativos mais arriscados/speculativos. O movimento reflete confiança renovada entre retail traders de cripto e possível volta de sentimento FOMO (fear of missing out) que caracteriza bull markets cripto. Analistas observam que este é o primeiro bounce de verdade após semanas de pressão contínua, sugerindo que floor pode ter sido encontrado. Memecoins e tokens emergentes estão particular beneficiários do retorno de volume especulativo. As implicações incluem possível aceleração do rali, risco de pump-and-dump em tokens menores, volatilidade aumentada em altcoins, possível enfraquecimento conforme profit-taking ocorrer, e teste de se rally é sustentável ou meramente bounce técnico em tendência de queda. CoinDesk" data-title="Tokens menores lideram rally enquanto Bitcoin e Sol se recuperam com 'primeiro bounce real' do sell-off" data-share-url="https://www.coindesk.com/markets/2026/07/02/smaller-tokens-lead-as-bitcoin-sol-rally-in-first-real-bounce-of-the-selloff">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">08:27</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Tokens menores lideram rally enquanto Bitcoin e Sol se recuperam com 'primeiro bounce real' do sell-off</div>
+        <div class="news-summary">Altcoins e tokens especulativos menores lideraram ganhos nesta quarta-feira, superando ganhos de Bitcoin e Solana, sugerindo que apetite por risco está retornando ao mercado cripto. Tokens como Memecore (M) e Audiera (BEAT) subiram dezenas de por cento em uma das primeiras recuperações significativas do recente sell-off que puxou mercado cripto para baixo. Bitcoin ganhou 4% estável enquanto Solana subiu mais, indicando rotação de capital de ativos core para ativos mais arriscados/speculativos. O movimento reflete confiança renovada entre retail traders de cripto e possível volta de sentimento FOMO (fear of missing out) que caracteriza bull markets cripto. Analistas observam que este é o primeiro bounce de verdade após semanas de pressão contínua, sugerindo que floor pode ter sido encontrado. Memecoins e tokens emergentes estão particular beneficiários do retorno de volume especulativo. As implicações incluem possível aceleração do rali, risco de pump-and-dump em tokens menores, volatilidade aumentada em altcoins, possível enfraquecimento conforme profit-taking ocorrer, e teste de se rally é sustentável ou meramente bounce técnico em tendência de queda.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/02/smaller-tokens-lead-as-bitcoin-sol-rally-in-first-real-bounce-of-the-selloff" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="SBI Crypto encerra pool de mineração de Bitcoin após corrida de 5 anos SBI Crypto anunciou encerramento de seu pool de mineração Bitcoin em 31 de julho após operação de mais de cinco anos. O pool foi classificado 12º globalmente com aproximadamente 2,2% do hashrate total de Bitcoin. SBI é braço cripto da SBI Holdings, conglomerado financeiro japonês, e o encerramento reflete possível reprioritização estratégica da empresa. O pool serviu milhares de miners independentes que usavam infraestrutura de SBI para consolidar poder computacional. As razões para encerramento não foram totalmente articuladas, mas podem incluir margens reduzidas de mineração, foco em outros negócios de cripto, ou consolidação de operações. O evento impactará milhares de pequenos miners que dependiam do pool, forçando-os a encontrar alternativas. Pools maiores como Foundry, AntPool e F2Pool absorverão provavelmente o hashrate excedente. As implicações incluem possível centralização aumentada de mineração em pools maiores, mudança para outros pools japoneses se houver, impacto menor no hashrate total de Bitcoin, e sinal de que algumas instituições estão reduzindo foco em mineração após margem reduction. Cointelegraph" data-title="SBI Crypto encerra pool de mineração de Bitcoin após corrida de 5 anos" data-share-url="https://cointelegraph.com/news/sbi-bitcoin-mining-pool-shutdown-five-years?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:37</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">SBI Crypto encerra pool de mineração de Bitcoin após corrida de 5 anos</div>
+        <div class="news-summary">SBI Crypto anunciou encerramento de seu pool de mineração Bitcoin em 31 de julho após operação de mais de cinco anos. O pool foi classificado 12º globalmente com aproximadamente 2,2% do hashrate total de Bitcoin. SBI é braço cripto da SBI Holdings, conglomerado financeiro japonês, e o encerramento reflete possível reprioritização estratégica da empresa. O pool serviu milhares de miners independentes que usavam infraestrutura de SBI para consolidar poder computacional. As razões para encerramento não foram totalmente articuladas, mas podem incluir margens reduzidas de mineração, foco em outros negócios de cripto, ou consolidação de operações. O evento impactará milhares de pequenos miners que dependiam do pool, forçando-os a encontrar alternativas. Pools maiores como Foundry, AntPool e F2Pool absorverão provavelmente o hashrate excedente. As implicações incluem possível centralização aumentada de mineração em pools maiores, mudança para outros pools japoneses se houver, impacto menor no hashrate total de Bitcoin, e sinal de que algumas instituições estão reduzindo foco em mineração após margem reduction.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/sbi-bitcoin-mining-pool-shutdown-five-years?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin sobe 4% acima de 61 mil dólares com enfraquecimento de receios inflacionários Bitcoin e outras criptomoedas principais realizaram rali significativo nesta quarta-feira, com Bitcoin atingindo níveis acima de 61 mil dólares em seu maior ganho diário em semanas. O movimento foi alimentado por comentários dovish do presidente do Federal Reserve Kevin Warsh, que indicou que riscos inflacionários tinham se atenuado significativamente. O otimismo de Warsh sobre impacto produtivo da IA na economia também contribuiu para melhor sentimento de risco. A queda de 7,9% do índice Kospi sul-coreano devido a preocupações com chips de IA teve impacto limitado no rali cripto, sugerindo que sinal dovish do Fed superou preocupações geopolitécnicas. O movimento reflete padrão consistente de Bitcoin se beneficiar de expectativa reduzida de taxas de juros altas. Volume de trading foi forte, sugerindo participação renovada de investidores institucionais. As implicações incluem possível continuação do rali se Fed confirmar postura dovish, redução de prêmio de risco para ativos de risco como cripto, potencial para Bitcoin testar resistências mais altas, e possível entrada de capital institucional se ambiente de taxa mudar. CoinDesk" data-title="Bitcoin sobe 4% acima de 61 mil dólares com enfraquecimento de receios inflacionários" data-share-url="https://www.coindesk.com/markets/2026/07/02/bitcoin-zooms-above-usd61-000-as-inflation-fears-soften">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:30</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin sobe 4% acima de 61 mil dólares com enfraquecimento de receios inflacionários</div>
+        <div class="news-summary">Bitcoin e outras criptomoedas principais realizaram rali significativo nesta quarta-feira, com Bitcoin atingindo níveis acima de 61 mil dólares em seu maior ganho diário em semanas. O movimento foi alimentado por comentários dovish do presidente do Federal Reserve Kevin Warsh, que indicou que riscos inflacionários tinham se atenuado significativamente. O otimismo de Warsh sobre impacto produtivo da IA na economia também contribuiu para melhor sentimento de risco. A queda de 7,9% do índice Kospi sul-coreano devido a preocupações com chips de IA teve impacto limitado no rali cripto, sugerindo que sinal dovish do Fed superou preocupações geopolitécnicas. O movimento reflete padrão consistente de Bitcoin se beneficiar de expectativa reduzida de taxas de juros altas. Volume de trading foi forte, sugerindo participação renovada de investidores institucionais. As implicações incluem possível continuação do rali se Fed confirmar postura dovish, redução de prêmio de risco para ativos de risco como cripto, potencial para Bitcoin testar resistências mais altas, e possível entrada de capital institucional se ambiente de taxa mudar.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/02/bitcoin-zooms-above-usd61-000-as-inflation-fears-soften" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Stablecoins geradores de rendimento desaceleram, encerrando corrida de 3 anos para produtos nativo-cripto Oferta de stablecoins geradores de rendimento caiu 15% no segundo trimestre, encerrando corrida de três anos de crescimento robusto desses produtos que tentam combinar estabilidade de valor com yield. Produtos como sUSDe e sUSDS sofreram contrações significativas enquanto inversores rotacionavam capital para produtos backed por Treasuries como BUIDL, USYC e USDY que oferecem yield sem risco de cripto. A desaceleração reflete mudança de dinâmica de mercado: com yields de Treasury agora competitivos com yield-bearing stablecoins, investidores preferem exposure tradicional de mercado monetário. O fenômeno é especialmente notado entre investidores institucionais que preferem regulated products. Oferecedores de yield-bearing stablecoins enfrentam pressão de margens conforme procuram competir com Treasury-backed products. As implicações incluem consolidação potencial entre oferecedores de yield stablecoins, migração de capital para Treasury-backed stablecoins de menor risco, desafio competitivo renovado para startups cripto de stablecoin, e demonstração de que mercado prefere legitimidade regulatória a yield superior. Cointelegraph" data-title="Stablecoins geradores de rendimento desaceleram, encerrando corrida de 3 anos para produtos nativo-cripto" data-share-url="https://cointelegraph.com/news/yield-bearing-stablecoins-lose-3-5-billion-q2?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:23</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Stablecoins geradores de rendimento desaceleram, encerrando corrida de 3 anos para produtos nativo-cripto</div>
+        <div class="news-summary">Oferta de stablecoins geradores de rendimento caiu 15% no segundo trimestre, encerrando corrida de três anos de crescimento robusto desses produtos que tentam combinar estabilidade de valor com yield. Produtos como sUSDe e sUSDS sofreram contrações significativas enquanto inversores rotacionavam capital para produtos backed por Treasuries como BUIDL, USYC e USDY que oferecem yield sem risco de cripto. A desaceleração reflete mudança de dinâmica de mercado: com yields de Treasury agora competitivos com yield-bearing stablecoins, investidores preferem exposure tradicional de mercado monetário. O fenômeno é especialmente notado entre investidores institucionais que preferem regulated products. Oferecedores de yield-bearing stablecoins enfrentam pressão de margens conforme procuram competir com Treasury-backed products. As implicações incluem consolidação potencial entre oferecedores de yield stablecoins, migração de capital para Treasury-backed stablecoins de menor risco, desafio competitivo renovado para startups cripto de stablecoin, e demonstração de que mercado prefere legitimidade regulatória a yield superior.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/yield-bearing-stablecoins-lose-3-5-billion-q2?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="OFAC sanciona 134 endereços de wallet cripto ligados a ISIS-K com Tether congelando fundos Office of Foreign Assets Control (OFAC) dos EUA adicionou 134 endereços de carteira cripto ligados a ISIS-K sua lista de sanções, com a Tether (issuer de USDT) imediatamente congelando 131 endereços em sua blockchain Tron que receberam mais de 1,4 milhão de dólares em criptmoedas de terror-linked wallets. A ação marca escalação significativa na guerra do governo américano contra uso de cripto por grupos terroristas. Os 134 endereços foram identificados através de análise on-chain sofisticada que rastreou fluxo de fundos. A ação rápida de Tether em congelar fundos demonstra compromisso de operadores de stablecoin em compliance com sanções governamentais. O evento ressalta tanto a capacidade de rastreamento on-chain como a implementação de controles de sanção em blockchain. As implicações incluem pressão contínua em exchanges cripto para implementar melhores KYC/AML, validação de que rastreamento on-chain é possível, preocupações de civil liberties sobre fintech surveillance, maior regulação de stablecoins esperada, e pressão em privacycoins de serem excluídas de serviços tradicionais. Cointelegraph" data-title="OFAC sanciona 134 endereços de wallet cripto ligados a ISIS-K com Tether congelando fundos" data-share-url="https://cointelegraph.com/news/ofac-134-isis-k-crypto-wallets-tether-freezes-131?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">07:23</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">OFAC sanciona 134 endereços de wallet cripto ligados a ISIS-K com Tether congelando fundos</div>
+        <div class="news-summary">Office of Foreign Assets Control (OFAC) dos EUA adicionou 134 endereços de carteira cripto ligados a ISIS-K sua lista de sanções, com a Tether (issuer de USDT) imediatamente congelando 131 endereços em sua blockchain Tron que receberam mais de 1,4 milhão de dólares em criptmoedas de terror-linked wallets. A ação marca escalação significativa na guerra do governo américano contra uso de cripto por grupos terroristas. Os 134 endereços foram identificados através de análise on-chain sofisticada que rastreou fluxo de fundos. A ação rápida de Tether em congelar fundos demonstra compromisso de operadores de stablecoin em compliance com sanções governamentais. O evento ressalta tanto a capacidade de rastreamento on-chain como a implementação de controles de sanção em blockchain. As implicações incluem pressão contínua em exchanges cripto para implementar melhores KYC/AML, validação de que rastreamento on-chain é possível, preocupações de civil liberties sobre fintech surveillance, maior regulação de stablecoins esperada, e pressão em privacycoins de serem excluídas de serviços tradicionais.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/ofac-134-isis-k-crypto-wallets-tether-freezes-131?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Metaplanet compra adicionais 170 milhões de dólares em Bitcoin, expandindo tesouro para 43 mil BTC Metaplanet, empresa japonesa de investimento em cripto, anunciou compra de 2.823 Bitcoin por aproximadamente 170 milhões de dólares durante o segundo trimestre, expandindo seu holdings total de Bitcoin para acima de 43 mil BTC. A empresa reduziu seu custo de aquisição médio para 106.500 dólares por Bitcoin. Metaplanet é agora o terceiro maior detentor público de Bitcoin, atrás apenas de Microstrategy e El Salvador entre entidades publicamente tradadas. A empresa reportou receita de geração de renda cripto de 10,9 milhões em Q2, sugerindo estratégia bem-sucedida de monetizar holdings de cripto. A compra agressiva de Bitcoin sinaliza confiança institucional japonesa em cripto como reserva de valor a longo prazo. A estratégia de Metaplanet é similar à de Microstrategy, que usou mercado de ações como vehicle para acumular Bitcoin massivamente. As implicações incluem potencial para mais empresas asiáticas adotarem Bitcoin como alocação de tesouro, maior legitimidade institucional de Bitcoin, possível pressão de compra continuada de Metaplanet, e sinalização de que grandes investidores vêem cripto como importante para diversificação de portfólio. CoinDesk" data-title="Metaplanet compra adicionais 170 milhões de dólares em Bitcoin, expandindo tesouro para 43 mil BTC" data-share-url="https://www.coindesk.com/markets/2026/07-02/metaplanet-buys-another-usd170-million-of-bitcoin-expanding-treasury-to-43-000-btc">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">05:57</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Metaplanet compra adicionais 170 milhões de dólares em Bitcoin, expandindo tesouro para 43 mil BTC</div>
+        <div class="news-summary">Metaplanet, empresa japonesa de investimento em cripto, anunciou compra de 2.823 Bitcoin por aproximadamente 170 milhões de dólares durante o segundo trimestre, expandindo seu holdings total de Bitcoin para acima de 43 mil BTC. A empresa reduziu seu custo de aquisição médio para 106.500 dólares por Bitcoin. Metaplanet é agora o terceiro maior detentor público de Bitcoin, atrás apenas de Microstrategy e El Salvador entre entidades publicamente tradadas. A empresa reportou receita de geração de renda cripto de 10,9 milhões em Q2, sugerindo estratégia bem-sucedida de monetizar holdings de cripto. A compra agressiva de Bitcoin sinaliza confiança institucional japonesa em cripto como reserva de valor a longo prazo. A estratégia de Metaplanet é similar à de Microstrategy, que usou mercado de ações como vehicle para acumular Bitcoin massivamente. As implicações incluem potencial para mais empresas asiáticas adotarem Bitcoin como alocação de tesouro, maior legitimidade institucional de Bitcoin, possível pressão de compra continuada de Metaplanet, e sinalização de que grandes investidores vêem cripto como importante para diversificação de portfólio.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07-02/metaplanet-buys-another-usd170-million-of-bitcoin-expanding-treasury-to-43-000-btc" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Taiko restaura completamente bridge cross-chain apenas 10 dias após hack de 1,7 milhão de dólares Protocolo Taiko completou restauração de seu bridge cross-chain apenas dez dias após sofrer hack que explorou aproximadamente 1,7 milhão de dólares em criptocustody. O protocolo implementou processo de recuperação em múltiplos estágios que incluiu revisão de segurança independente e reabastecimento de assets para backing. Impressionantemente, o token TAIKO ganhou até 136% em recente trading após a restauração, sugerindo que mercado interpretou ação rápida e responsável como positiva. O hack foi significativo para protocolo layer 2 que tenta competir com Arbitrum e Optimism, mas a resposta rápida mitigou dano reputacional potencial. Usuários foram compensados pelas perdas, demonstrando commitment a segurança. A rápida restauração contrasta com outros exploits em DeFi que frequentemente levam semanas ou meses. As implicações incluem aumentada confiança do mercado em Taiko após resposta responsável, aumento de TVL possível no protocolo, benchmark positivo para como protocolos devem responder a exploits, e validação de que segurança e responsabilidade podem restaurar confiança rapidamente. CoinDesk / Cointelegraph" data-title="Taiko restaura completamente bridge cross-chain apenas 10 dias após hack de 1,7 milhão de dólares" data-share-url="https://www.coindesk.com/markets/2026/07/02/taiko-s-bridge-is-back-online-after-usd1-7-million-hack-and-its-token-is-up-a-staggering-136">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">05:35</span>
+          <span class="news-source">CoinDesk / Cointelegraph</span>
+        </div>
+        <div class="news-title">Taiko restaura completamente bridge cross-chain apenas 10 dias após hack de 1,7 milhão de dólares</div>
+        <div class="news-summary">Protocolo Taiko completou restauração de seu bridge cross-chain apenas dez dias após sofrer hack que explorou aproximadamente 1,7 milhão de dólares em criptocustody. O protocolo implementou processo de recuperação em múltiplos estágios que incluiu revisão de segurança independente e reabastecimento de assets para backing. Impressionantemente, o token TAIKO ganhou até 136% em recente trading após a restauração, sugerindo que mercado interpretou ação rápida e responsável como positiva. O hack foi significativo para protocolo layer 2 que tenta competir com Arbitrum e Optimism, mas a resposta rápida mitigou dano reputacional potencial. Usuários foram compensados pelas perdas, demonstrando commitment a segurança. A rápida restauração contrasta com outros exploits em DeFi que frequentemente levam semanas ou meses. As implicações incluem aumentada confiança do mercado em Taiko após resposta responsável, aumento de TVL possível no protocolo, benchmark positivo para como protocolos devem responder a exploits, e validação de que segurança e responsabilidade podem restaurar confiança rapidamente.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/02/taiko-s-bridge-is-back-online-after-usd1-7-million-hack-and-its-token-is-up-a-staggering-136" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Solana lança governança on-chain com entrada de 100 mil SOL (7,7 milhões de dólares) Fundação Solana lançou framework de governança on-chain permitindo validators e stakeholders com pelo menos 100 mil SOL delegados publicarem propostas para direcionar desenvolvimento da rede. O requisito de 100 mil SOL (equivalente a aproximadamente 7,7 milhões de dólares ao preço atual) representa barreira significativa para prevenir spam. O novo sistema chamado Solana Governance Proposals (SGP) permite que comunidade mais amplamente influencie decisões técnicas e alocação de recursos. O lançamento marca primeira volta significativa de Solana para sistema de governança mais descentralizado após anos de tomada de decisão concentrada na Fundação Solana. Validators já podem começar a publicar propostas através do novo sistema. O desenvolvimento reflete pressão da comunidade por maior descentralização e voz em governança. As implicações incluem possível aceleração de decisões técnicas baseadas em consenso comunitário, maior descentralização de Solana, potencial para conflito entre diferentes facções de stakeholders sobre direção, e demonstração de que Solana está evoluindo para modelo de governança mais maduro e democrático. CoinDesk" data-title="Solana lança governança on-chain com entrada de 100 mil SOL (7,7 milhões de dólares)" data-share-url="https://www.coindesk.com/markets/2026/07/02/solana-adds-onchain-governance-with-usd7-7-million-sol-needed-to-open-proposals">
+        <div class="news-meta">
+          <span class="news-date">02 jul 2026</span>
+          <span class="news-time">04:15</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Solana lança governança on-chain com entrada de 100 mil SOL (7,7 milhões de dólares)</div>
+        <div class="news-summary">Fundação Solana lançou framework de governança on-chain permitindo validators e stakeholders com pelo menos 100 mil SOL delegados publicarem propostas para direcionar desenvolvimento da rede. O requisito de 100 mil SOL (equivalente a aproximadamente 7,7 milhões de dólares ao preço atual) representa barreira significativa para prevenir spam. O novo sistema chamado Solana Governance Proposals (SGP) permite que comunidade mais amplamente influencie decisões técnicas e alocação de recursos. O lançamento marca primeira volta significativa de Solana para sistema de governança mais descentralizado após anos de tomada de decisão concentrada na Fundação Solana. Validators já podem começar a publicar propostas através do novo sistema. O desenvolvimento reflete pressão da comunidade por maior descentralização e voz em governança. As implicações incluem possível aceleração de decisões técnicas baseadas em consenso comunitário, maior descentralização de Solana, potencial para conflito entre diferentes facções de stakeholders sobre direção, e demonstração de que Solana está evoluindo para modelo de governança mais maduro e democrático.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/02/solana-adds-onchain-governance-with-usd7-7-million-sol-needed-to-open-proposals" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
