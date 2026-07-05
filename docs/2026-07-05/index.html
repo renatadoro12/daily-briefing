@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">5 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia é marcado por tensões geopolíticas crescentes no Irã e Taiwan, com reverberações econômicas globais, enquanto a tecnologia avança em IA e blockchain desafiam estruturas tradicionais de mercado. De Teerã a Pequim, passando pela escalada de regulação em criptomoedas, os mercados enfrentam um cenário de incerteza que demanda monitoramento constante de geopolítica, inovação tecnológica e fluxos de capital.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-07-04/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05" selected>2026-07-05</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Coreia do Sul planeja fundo de crescimento com receita de impostos sobre semicondutores Seul anunciou planos para criar um fundo de investimento utilizando receitas fiscais da próspera indústria de semicondutores para financiar o crescimento econômico de longo prazo. A iniciativa reflete a estratégia coreana de capitalizar sobre sua liderança global em chips de memória e semicondutores avançados, convertendo receitas tributárias em catalisadores de inovação. O fundo deve contemplar setores como IA, chips de próxima geração e transição energética, alinhando a política fiscal coreana com as megatendências tecnológicas globais. Trata-se de um exemplo de como governos aproveitam ciclos de prosperidade em indústrias estratégicas para financiar transformações estruturais. A iniciativa também sinaliza confiança de Seul em sua posição competitiva em semicondutores apesar da concorrência crescente da China e Taiwan. Para investidores globais e empresas de tecnologia, a iniciativa coreana sugere fortalecimento da base industrial de chips asiática e potencial atração de novos investimentos em P&amp;D na região. Bloomberg Economics" data-title="Coreia do Sul planeja fundo de crescimento com receita de impostos sobre semicondutores" data-share-url="https://www.bloomberg.com/news/articles/2026-07-05/south-korea-eyes-growth-fund-from-chip-tax-windfall-yonhap-says">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:51</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Coreia do Sul planeja fundo de crescimento com receita de impostos sobre semicondutores</div>
+        <div class="news-summary">Seul anunciou planos para criar um fundo de investimento utilizando receitas fiscais da próspera indústria de semicondutores para financiar o crescimento econômico de longo prazo. A iniciativa reflete a estratégia coreana de capitalizar sobre sua liderança global em chips de memória e semicondutores avançados, convertendo receitas tributárias em catalisadores de inovação. O fundo deve contemplar setores como IA, chips de próxima geração e transição energética, alinhando a política fiscal coreana com as megatendências tecnológicas globais. Trata-se de um exemplo de como governos aproveitam ciclos de prosperidade em indústrias estratégicas para financiar transformações estruturais. A iniciativa também sinaliza confiança de Seul em sua posição competitiva em semicondutores apesar da concorrência crescente da China e Taiwan. Para investidores globais e empresas de tecnologia, a iniciativa coreana sugere fortalecimento da base industrial de chips asiática e potencial atração de novos investimentos em P&amp;D na região.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-05/south-korea-eyes-growth-fund-from-chip-tax-windfall-yonhap-says" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Enlutados cantam 'Vingança' em orações fúnebres do Líder Supremo do Irã Em seu segundo dia de luto público após a morte do Aiatolá Ali Khamenei, assassinado em fevereiro, multidões iranianas reuniram-se em Teerã em cerimônias de Estado que evidenciaram o clima de tensão política dentro da república islâmica. Khamenei foi morto durante o que fontes caracterizaram como um ataque coordenado entre EUA e Israel, marcando um ponto de inflexão nas relações entre Teerã e o Ocidente. Destaque para a ausência do filho e sucessor designado, Mojtaba Khamenei, o que alimenta especulações sobre a estabilidade da sucessão e possíveis divisões internas na liderança iraniana. Os cânticos de vingança durante as orações fúnebres sinalizam preparação retórica para possível resposta militar, elevando o risco de escalada regional. O funeral de Estado reflete tanto o luto genuíno quanto a mobilização política do regime para consolidar sua base de apoio em momento crítico. As consequências geopolíticas tendem a intensificar as tensões no Golfo Pérsico, afetando preços de petróleo e estabilidade regional. NYT World News" data-title="Enlutados cantam 'Vingança' em orações fúnebres do Líder Supremo do Irã" data-share-url="https://www.nytimes.com/2026/07/05/world/middleeast/iran-funeral-supreme-leader.html">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:07</span>
+          <span class="news-source">NYT World News</span>
+        </div>
+        <div class="news-title">Enlutados cantam 'Vingança' em orações fúnebres do Líder Supremo do Irã</div>
+        <div class="news-summary">Em seu segundo dia de luto público após a morte do Aiatolá Ali Khamenei, assassinado em fevereiro, multidões iranianas reuniram-se em Teerã em cerimônias de Estado que evidenciaram o clima de tensão política dentro da república islâmica. Khamenei foi morto durante o que fontes caracterizaram como um ataque coordenado entre EUA e Israel, marcando um ponto de inflexão nas relações entre Teerã e o Ocidente. Destaque para a ausência do filho e sucessor designado, Mojtaba Khamenei, o que alimenta especulações sobre a estabilidade da sucessão e possíveis divisões internas na liderança iraniana. Os cânticos de vingança durante as orações fúnebres sinalizam preparação retórica para possível resposta militar, elevando o risco de escalada regional. O funeral de Estado reflete tanto o luto genuíno quanto a mobilização política do regime para consolidar sua base de apoio em momento crítico. As consequências geopolíticas tendem a intensificar as tensões no Golfo Pérsico, afetando preços de petróleo e estabilidade regional.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/05/world/middleeast/iran-funeral-supreme-leader.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="As empresas aprenderam a contratar; o desafio agora é reter talentos Após reaprender a contratar após períodos de ajustes e crises econômicas, as corporações agora enfrentam novo desafio: a retenção de profissionais qualificados em um mercado com mobilidade profissional crescente. A permanência de talentos vem diminuindo significativamente, sinalizando que bons processos seletivos já não são suficientes para manter funcionários motivados e comprometidos. Empresas descobrem que após contratação, a próxima etapa—desenvolvimento, alinhamento de carreira e cultura organizacional—é determinante para evitar rotatividade. Dados mostram aumento expressivo em mudanças de emprego entre profissionais sênior e de alta qualificação, refletindo busca por melhores condições, salários e oportunidades de desenvolvimento. Este cenário cria pressão sobre estruturas de RH e recompensa, forçando empresas a repensar estratégias de retenção além de salário. O fenômeno impacta produtividade, continuidade de projetos e custos operacionais, e tende a intensificar competição por talento em mercados aquecidos. A transição do foco em recrutamento para retenção marca mudança estrutural no mercado de trabalho global. InfoMoney" data-title="As empresas aprenderam a contratar; o desafio agora é reter talentos" data-share-url="https://www.infomoney.com.br/carreira/as-empresas-aprenderam-a-contratar-o-desafio-agora-e-fazer-as-pessoas-ficarem/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:06</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">As empresas aprenderam a contratar; o desafio agora é reter talentos</div>
+        <div class="news-summary">Após reaprender a contratar após períodos de ajustes e crises econômicas, as corporações agora enfrentam novo desafio: a retenção de profissionais qualificados em um mercado com mobilidade profissional crescente. A permanência de talentos vem diminuindo significativamente, sinalizando que bons processos seletivos já não são suficientes para manter funcionários motivados e comprometidos. Empresas descobrem que após contratação, a próxima etapa—desenvolvimento, alinhamento de carreira e cultura organizacional—é determinante para evitar rotatividade. Dados mostram aumento expressivo em mudanças de emprego entre profissionais sênior e de alta qualificação, refletindo busca por melhores condições, salários e oportunidades de desenvolvimento. Este cenário cria pressão sobre estruturas de RH e recompensa, forçando empresas a repensar estratégias de retenção além de salário. O fenômeno impacta produtividade, continuidade de projetos e custos operacionais, e tende a intensificar competição por talento em mercados aquecidos. A transição do foco em recrutamento para retenção marca mudança estrutural no mercado de trabalho global.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/carreira/as-empresas-aprenderam-a-contratar-o-desafio-agora-e-fazer-as-pessoas-ficarem/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Alemanha planeja aumentar endividamento em 2027 conforme receita fiscal cai Berlim planeja elevar o endividamento líquido para 2027 a 118 bilhões de euros (aproximadamente 135 bilhões de dólares), representando aumento de cerca de 7% em relação às projeções feitas em abril. A mudança reflete preocupações do governo alemão com arrecadação tributária abaixo do esperado e pressões orçamentárias em áreas críticas como defesa e infraestrutura. A Alemanha, maior economia da Europa, vem enfrentando desafios de crescimento econômico fraco e pressões inflacionárias que impactam receitas e ampliam despesas. O aumento planejado do endividamento sinaliza que Berlim precisará aumentar gastos para manter a estabilidade econômica e investimentos estratégicos, potencialmente elevando custos de financiamento. Para a zona do euro, a maior contração fiscal de Berlim teria impacto adverso, dada a importância da Alemanha como âncora econômica regional. O movimento reflete dilema clássico entre austeridade e estímulo em momento de incerteza macroeconômica, com possíveis implicações para as discussões sobre política fiscal europeia. Bloomberg Economics" data-title="Alemanha planeja aumentar endividamento em 2027 conforme receita fiscal cai" data-share-url="https://www.bloomberg.com/news/articles/2026-07-05/germany-plans-to-boost-2027-borrowing-as-tax-revenue-falls-short">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">07:18</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Alemanha planeja aumentar endividamento em 2027 conforme receita fiscal cai</div>
+        <div class="news-summary">Berlim planeja elevar o endividamento líquido para 2027 a 118 bilhões de euros (aproximadamente 135 bilhões de dólares), representando aumento de cerca de 7% em relação às projeções feitas em abril. A mudança reflete preocupações do governo alemão com arrecadação tributária abaixo do esperado e pressões orçamentárias em áreas críticas como defesa e infraestrutura. A Alemanha, maior economia da Europa, vem enfrentando desafios de crescimento econômico fraco e pressões inflacionárias que impactam receitas e ampliam despesas. O aumento planejado do endividamento sinaliza que Berlim precisará aumentar gastos para manter a estabilidade econômica e investimentos estratégicos, potencialmente elevando custos de financiamento. Para a zona do euro, a maior contração fiscal de Berlim teria impacto adverso, dada a importância da Alemanha como âncora econômica regional. O movimento reflete dilema clássico entre austeridade e estímulo em momento de incerteza macroeconômica, com possíveis implicações para as discussões sobre política fiscal europeia.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-05/germany-plans-to-boost-2027-borrowing-as-tax-revenue-falls-short" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Wikipedia enfrenta ameaça do MAGA, IA e autocratas estrangeiros A maior biblioteca gratuita de conhecimento da internet está sob pressão de múltiplas frentes: a ascensão do movimento MAGA nos EUA, a disrupção causada por ferramentas de IA e campanhas de desinformação orquestradas por regimes autocráticos. Um ex-embaixador bibliófilo foi recrutado para liderar esforços de defesa da plataforma contra essas ameaças convergentes. Wikipedia enfrenta desafios sem precedentes em sua história: editores enfrentam censura em países autoritários, bots alimentados por IA geram conteúdo falso ou tendencioso, e movimentos políticos domésticos tentam reconfigurar narrativas em entradas sensíveis. A IA generativa particularmente ameaça a integridade editorial, permitindo criação em massa de conteúdo enviesado e difícil de detectar. A organização se vê obrigada a repensar estruturas de governança e moderação para manter a credibilidade em era de informação destrutiva em escala industrial. Consequências práticas incluem potencial fragmentação do conhecimento global em versões regionalizadas e conflitantes, reduzindo a função original de Wikipedia como referência universal neutra. NYT Business" data-title="Wikipedia enfrenta ameaça do MAGA, IA e autocratas estrangeiros" data-share-url="https://www.nytimes.com/2026/07/05/business/media/wikipedia-ai-elon-musk.html">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Wikipedia enfrenta ameaça do MAGA, IA e autocratas estrangeiros</div>
+        <div class="news-summary">A maior biblioteca gratuita de conhecimento da internet está sob pressão de múltiplas frentes: a ascensão do movimento MAGA nos EUA, a disrupção causada por ferramentas de IA e campanhas de desinformação orquestradas por regimes autocráticos. Um ex-embaixador bibliófilo foi recrutado para liderar esforços de defesa da plataforma contra essas ameaças convergentes. Wikipedia enfrenta desafios sem precedentes em sua história: editores enfrentam censura em países autoritários, bots alimentados por IA geram conteúdo falso ou tendencioso, e movimentos políticos domésticos tentam reconfigurar narrativas em entradas sensíveis. A IA generativa particularmente ameaça a integridade editorial, permitindo criação em massa de conteúdo enviesado e difícil de detectar. A organização se vê obrigada a repensar estruturas de governança e moderação para manter a credibilidade em era de informação destrutiva em escala industrial. Consequências práticas incluem potencial fragmentação do conhecimento global em versões regionalizadas e conflitantes, reduzindo a função original de Wikipedia como referência universal neutra.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/05/business/media/wikipedia-ai-elon-musk.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="China intensifica pressão sobre Taiwan com patrulhas da Guarda Costeira expandidas Pequim enviou dois navios para patrulhar as águas a leste de Taiwan em nova campanha de desafio à autoridade da ilha sobre territórios cruciais para qualquer possível invasão futura. A estratégia reflete a escalação da postura coercitiva chinesa contra Taiwan, parte de uma campanha mais ampla de cercamento e intimidação que combina operações navais, aéreas e diplomáticas. As águas a leste são historicamente menos monitoradas e mais controversas, tornando-as alvo de pressão chinesa para redefinir o status quo. A ação ocorre em contexto de maior assertividade de Pequim em toda a região Indo-Pacífica e representa teste à capacidade de Taiwan de defender seu espaço aéreo e marítimo. Para os mercados globais, especialmente para a indústria de semicondutores, qualquer escalada na tensão Taiwan-China é preocupante, dada a importância estratégica da ilha. Analistas apontam que as patrulhas expandidas podem ser precursor de confrontações futuras se não forem contidas diplomaticamente. NYT World News" data-title="China intensifica pressão sobre Taiwan com patrulhas da Guarda Costeira expandidas" data-share-url="https://www.nytimes.com/2026/07/05/world/asia/china-taiwan-east-coast-guard-patrols.html">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">05:21</span>
+          <span class="news-source">NYT World News</span>
+        </div>
+        <div class="news-title">China intensifica pressão sobre Taiwan com patrulhas da Guarda Costeira expandidas</div>
+        <div class="news-summary">Pequim enviou dois navios para patrulhar as águas a leste de Taiwan em nova campanha de desafio à autoridade da ilha sobre territórios cruciais para qualquer possível invasão futura. A estratégia reflete a escalação da postura coercitiva chinesa contra Taiwan, parte de uma campanha mais ampla de cercamento e intimidação que combina operações navais, aéreas e diplomáticas. As águas a leste são historicamente menos monitoradas e mais controversas, tornando-as alvo de pressão chinesa para redefinir o status quo. A ação ocorre em contexto de maior assertividade de Pequim em toda a região Indo-Pacífica e representa teste à capacidade de Taiwan de defender seu espaço aéreo e marítimo. Para os mercados globais, especialmente para a indústria de semicondutores, qualquer escalada na tensão Taiwan-China é preocupante, dada a importância estratégica da ilha. Analistas apontam que as patrulhas expandidas podem ser precursor de confrontações futuras se não forem contidas diplomaticamente.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/05/world/asia/china-taiwan-east-coast-guard-patrols.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Setor imobiliário vê 2026 forte, mas trata 2027 com cautela Representantes de instituições-chave do setor imobiliário brasileiro, incluindo Caixa, CBIC, ABECIP e ABRAMAT, projetam um novo ciclo de crescimento para o atual ano, mas já sinalizam preocupações com o cenário macroeconômico de 2027. Em painel no Construsummit, executivos reconhecem que 2026 proporciona oportunidades de expansão graças ao crédito mais acessível e demanda aquecida no segmento residencial e comercial. No entanto, o alerta centrado em riscos ligados à Selic (taxa básica de juros) revela preocupação com possíveis apertos monetários que poderiam impactar a acessibilidade e o fluxo de crédito. A questão fiscal brasileira também emerge como fator de risco para a sustentabilidade das projeções positivas de médio prazo. Dados recentes mostram que o mercado imobiliário responde rapidamente a mudanças nas condições de crédito e cenário inflacionário, sugerindo que a euforia presente pode ser seguida por contração se não houver controle das pressões sobre a Selic. O posicionamento cauteloso do setor é sintomático da incerteza macroeconômica que marca o ambiente corporativo brasileiro. InfoMoney" data-title="Setor imobiliário vê 2026 forte, mas trata 2027 com cautela" data-share-url="https://www.infomoney.com.br/business/setor-imobiliario-ve-2026-forte-mas-ja-trata-2027-com-mais-cautela/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Setor imobiliário vê 2026 forte, mas trata 2027 com cautela</div>
+        <div class="news-summary">Representantes de instituições-chave do setor imobiliário brasileiro, incluindo Caixa, CBIC, ABECIP e ABRAMAT, projetam um novo ciclo de crescimento para o atual ano, mas já sinalizam preocupações com o cenário macroeconômico de 2027. Em painel no Construsummit, executivos reconhecem que 2026 proporciona oportunidades de expansão graças ao crédito mais acessível e demanda aquecida no segmento residencial e comercial. No entanto, o alerta centrado em riscos ligados à Selic (taxa básica de juros) revela preocupação com possíveis apertos monetários que poderiam impactar a acessibilidade e o fluxo de crédito. A questão fiscal brasileira também emerge como fator de risco para a sustentabilidade das projeções positivas de médio prazo. Dados recentes mostram que o mercado imobiliário responde rapidamente a mudanças nas condições de crédito e cenário inflacionário, sugerindo que a euforia presente pode ser seguida por contração se não houver controle das pressões sobre a Selic. O posicionamento cauteloso do setor é sintomático da incerteza macroeconômica que marca o ambiente corporativo brasileiro.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/business/setor-imobiliario-ve-2026-forte-mas-ja-trata-2027-com-mais-cautela/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="CEO de empresa de US$ 25 bilhões diz que entrevista de uma hora é perda de tempo Iñaki Ereño, CEO da Bupa (empresa de saúde avaliada em US$ 25 bilhões), declarou que o formato tradicional de entrevista única de uma hora é ineficaz para avaliar candidatos adequadamente. Ereño argumenta que conhecer de fato um candidato requer pelo menos três encontros de duas horas cada, incluindo refeição informal fora do escritório para observar comportamento em contextos naturais. A posição reflete tendência crescente entre executivos de grandes corporações de questionar e reformular processos de seleção convencionais para melhorar qualidade de contratações. O executivo sugere que entrevistas convencionais favorecem candidatos com melhor preparação discursiva, não necessariamente os mais competentes ou alinhados culturalmente com a organização. A abordagem, embora exigir mais tempo e recursos, busca reduzir erros de contratação e consequente rotatividade cara. A posição de liderança de Bupa amplifica essa mensagem, potencialmente influenciando outros executivos a repensar seus próprios processos seletivos. Isso reflete preocupação corporativa mais ampla com qualidade de recrutamento em contexto de competição acirrada por talento. InfoMoney" data-title="CEO de empresa de US$ 25 bilhões diz que entrevista de uma hora é perda de tempo" data-share-url="https://www.infomoney.com.br/business/global/ceo-de-empresa-de-us-25-bilhoes-diz-que-entrevista-de-uma-hora-e-perda-de-tempo/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">CEO de empresa de US$ 25 bilhões diz que entrevista de uma hora é perda de tempo</div>
+        <div class="news-summary">Iñaki Ereño, CEO da Bupa (empresa de saúde avaliada em US$ 25 bilhões), declarou que o formato tradicional de entrevista única de uma hora é ineficaz para avaliar candidatos adequadamente. Ereño argumenta que conhecer de fato um candidato requer pelo menos três encontros de duas horas cada, incluindo refeição informal fora do escritório para observar comportamento em contextos naturais. A posição reflete tendência crescente entre executivos de grandes corporações de questionar e reformular processos de seleção convencionais para melhorar qualidade de contratações. O executivo sugere que entrevistas convencionais favorecem candidatos com melhor preparação discursiva, não necessariamente os mais competentes ou alinhados culturalmente com a organização. A abordagem, embora exigir mais tempo e recursos, busca reduzir erros de contratação e consequente rotatividade cara. A posição de liderança de Bupa amplifica essa mensagem, potencialmente influenciando outros executivos a repensar seus próprios processos seletivos. Isso reflete preocupação corporativa mais ampla com qualidade de recrutamento em contexto de competição acirrada por talento.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/business/global/ceo-de-empresa-de-us-25-bilhoes-diz-que-entrevista-de-uma-hora-e-perda-de-tempo/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Coreia do Sul planeja fundo de crescimento com superávit de impostos de semicondutores Seul planeja desdobrar até US$ 46 bilhões em superávit fiscal de semicondutores em fundo de investimento visando setores de IA, chips e transição energética. A iniciativa representa um dos maiores compromissos de política fiscal com transformação tecnológica de longo prazo entre economias desenvolvidas. O fundo busca não apenas perpetuar liderança coreana em semicondutores, mas diversificar em adjacências tecnológicas onde IA será central. A magnitude de US$ 46 bilhões permite investimentos significativos em P&amp;D, infraestrutura e talento, potencialmente reposicionando Coreia do Sul como hub de inovação em tecnologias de fronteira. A estratégia reflete compreensão coreana de que ciclos tecnológicos exigem reinvestimento constante para manter competitividade diante de concorrentes globais. Para investidores e empresas de IA, a iniciativa sinaliza que Seul se posiciona como importante receptor de talento e investimento em desenvolvimento de IA. Potencialmente, poderia elevar Coreia do Sul ao lado de EUA e China como terceiro polo de inovação em IA de escala industrial. Crypto Briefing" data-title="Coreia do Sul planeja fundo de crescimento com superávit de impostos de semicondutores" data-share-url="https://cryptobriefing.com/south-korea-semiconductor-tax-investment-fund/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">09:03</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Coreia do Sul planeja fundo de crescimento com superávit de impostos de semicondutores</div>
+        <div class="news-summary">Seul planeja desdobrar até US$ 46 bilhões em superávit fiscal de semicondutores em fundo de investimento visando setores de IA, chips e transição energética. A iniciativa representa um dos maiores compromissos de política fiscal com transformação tecnológica de longo prazo entre economias desenvolvidas. O fundo busca não apenas perpetuar liderança coreana em semicondutores, mas diversificar em adjacências tecnológicas onde IA será central. A magnitude de US$ 46 bilhões permite investimentos significativos em P&amp;D, infraestrutura e talento, potencialmente reposicionando Coreia do Sul como hub de inovação em tecnologias de fronteira. A estratégia reflete compreensão coreana de que ciclos tecnológicos exigem reinvestimento constante para manter competitividade diante de concorrentes globais. Para investidores e empresas de IA, a iniciativa sinaliza que Seul se posiciona como importante receptor de talento e investimento em desenvolvimento de IA. Potencialmente, poderia elevar Coreia do Sul ao lado de EUA e China como terceiro polo de inovação em IA de escala industrial.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/south-korea-semiconductor-tax-investment-fund/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Xbox está em colapso A divisão de games Xbox da Microsoft enfrenta desafios estratégicos e operacionais significativos que a posicionam como perda relativa em seu portfólio de negócios. O colapso reflete múltiplos fatores: fragmentação de estratégia de conteúdo, falha em entregar exclusivos blockbuster no ritmo esperado, perda de participação de mercado para PlayStation e desafios em monetização de Game Pass. Titles como Gears of War: E-Day não conseguiram reverter narrativa negativa ao redor da plataforma. A Xbox, outrora líder de inovação com Kinect e game pass, viu sua relevância diminuir na corrida por market share de consoles. Falhas em desenvolvimento de IP exclusivo de sucesso deixaram Xbox dependente de ports e serviços, deixando-a em posição defensiva. A narrativa de colapso reflete não apenas métricas de vendas, mas também percepção de mercado e cultural sobre o futuro estratégico da marca. Para Microsoft, Xbox representa divisão que demanda investimento estratégico significativo para recuperar posição, ou eventual desfoque estratégico em direção a gaming como serviço. A situação contrasta com sucesso da divisão de IA da Microsoft, que tem se beneficiado do boom de ChatGPT e parcerias com OpenAI. The Verge" data-title="Xbox está em colapso" data-share-url="https://www.theverge.com/column/960600/xbox-is-a-disaster">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Xbox está em colapso</div>
+        <div class="news-summary">A divisão de games Xbox da Microsoft enfrenta desafios estratégicos e operacionais significativos que a posicionam como perda relativa em seu portfólio de negócios. O colapso reflete múltiplos fatores: fragmentação de estratégia de conteúdo, falha em entregar exclusivos blockbuster no ritmo esperado, perda de participação de mercado para PlayStation e desafios em monetização de Game Pass. Titles como Gears of War: E-Day não conseguiram reverter narrativa negativa ao redor da plataforma. A Xbox, outrora líder de inovação com Kinect e game pass, viu sua relevância diminuir na corrida por market share de consoles. Falhas em desenvolvimento de IP exclusivo de sucesso deixaram Xbox dependente de ports e serviços, deixando-a em posição defensiva. A narrativa de colapso reflete não apenas métricas de vendas, mas também percepção de mercado e cultural sobre o futuro estratégico da marca. Para Microsoft, Xbox representa divisão que demanda investimento estratégico significativo para recuperar posição, ou eventual desfoque estratégico em direção a gaming como serviço. A situação contrasta com sucesso da divisão de IA da Microsoft, que tem se beneficiado do boom de ChatGPT e parcerias com OpenAI.</div>
+        <div class="news-link"><a href="https://www.theverge.com/column/960600/xbox-is-a-disaster" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="A vingança dos maiores em filosofia Laboratórios de IA estão contratando profissionais com formação em filosofia em ritmo acelerado, reconhecendo valor único de pensadores contrarianos, questionadores e que dominam análise ética complexa. A tendência inverte narrativa histórica que associava formação em filosofia com desemprego ou subemprego, criando demanda genuína por esses profissionais. Empresas como OpenAI, Anthropic e similares buscam filósofos para trabalhar em tópicos críticos como alinhamento de IA, ética algorítmica, explicabilidade e mitigação de riscos. A formação filosófica proporciona base sólida para pensar sobre consequências de longo prazo de sistemas de IA, uma preocupação central para empresas que enfrentam escrutínio regulatório. Salários oferecidos aos filósofos contratados por labs de IA competem com posições técnicas tradicionais, invertendo status econômico histórico dessa carreira. O movimento reflete reconhecimento de que viés e risco em IA não são exclusivamente problemas técnicos, mas também éticos e filosóficos. Essa demanda por filósofos em IA provavelmente continuará enquanto regulação aumentar pressão sobre explicabilidade e responsabilidade corporativa. NYT Business" data-title="A vingança dos maiores em filosofia" data-share-url="https://www.nytimes.com/2026/07/05/business/philosophy-majors-ai-jobs.html">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:17</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">A vingança dos maiores em filosofia</div>
+        <div class="news-summary">Laboratórios de IA estão contratando profissionais com formação em filosofia em ritmo acelerado, reconhecendo valor único de pensadores contrarianos, questionadores e que dominam análise ética complexa. A tendência inverte narrativa histórica que associava formação em filosofia com desemprego ou subemprego, criando demanda genuína por esses profissionais. Empresas como OpenAI, Anthropic e similares buscam filósofos para trabalhar em tópicos críticos como alinhamento de IA, ética algorítmica, explicabilidade e mitigação de riscos. A formação filosófica proporciona base sólida para pensar sobre consequências de longo prazo de sistemas de IA, uma preocupação central para empresas que enfrentam escrutínio regulatório. Salários oferecidos aos filósofos contratados por labs de IA competem com posições técnicas tradicionais, invertendo status econômico histórico dessa carreira. O movimento reflete reconhecimento de que viés e risco em IA não são exclusivamente problemas técnicos, mas também éticos e filosóficos. Essa demanda por filósofos em IA provavelmente continuará enquanto regulação aumentar pressão sobre explicabilidade e responsabilidade corporativa.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/05/business/philosophy-majors-ai-jobs.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Índia notifica Meta para remover conteúdo de abuso infantil do Instagram A Índia notificou a Meta Platforms que é necessário remover conteúdo sexual envolvendo crianças de suas plataformas, incluindo Instagram, marcando o mais recente episódio em crescente pressão regulatória sobre a empresa de Mídia Social. A ação reflete preocupação governamental com disseminação de material de abuso infantil em plataformas digitais, um problema grave e de escala global que Meta vem enfrentando em múltiplas jurisdições. A Índia, com mais de 400 milhões de usuários de internet, representa mercado crucial para Meta e possui autoridades regulatórias cada vez mais assertivas. O governo indiano vem intensificando escrutínio sobre práticas de moderação de conteúdo da Meta, argumentando que ferramentas de IA não são suficientes para proteger menores. A notificação sinaliza potencial para novas regulações ou multas se Meta não cumprir requisitos, adicionando pressão ao já complexo ambiente regulatório que a empresa enfrenta globalmente. Para investidores, ações regulatórias de mercados-chave como Índia ampliam risco de impactos financeiros e operacionais significativos em Meta. Bloomberg Technology" data-title="Índia notifica Meta para remover conteúdo de abuso infantil do Instagram" data-share-url="https://www.bloomberg.com/news/articles/2026-07-05/india-tells-meta-to-remove-child-abuse-content-from-instagram">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">06:13</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Índia notifica Meta para remover conteúdo de abuso infantil do Instagram</div>
+        <div class="news-summary">A Índia notificou a Meta Platforms que é necessário remover conteúdo sexual envolvendo crianças de suas plataformas, incluindo Instagram, marcando o mais recente episódio em crescente pressão regulatória sobre a empresa de Mídia Social. A ação reflete preocupação governamental com disseminação de material de abuso infantil em plataformas digitais, um problema grave e de escala global que Meta vem enfrentando em múltiplas jurisdições. A Índia, com mais de 400 milhões de usuários de internet, representa mercado crucial para Meta e possui autoridades regulatórias cada vez mais assertivas. O governo indiano vem intensificando escrutínio sobre práticas de moderação de conteúdo da Meta, argumentando que ferramentas de IA não são suficientes para proteger menores. A notificação sinaliza potencial para novas regulações ou multas se Meta não cumprir requisitos, adicionando pressão ao já complexo ambiente regulatório que a empresa enfrenta globalmente. Para investidores, ações regulatórias de mercados-chave como Índia ampliam risco de impactos financeiros e operacionais significativos em Meta.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-05/india-tells-meta-to-remove-child-abuse-content-from-instagram" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Casamento de Taylor Swift se torna momento de marketing para grandes marcas O casamento de Taylor Swift transformou-se em oportunidade de marketing para centenas de marcas que capitalizaram na atenção mediática massiva utilizando conteúdo gerado por IA e publicidade digital estratégica. Algumas empresas produziram conteúdo sintético com ferramentas de IA para conectar seus produtos ao evento, enquanto outras lançaram campanhas publicidade digital precisamente direcionadas para capturar o frenesi de consumidores. A estratégia reflete evolução do marketing em era de IA, onde conteúdo pode ser gerado em escala e distribuído em velocidade sem precedentes. Críticos apontam que uso indiscriminado de IA para gerar conteúdo de marketing durante evento de alta repercussão levanta questões sobre autenticidade e fadiga de consumidor. Por outro lado, marcas menores conseguiram pela primeira vez competir em nível de visibilidade com corporações gigantes através de criatividade na IA e agilidade em publicidade social. O fenômeno exemplifica como IA está democratizando acesso a ferramentas de marketing em escala, alterando dinâmicas competitivas entre empresas. Para agências de publicidade e profissionais de marketing, o evento sinaliza necessidade de integração urgente de competências em IA para permanecer relevante. NYT Business" data-title="Casamento de Taylor Swift se torna momento de marketing para grandes marcas" data-share-url="https://www.nytimes.com/2026/07/05/style/taylor-swift-wedding-marketing-brands-ai.html">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Casamento de Taylor Swift se torna momento de marketing para grandes marcas</div>
+        <div class="news-summary">O casamento de Taylor Swift transformou-se em oportunidade de marketing para centenas de marcas que capitalizaram na atenção mediática massiva utilizando conteúdo gerado por IA e publicidade digital estratégica. Algumas empresas produziram conteúdo sintético com ferramentas de IA para conectar seus produtos ao evento, enquanto outras lançaram campanhas publicidade digital precisamente direcionadas para capturar o frenesi de consumidores. A estratégia reflete evolução do marketing em era de IA, onde conteúdo pode ser gerado em escala e distribuído em velocidade sem precedentes. Críticos apontam que uso indiscriminado de IA para gerar conteúdo de marketing durante evento de alta repercussão levanta questões sobre autenticidade e fadiga de consumidor. Por outro lado, marcas menores conseguiram pela primeira vez competir em nível de visibilidade com corporações gigantes através de criatividade na IA e agilidade em publicidade social. O fenômeno exemplifica como IA está democratizando acesso a ferramentas de marketing em escala, alterando dinâmicas competitivas entre empresas. Para agências de publicidade e profissionais de marketing, o evento sinaliza necessidade de integração urgente de competências em IA para permanecer relevante.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/05/style/taylor-swift-wedding-marketing-brands-ai.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Como Meta Threads se tornou tão popular quanto X A plataforma social que Meta posicionou como rival direto do X (antigo Twitter) de Elon Musk agora conta com 500 milhões de usuários, consolidando-se como força relevante no cenário de redes sociais. Threads, lançado em 2023 como alternativa descentralizada ao Twitter, cresceu exponencialmente aproveitando insatisfação com mudanças editoriais no X pós-aquisição por Musk. Conforme cresceu em escala, Threads passou a cada vez mais se assemelhar a Reddit, adotando formatos de comunidades temáticas e estruturas de moderação descentralizadas. Meta investiu bilhões em infraestrutura de IA para moderar conteúdo em escala, permitindo que Threads mantivesse padrões comunitários rigorosos sem custo operacional extremo. O alcance de 500 milhões de usuários coloca Threads entre as plataformas sociais mais relevantes globalmente, representando redistribuição significativa do ecossistema de mídia social. Para criadores e marcas, Threads oferece nova oportunidade de alcance, embora fragmentação de audiência entre plataformas permaneça desafio. A trajetória de Threads demonstra potencial de novos entrantes em desafiar gigantes estabelecidas se oferecerem proposição de valor genuína. NYT Technology" data-title="Como Meta Threads se tornou tão popular quanto X" data-share-url="https://www.nytimes.com/2026/07/05/technology/threads-meta-twitter-x.html">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">06:01</span>
+          <span class="news-source">NYT Technology</span>
+        </div>
+        <div class="news-title">Como Meta Threads se tornou tão popular quanto X</div>
+        <div class="news-summary">A plataforma social que Meta posicionou como rival direto do X (antigo Twitter) de Elon Musk agora conta com 500 milhões de usuários, consolidando-se como força relevante no cenário de redes sociais. Threads, lançado em 2023 como alternativa descentralizada ao Twitter, cresceu exponencialmente aproveitando insatisfação com mudanças editoriais no X pós-aquisição por Musk. Conforme cresceu em escala, Threads passou a cada vez mais se assemelhar a Reddit, adotando formatos de comunidades temáticas e estruturas de moderação descentralizadas. Meta investiu bilhões em infraestrutura de IA para moderar conteúdo em escala, permitindo que Threads mantivesse padrões comunitários rigorosos sem custo operacional extremo. O alcance de 500 milhões de usuários coloca Threads entre as plataformas sociais mais relevantes globalmente, representando redistribuição significativa do ecossistema de mídia social. Para criadores e marcas, Threads oferece nova oportunidade de alcance, embora fragmentação de audiência entre plataformas permaneça desafio. A trajetória de Threads demonstra potencial de novos entrantes em desafiar gigantes estabelecidas se oferecerem proposição de valor genuína.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/05/technology/threads-meta-twitter-x.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ethereum mostra sinal de compra raro – ETH está pronto para reclamar US$ 2.000? Ethereum apresentou sinais técnicos de compra raros enquanto implantações de novos contratos inteligentes na rede experimentaram surto de 303% em relação à média de 90 dias. O fenômeno de aumento em atividade de desenvolvimento sugere renovado interesse de desenvolvedores em construir aplicações descentralizadas na rede. Historicamente, picos em atividade de desenvolvimento em Ethereum precedem movimentos de preço significativos, funcionando como leading indicator de reconhecimento de valor de longo prazo. Se o padrão repetir, ETH poderia estar posicionado para desafiar resistência de US$ 2.000, nível que permaneceu fora de alcance por período estendido. Analistas técnicos apontam convergência de múltiplos indicadores sugerindo oportunidade de entrada, embora com ressalva de que criptomoedas permanecem voláteis. A renovação de interesse em desenvolvimento de aplicações em Ethereum reflete potencial ressurgimento de narrativa de DeFi e Web3 após período de desinteresse relativo. Investidores monitoram se atividade de desenvolvimento sustentada pode traduzir em apreciação de preço maior em médio prazo. AMBCrypto" data-title="Ethereum mostra sinal de compra raro – ETH está pronto para reclamar US$ 2.000?" data-share-url="https://ambcrypto.com/ethereum-flashes-a-rare-buy-signal-is-eth-ready-to-reclaim-2000/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Ethereum mostra sinal de compra raro – ETH está pronto para reclamar US$ 2.000?</div>
+        <div class="news-summary">Ethereum apresentou sinais técnicos de compra raros enquanto implantações de novos contratos inteligentes na rede experimentaram surto de 303% em relação à média de 90 dias. O fenômeno de aumento em atividade de desenvolvimento sugere renovado interesse de desenvolvedores em construir aplicações descentralizadas na rede. Historicamente, picos em atividade de desenvolvimento em Ethereum precedem movimentos de preço significativos, funcionando como leading indicator de reconhecimento de valor de longo prazo. Se o padrão repetir, ETH poderia estar posicionado para desafiar resistência de US$ 2.000, nível que permaneceu fora de alcance por período estendido. Analistas técnicos apontam convergência de múltiplos indicadores sugerindo oportunidade de entrada, embora com ressalva de que criptomoedas permanecem voláteis. A renovação de interesse em desenvolvimento de aplicações em Ethereum reflete potencial ressurgimento de narrativa de DeFi e Web3 após período de desinteresse relativo. Investidores monitoram se atividade de desenvolvimento sustentada pode traduzir em apreciação de preço maior em médio prazo.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/ethereum-flashes-a-rare-buy-signal-is-eth-ready-to-reclaim-2000/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Medo de bolha em OpenAI, Anthropic e SpaceX? Veja alternativas de investimento em IA Conforme especulações sobre possível bolha em valuações de empresas de IA como OpenAI, Anthropic e SpaceX ganham tração entre investidores, gestoras como Eleven identificam alternativas para se expor ao tema sem investir diretamente nessas companhias. A estratégia oferece acesso a megatendência de IA enquanto diversifica risco de concentração em poucas corporações privadas de altíssima valorização. Alternativas incluem ETFs de tecnologia diversificados, ações de fornecedores de semicondutores, empresas de cloud computing e outros players da cadeia de valor de IA. A abordagem reconhece que risco de correção em private equity de IA pode ser real se expectativas de crescimento não se materializarem na velocidade esperada. Para investidores retail, acesso indireto oferece forma menos especulativa de participar da narrativa de IA sem concentrar capital em empresas privadas não-líquidas. A recomendação reflete preocupação crescente no mercado com múltiplos-valuation de startups de IA e potencial de ajuste significativo em caso de decepção operacional. InfoMoney" data-title="Medo de bolha em OpenAI, Anthropic e SpaceX? Veja alternativas de investimento em IA" data-share-url="https://www.infomoney.com.br/mercados/grandes-ipos-de-ia-a-conta-que-o-mercado-precisa-fechar/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Medo de bolha em OpenAI, Anthropic e SpaceX? Veja alternativas de investimento em IA</div>
+        <div class="news-summary">Conforme especulações sobre possível bolha em valuações de empresas de IA como OpenAI, Anthropic e SpaceX ganham tração entre investidores, gestoras como Eleven identificam alternativas para se expor ao tema sem investir diretamente nessas companhias. A estratégia oferece acesso a megatendência de IA enquanto diversifica risco de concentração em poucas corporações privadas de altíssima valorização. Alternativas incluem ETFs de tecnologia diversificados, ações de fornecedores de semicondutores, empresas de cloud computing e outros players da cadeia de valor de IA. A abordagem reconhece que risco de correção em private equity de IA pode ser real se expectativas de crescimento não se materializarem na velocidade esperada. Para investidores retail, acesso indireto oferece forma menos especulativa de participar da narrativa de IA sem concentrar capital em empresas privadas não-líquidas. A recomendação reflete preocupação crescente no mercado com múltiplos-valuation de startups de IA e potencial de ajuste significativo em caso de decepção operacional.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/mercados/grandes-ipos-de-ia-a-conta-que-o-mercado-precisa-fechar/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fornecedora Nvidia Hon Hai bate expectativas com crescimento de 40% impulsionado por demanda de IA Hon Hai Precision Industry Co., principal parceira de montagem de servidores para Nvidia, reportou crescimento trimestral de vendas 40% maior que o esperado, sinalizado por demanda robusta de IA. A empresa taiwanesa, também conhecida como Foxconn, beneficia-se de posição estratégica na cadeia de suprimentos de computação de IA, montando servidores que alimentam data centers globais. O crescimento reflete pressão contínua na demanda por infraestrutura de IA, com clientes incluindo provedores de nuvem, empresas de tecnologia e governos investindo maciçamente em capacidade computacional. Hon Hai sinalizou que a demanda de IA permanece sólida, sugerindo que ciclo de capex em IA não está próximo de desacelerar. Resultados da fornecedora validam narrativa de investimento em IA como megatendência de múltiplos anos, não bolha de curto prazo. Para a economia taiwanesa, resultado reforça importância da indústria de manufatura de eletrônicos como pilar de crescimento. Analistas apontam que fornecedores como Hon Hai continuarão a se beneficiar de demanda de IA enquanto grandes cloud providers expandem infraestrutura computacional. Bloomberg Technology" data-title="Fornecedora Nvidia Hon Hai bate expectativas com crescimento de 40% impulsionado por demanda de IA" data-share-url="https://www.bloomberg.com/news/articles/2026-07-05/nvidia-supplier-hon-hai-reports-surging-sales-on-solid-ai-demand">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">04:47</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Fornecedora Nvidia Hon Hai bate expectativas com crescimento de 40% impulsionado por demanda de IA</div>
+        <div class="news-summary">Hon Hai Precision Industry Co., principal parceira de montagem de servidores para Nvidia, reportou crescimento trimestral de vendas 40% maior que o esperado, sinalizado por demanda robusta de IA. A empresa taiwanesa, também conhecida como Foxconn, beneficia-se de posição estratégica na cadeia de suprimentos de computação de IA, montando servidores que alimentam data centers globais. O crescimento reflete pressão contínua na demanda por infraestrutura de IA, com clientes incluindo provedores de nuvem, empresas de tecnologia e governos investindo maciçamente em capacidade computacional. Hon Hai sinalizou que a demanda de IA permanece sólida, sugerindo que ciclo de capex em IA não está próximo de desacelerar. Resultados da fornecedora validam narrativa de investimento em IA como megatendência de múltiplos anos, não bolha de curto prazo. Para a economia taiwanesa, resultado reforça importância da indústria de manufatura de eletrônicos como pilar de crescimento. Analistas apontam que fornecedores como Hon Hai continuarão a se beneficiar de demanda de IA enquanto grandes cloud providers expandem infraestrutura computacional.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-05/nvidia-supplier-hon-hai-reports-surging-sales-on-solid-ai-demand" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fornecedora Nvidia Hon Hai bate expectativas de vendas com demanda sólida de IA A empresa de manufatura taiwanesa Hon Hai reportou crescimento trimestral de 40% em vendas, superando expectativas amplamente e sinalizando continuação de demanda robusta por infraestrutura de IA. Como principal fornecedor de servidores para Nvidia e clientes globais de computação, Hon Hai beneficia-se diretamente do boom de investimento em capacidade computacional para IA. Resultados validam que demanda por infraestrutura continua acelerada, com data centers globais expandindo significativamente sua capacidade. A trajetória de crescimento de Hon Hai sugere que o capex em IA não é fenômeno de curta duração, mas tendência multianual que sustentará fornecedores de hardware. Para Taiwan, economia altamente dependente de export de tecnologia, resultados reforçam importância crítica do setor de eletrônicos para crescimento econômico. Analistas observam que Hon Hai está bem posicionada para continuar a capturar valor da expansão de infraestrutura de IA enquanto concorrentes enfrentam constrangimentos de capacidade. Performance reflete que cadeia de suprimentos de IA permanece sob pressão de demanda, suportando preços e margens de fabricantes. Bloomberg Technology" data-title="Fornecedora Nvidia Hon Hai bate expectativas de vendas com demanda sólida de IA" data-share-url="https://www.bloomberg.com/news/articles/2026-07-05/nvidia-supplier-hon-hai-reports-surging-sales-on-solid-ai-demand">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">04:47</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Fornecedora Nvidia Hon Hai bate expectativas de vendas com demanda sólida de IA</div>
+        <div class="news-summary">A empresa de manufatura taiwanesa Hon Hai reportou crescimento trimestral de 40% em vendas, superando expectativas amplamente e sinalizando continuação de demanda robusta por infraestrutura de IA. Como principal fornecedor de servidores para Nvidia e clientes globais de computação, Hon Hai beneficia-se diretamente do boom de investimento em capacidade computacional para IA. Resultados validam que demanda por infraestrutura continua acelerada, com data centers globais expandindo significativamente sua capacidade. A trajetória de crescimento de Hon Hai sugere que o capex em IA não é fenômeno de curta duração, mas tendência multianual que sustentará fornecedores de hardware. Para Taiwan, economia altamente dependente de export de tecnologia, resultados reforçam importância crítica do setor de eletrônicos para crescimento econômico. Analistas observam que Hon Hai está bem posicionada para continuar a capturar valor da expansão de infraestrutura de IA enquanto concorrentes enfrentam constrangimentos de capacidade. Performance reflete que cadeia de suprimentos de IA permanece sob pressão de demanda, suportando preços e margens de fabricantes.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-05/nvidia-supplier-hon-hai-reports-surging-sales-on-solid-ai-demand" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="eToro assume participação estratégica em exchange descentralizado Extended, planeja parceria Zengo A plataforma de trading eToro investiu estrategicamente em Extended, exchange descentralizado de futuros perpétuos on-chain, e sinalizou parceria planejada com Zengo, carteira de auto-custódia. O movimento reflete estratégia de eToro de oferecer acesso a produtos descentralizados enquanto mantém custódia segura através de integração com Zengo. A participação estratégica em Extended posiciona eToro para capturar crescimento em trading descentralizado sem construir toda infraestrutura internamente. Extended, lançado recentemente, oferece interface moderna de trading de derivativos completamente on-chain, competindo com plataformas centralizadas. A parceria eToro-Zengo oferece modelo de custódia alternativo que permite usuários manter controle criptográfico de chaves privadas enquanto utilizam serviços de trading sofisticados. Para usuários de eToro, iniciativa sinaliza evolução em direção a oferta mais robusta de produtos DeFi, historicamente negligenciada por plataformas centralizadas de varejo. O movimento reflete reconhecimento de que demanda de produtos descentralizados está em crescimento entre investidores mais sofisticados e conscienciosos em privacidade. The Defiant" data-title="eToro assume participação estratégica em exchange descentralizado Extended, planeja parceria Zengo" data-share-url="https://thedefiant.io/news/cefi/etoro-strategic-stake-onchain-derivatives-extended-zengo">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">09:06</span>
+          <span class="news-source">The Defiant</span>
+        </div>
+        <div class="news-title">eToro assume participação estratégica em exchange descentralizado Extended, planeja parceria Zengo</div>
+        <div class="news-summary">A plataforma de trading eToro investiu estrategicamente em Extended, exchange descentralizado de futuros perpétuos on-chain, e sinalizou parceria planejada com Zengo, carteira de auto-custódia. O movimento reflete estratégia de eToro de oferecer acesso a produtos descentralizados enquanto mantém custódia segura através de integração com Zengo. A participação estratégica em Extended posiciona eToro para capturar crescimento em trading descentralizado sem construir toda infraestrutura internamente. Extended, lançado recentemente, oferece interface moderna de trading de derivativos completamente on-chain, competindo com plataformas centralizadas. A parceria eToro-Zengo oferece modelo de custódia alternativo que permite usuários manter controle criptográfico de chaves privadas enquanto utilizam serviços de trading sofisticados. Para usuários de eToro, iniciativa sinaliza evolução em direção a oferta mais robusta de produtos DeFi, historicamente negligenciada por plataformas centralizadas de varejo. O movimento reflete reconhecimento de que demanda de produtos descentralizados está em crescimento entre investidores mais sofisticados e conscienciosos em privacidade.</div>
+        <div class="news-link"><a href="https://thedefiant.io/news/cefi/etoro-strategic-stake-onchain-derivatives-extended-zengo" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Aerodrome Finance: AERO pode atingir US$ 0,65 após rally de 22% na semana? O token Aerodrome Finance (AERO) estendeu sua tendência de alta, atingindo US$ 0,60 pela primeira vez desde janeiro, levantando questões sobre potencial para atingir US$ 0,65 como próximo alvo técnico. A rally de 22% na semana reflete renovado interesse em token de DEX de base layer, possivelmente ligado a recuperação mais ampla do segmento DeFi. Aerodrome é DEX descentralizado líder na blockchain Optimism, beneficiando-se de crescimento de atividade em layer 2s conforme usuários buscam reduzir custos de transação. Análise técnica mostra que rompimento acima de US$ 0,60 elimina resistência importante, abrindo caminho para US$ 0,65 se volume sustentar. Token AERO oferece possibilidade de participação em crescimento de DEX descentralizados sem exposição direta a Bitcoin ou Ethereum, representando aposta em narrativa de DeFi. Críticos advertem que rally pode ser acompanhado por profit-taking, especialmente se mercado mais amplo sofrer correção. Traders monitoram volume e momentum para confirmar se breakout é genuíno ou falsa reversão. AMBCrypto" data-title="Aerodrome Finance: AERO pode atingir US$ 0,65 após rally de 22% na semana?" data-share-url="https://ambcrypto.com/aerodrome-finance-can-aero-target-0-65-after-a-22-weekly-rally/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Aerodrome Finance: AERO pode atingir US$ 0,65 após rally de 22% na semana?</div>
+        <div class="news-summary">O token Aerodrome Finance (AERO) estendeu sua tendência de alta, atingindo US$ 0,60 pela primeira vez desde janeiro, levantando questões sobre potencial para atingir US$ 0,65 como próximo alvo técnico. A rally de 22% na semana reflete renovado interesse em token de DEX de base layer, possivelmente ligado a recuperação mais ampla do segmento DeFi. Aerodrome é DEX descentralizado líder na blockchain Optimism, beneficiando-se de crescimento de atividade em layer 2s conforme usuários buscam reduzir custos de transação. Análise técnica mostra que rompimento acima de US$ 0,60 elimina resistência importante, abrindo caminho para US$ 0,65 se volume sustentar. Token AERO oferece possibilidade de participação em crescimento de DEX descentralizados sem exposição direta a Bitcoin ou Ethereum, representando aposta em narrativa de DeFi. Críticos advertem que rally pode ser acompanhado por profit-taking, especialmente se mercado mais amplo sofrer correção. Traders monitoram volume e momentum para confirmar se breakout é genuíno ou falsa reversão.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/aerodrome-finance-can-aero-target-0-65-after-a-22-weekly-rally/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Onda de especulação em token de meme não autorizado de Mbappé traz preocupações de risco O momento de Mbappé na Copa do Mundo gerou onda de especulação em tokens de meme não autorizados criados por terceiros, levantando preocupações importantes sobre riscos para investidores. Fenômeno reflete padrão recorrente em cripto onde eventos de alta visibilidade catalizam criação em massa de tokens spoof que exploram reconhecimento de marca sem autorização ou ligação real com figura. Maioria desses tokens carecem de utilidade genuína e são criados com intenção de pump-and-dump, onde criadores vendem posições iniciais e abandonam projeto, deixando investidores com perdas totais. A proliferação de meme tokens não autorizados destaca lacuna regulatória persistente em mercados cripto, onde barreira de entrada para criação de token é negligenciável. Educação de investidor permanece crítica, com necessidade de evitar tokens sem verificação de legitimidade ou conexão clara com figure/entidade retratada. O fenômeno não é específico a Mbappé mas padrão geral em cripto sempre que personalidades de alta projeção ganham atenção mediática. Reguladores globais estão considerando frameworks para restringir atividades de token fraud, embora implementação permaneça desafiadora dada natureza descentralizada de blockchains. Crypto Briefing" data-title="Onda de especulação em token de meme não autorizado de Mbappé traz preocupações de risco" data-share-url="https://cryptobriefing.com/mbappe-world-cup-meme-token-speculation/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:54</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Onda de especulação em token de meme não autorizado de Mbappé traz preocupações de risco</div>
+        <div class="news-summary">O momento de Mbappé na Copa do Mundo gerou onda de especulação em tokens de meme não autorizados criados por terceiros, levantando preocupações importantes sobre riscos para investidores. Fenômeno reflete padrão recorrente em cripto onde eventos de alta visibilidade catalizam criação em massa de tokens spoof que exploram reconhecimento de marca sem autorização ou ligação real com figura. Maioria desses tokens carecem de utilidade genuína e são criados com intenção de pump-and-dump, onde criadores vendem posições iniciais e abandonam projeto, deixando investidores com perdas totais. A proliferação de meme tokens não autorizados destaca lacuna regulatória persistente em mercados cripto, onde barreira de entrada para criação de token é negligenciável. Educação de investidor permanece crítica, com necessidade de evitar tokens sem verificação de legitimidade ou conexão clara com figure/entidade retratada. O fenômeno não é específico a Mbappé mas padrão geral em cripto sempre que personalidades de alta projeção ganham atenção mediática. Reguladores globais estão considerando frameworks para restringir atividades de token fraud, embora implementação permaneça desafiadora dada natureza descentralizada de blockchains.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/mbappe-world-cup-meme-token-speculation/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="África do Sul propõe regras de tributação de cripto dentro de marco regulatório existente A autoridade tributária da África do Sul propôs orientações em fase draft esclarecendo como ativos cripto são tributados sob regras existentes de imposto de renda e ganhos de capital, buscando feedback público. A proposta representa abordagem pragmática do regulador sul-africano para integrar criptomoedas ao sistema tributário estabelecido, sem necessidade de novo quadro legislativo específico. O move de integração implícita sinaliza aceitação regulatória de criptomoedas como ativos legítimos, embora sujeitos a tributação convencional. Para proprietários de cripto na África do Sul, a clarificação oferece certeza sobre obrigações fiscais, historicamente uma área de ambiguidade. A iniciativa da África do Sul pode servir como modelo para outras jurisdições emergentes navegando balance entre promoção de inovação cripto e garantia de conformidade tributária. Investidores e comerciantes sul-africanos reagem positivamente à clarificação, vendo como desenvolvimento de longo prazo positivo que legitima market de cripto localmente. Cointelegraph" data-title="África do Sul propõe regras de tributação de cripto dentro de marco regulatório existente" data-share-url="https://cointelegraph.com/news/south-africa-proposes-crypto-tax-draft-guidance?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:52</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">África do Sul propõe regras de tributação de cripto dentro de marco regulatório existente</div>
+        <div class="news-summary">A autoridade tributária da África do Sul propôs orientações em fase draft esclarecendo como ativos cripto são tributados sob regras existentes de imposto de renda e ganhos de capital, buscando feedback público. A proposta representa abordagem pragmática do regulador sul-africano para integrar criptomoedas ao sistema tributário estabelecido, sem necessidade de novo quadro legislativo específico. O move de integração implícita sinaliza aceitação regulatória de criptomoedas como ativos legítimos, embora sujeitos a tributação convencional. Para proprietários de cripto na África do Sul, a clarificação oferece certeza sobre obrigações fiscais, historicamente uma área de ambiguidade. A iniciativa da África do Sul pode servir como modelo para outras jurisdições emergentes navegando balance entre promoção de inovação cripto e garantia de conformidade tributária. Investidores e comerciantes sul-africanos reagem positivamente à clarificação, vendo como desenvolvimento de longo prazo positivo que legitima market de cripto localmente.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/south-africa-proposes-crypto-tax-draft-guidance?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Irã e Catar retomam comércio marítimo após pausa de cinco meses Irã e Catar retomaram atividades comerciais marítimas após interrupção de cinco meses, movimento que pode estabilizar logística energética do Golfo e melhorar dinâmicas regionais. A retomada de rotas comerciais reflete potencial desescalada de tensões diplomáticas entre dois importantes atores do Golfo Pérsico. Para cadeias de suprimentos globais e mercados de energia, retomada de comércio entre Irã e Catar pode reduzir riscos de disrupção de embarques e estabilizar preços de petróleo. Historicamente, conflitos localizados no Golfo Pérsico têm impactado significativamente preços de petróleo global e fluxos de cripto conforme traders ajustam percepção de risco. A retomada também sinaliza que diplomacia está gerando resultados parciais apesar das tensões geopolíticas mais amplas na região. Para investidores em cripto, melhoria na estabilidade regional potencialmente reduz prêmio de risco-geopolítico nos mercados, apoiando ambiente mais favorável para ativos de risco. Analistas monitoram se retomada de comércio Irã-Catar representa trending estrutural ou movimentação tática temporária. Crypto Briefing" data-title="Irã e Catar retomam comércio marítimo após pausa de cinco meses" data-share-url="https://cryptobriefing.com/iran-and-qatar-resume-maritime-trade-after-five-month-hiatus/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:48</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Irã e Catar retomam comércio marítimo após pausa de cinco meses</div>
+        <div class="news-summary">Irã e Catar retomaram atividades comerciais marítimas após interrupção de cinco meses, movimento que pode estabilizar logística energética do Golfo e melhorar dinâmicas regionais. A retomada de rotas comerciais reflete potencial desescalada de tensões diplomáticas entre dois importantes atores do Golfo Pérsico. Para cadeias de suprimentos globais e mercados de energia, retomada de comércio entre Irã e Catar pode reduzir riscos de disrupção de embarques e estabilizar preços de petróleo. Historicamente, conflitos localizados no Golfo Pérsico têm impactado significativamente preços de petróleo global e fluxos de cripto conforme traders ajustam percepção de risco. A retomada também sinaliza que diplomacia está gerando resultados parciais apesar das tensões geopolíticas mais amplas na região. Para investidores em cripto, melhoria na estabilidade regional potencialmente reduz prêmio de risco-geopolítico nos mercados, apoiando ambiente mais favorável para ativos de risco. Analistas monitoram se retomada de comércio Irã-Catar representa trending estrutural ou movimentação tática temporária.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/iran-and-qatar-resume-maritime-trade-after-five-month-hiatus/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="NATO reforça defesas na fronteira russa em contexto de tensões crescentes A OTAN aumentou defesas ao longo das fronteiras com Rússia em resposta a tensões geopolíticas em escalação, incluindo reposicionamento de unidades militares e equipamento. O movimento reflete preocupação da aliança com potencial agressão russa contra membros da OTAN ou aliados, especialmente em contexto de conflito contínuo Rússia-Ucrânia. Para mercados, reforço de defesas da OTAN sinaliza ambiente geopolítico de maior incerteza que historicamente eleva demanda por ativos-refúgio como ouro e Bitcoin. A escalada de militarização na Europa pode impactar investimento e crescimento econômico europeu, potencialmente suportando apetite por criptomoedas como cobertura contra risco de desestabilização. Cripto, particularmente Bitcoin, têm sido procurados por investidores institucionais e privados em contextos de instabilidade geopolítica como proteção contra controle de capital ou congelamento de ativos. Tensões Rússia-OTAN criam ambiente favorável para narrativa de Bitcoin como reserva de valor descentralizada e resistente a censura. Crypto Briefing" data-title="NATO reforça defesas na fronteira russa em contexto de tensões crescentes" data-share-url="https://cryptobriefing.com/nato-bolsters-defenses-on-russian-border-amid-rising-tensions/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:16</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">NATO reforça defesas na fronteira russa em contexto de tensões crescentes</div>
+        <div class="news-summary">A OTAN aumentou defesas ao longo das fronteiras com Rússia em resposta a tensões geopolíticas em escalação, incluindo reposicionamento de unidades militares e equipamento. O movimento reflete preocupação da aliança com potencial agressão russa contra membros da OTAN ou aliados, especialmente em contexto de conflito contínuo Rússia-Ucrânia. Para mercados, reforço de defesas da OTAN sinaliza ambiente geopolítico de maior incerteza que historicamente eleva demanda por ativos-refúgio como ouro e Bitcoin. A escalada de militarização na Europa pode impactar investimento e crescimento econômico europeu, potencialmente suportando apetite por criptomoedas como cobertura contra risco de desestabilização. Cripto, particularmente Bitcoin, têm sido procurados por investidores institucionais e privados em contextos de instabilidade geopolítica como proteção contra controle de capital ou congelamento de ativos. Tensões Rússia-OTAN criam ambiente favorável para narrativa de Bitcoin como reserva de valor descentralizada e resistente a censura.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/nato-bolsters-defenses-on-russian-border-amid-rising-tensions/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Hyperliquid captura 9% do mercado global de futuros perpétuos com US$ 4 bilhões em interesse aberto A exchange descentralizada de derivativos Hyperliquid alcançou 9% de participação de mercado global de futuros perpétuos com US$ 4 bilhões em interesse aberto, sinalizando mudança potencial em dinâmicas de negociação de derivativos cripto. O crescimento rápido de Hyperliquid demonstra apetite crescente de traders por alternativas descentralizadas em relação a exchanges centralizadas tradicionais. A plataforma atrai traders buscando redução de contraparte, interface de trading avançada e execução sem dependência de intermediários tradicionais. A ascensão de Hyperliquid reflete tendência mais ampla de descentralização em finança cripto, onde plataformas sem custódia ganham relevância conforme regulação de exchanges centralizadas se intensifica. Para exchanges estabelecidas como Binance e Bybit, o crescimento de Hyperliquid representa desafio direto em segmento de futuros, historicamente fonte crítica de receita. Analytics mostram que volume em Hyperliquid continua acelerado, sugerindo que tendência de migração para DEX pode ser mais do que fase temporária. Analistas apontam que fragmentação entre centralizadas e descentralizadas reflete mercado maduro onde traders escolhem venue baseado em preferências individuais. Crypto Briefing" data-title="Hyperliquid captura 9% do mercado global de futuros perpétuos com US$ 4 bilhões em interesse aberto" data-share-url="https://cryptobriefing.com/hyperliquid-captures-9-of-global-perpetual-futures-market-4b-open-interest/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">08:14</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Hyperliquid captura 9% do mercado global de futuros perpétuos com US$ 4 bilhões em interesse aberto</div>
+        <div class="news-summary">A exchange descentralizada de derivativos Hyperliquid alcançou 9% de participação de mercado global de futuros perpétuos com US$ 4 bilhões em interesse aberto, sinalizando mudança potencial em dinâmicas de negociação de derivativos cripto. O crescimento rápido de Hyperliquid demonstra apetite crescente de traders por alternativas descentralizadas em relação a exchanges centralizadas tradicionais. A plataforma atrai traders buscando redução de contraparte, interface de trading avançada e execução sem dependência de intermediários tradicionais. A ascensão de Hyperliquid reflete tendência mais ampla de descentralização em finança cripto, onde plataformas sem custódia ganham relevância conforme regulação de exchanges centralizadas se intensifica. Para exchanges estabelecidas como Binance e Bybit, o crescimento de Hyperliquid representa desafio direto em segmento de futuros, historicamente fonte crítica de receita. Analytics mostram que volume em Hyperliquid continua acelerado, sugerindo que tendência de migração para DEX pode ser mais do que fase temporária. Analistas apontam que fragmentação entre centralizadas e descentralizadas reflete mercado maduro onde traders escolhem venue baseado em preferências individuais.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/hyperliquid-captures-9-of-global-perpetual-futures-market-4b-open-interest/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Por que as transferências de ETH do hacker UXLINK levantam questões novas para DeFi O hacker responsável pelo exploit em protocolo UXLINK moveu 14.336 ETH em transações distintas, levantando questões críticas sobre vulnerabilidades estruturais persistentes em DeFi e capacidade limitada de protocolos em reverter ataques. Apesar de dois eventos on-chain distintos relacionados ao ataque, a lacuna estrutural de DeFi em proteger usuários permanece praticamente inalterada. O volume massivo de ETH movido sublinha magnitude do exploit e riscos contínuos de hackers causarem perdas significativas. Análise forense on-chain mostra que os hackers conseguem frequentemente mover fundos em múltiplos saltos para evitar detecção, enquanto infraestrutura DeFi oferece poucos mecanismos de freeze ou reversão. O evento reflete viés fundamental de DeFi em direção a imutabilidade que, embora alinhada com princípios, também significa que perdas são praticamente irreversíveis uma vez transferidas. Para usuários de DeFi, o incidente reforça necessidade crítica de devida diligência em seleção de protocolos e práticas de segurança conservadoras. Comunidade DeFi vem debatendo soluções como sistemas de emergency multisig mais robustos, mas consenso em mudanças permanece fragmentado. AMBCrypto" data-title="Por que as transferências de ETH do hacker UXLINK levantam questões novas para DeFi" data-share-url="https://ambcrypto.com/why-the-uxlink-hackers-14336-eth-transfers-raise-fresh-questions-for-defi/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Por que as transferências de ETH do hacker UXLINK levantam questões novas para DeFi</div>
+        <div class="news-summary">O hacker responsável pelo exploit em protocolo UXLINK moveu 14.336 ETH em transações distintas, levantando questões críticas sobre vulnerabilidades estruturais persistentes em DeFi e capacidade limitada de protocolos em reverter ataques. Apesar de dois eventos on-chain distintos relacionados ao ataque, a lacuna estrutural de DeFi em proteger usuários permanece praticamente inalterada. O volume massivo de ETH movido sublinha magnitude do exploit e riscos contínuos de hackers causarem perdas significativas. Análise forense on-chain mostra que os hackers conseguem frequentemente mover fundos em múltiplos saltos para evitar detecção, enquanto infraestrutura DeFi oferece poucos mecanismos de freeze ou reversão. O evento reflete viés fundamental de DeFi em direção a imutabilidade que, embora alinhada com princípios, também significa que perdas são praticamente irreversíveis uma vez transferidas. Para usuários de DeFi, o incidente reforça necessidade crítica de devida diligência em seleção de protocolos e práticas de segurança conservadoras. Comunidade DeFi vem debatendo soluções como sistemas de emergency multisig mais robustos, mas consenso em mudanças permanece fragmentado.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/why-the-uxlink-hackers-14336-eth-transfers-raise-fresh-questions-for-defi/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin: Por que o rally de Q3 de Bitcoin pode enfrentar teste de liquidez Análise técnica sugere que rally de Bitcoin no terceiro trimestre pode enfrentar constrangimento de liquidez, especialmente conforme demanda de ETF retorna mas estrutura de liquidez permanece questionável. Demanda renovada por Bitcoin através de fundos de negociação em bolsa (ETFs) oferece suporte fundamental, mas volume de negociação em exchanges permanece insuficiente em nível macro para absorver picos de vendas institucional. O teste de liquidez refere-se ao cenário onde volume de negociação se torna insuficiente para suportar movimento ordenado de preço, resultando em deslizamento e volatilidade amplificada. Mercado de Bitcoin vem experimentando ciclos onde demanda de ETF não está necessariamente correlacionada com demanda de negociação spot/futuros convencional. Para traders, cenário de liquidez débil implica maior potencial de movimentos disruptivos de preço, criando oportunidades e riscos simultâneos. Analistas monitoram métricas de liquidez de Bitcoin aproximadamente a cada grande reunião do Fed ou lançamento de dados macroeconômicos, períodos onde liquidez tende a secar. Realização de teste de liquidez em Q3 não é certa, mas permanece risco relevante conforme Bitcoin desafia máximas locais. AMBCrypto" data-title="Bitcoin: Por que o rally de Q3 de Bitcoin pode enfrentar teste de liquidez" data-share-url="https://ambcrypto.com/bitcoin-heres-why-bitcoins-q3-rally-could-face-a-liquidity-test/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Bitcoin: Por que o rally de Q3 de Bitcoin pode enfrentar teste de liquidez</div>
+        <div class="news-summary">Análise técnica sugere que rally de Bitcoin no terceiro trimestre pode enfrentar constrangimento de liquidez, especialmente conforme demanda de ETF retorna mas estrutura de liquidez permanece questionável. Demanda renovada por Bitcoin através de fundos de negociação em bolsa (ETFs) oferece suporte fundamental, mas volume de negociação em exchanges permanece insuficiente em nível macro para absorver picos de vendas institucional. O teste de liquidez refere-se ao cenário onde volume de negociação se torna insuficiente para suportar movimento ordenado de preço, resultando em deslizamento e volatilidade amplificada. Mercado de Bitcoin vem experimentando ciclos onde demanda de ETF não está necessariamente correlacionada com demanda de negociação spot/futuros convencional. Para traders, cenário de liquidez débil implica maior potencial de movimentos disruptivos de preço, criando oportunidades e riscos simultâneos. Analistas monitoram métricas de liquidez de Bitcoin aproximadamente a cada grande reunião do Fed ou lançamento de dados macroeconômicos, períodos onde liquidez tende a secar. Realização de teste de liquidez em Q3 não é certa, mas permanece risco relevante conforme Bitcoin desafia máximas locais.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/bitcoin-heres-why-bitcoins-q3-rally-could-face-a-liquidity-test/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Binance registra saídas triplicadas para US$ 1,2 bilhão com saques de ETH em alta de 3 anos A Binance registrou US$ 1,23 bilhões em saídas líquidas semanais, representando aumento de 207% comparado à semana anterior, enquanto saques de Ethereum atingiram níveis de três anos. O movimento massivo de saques sinaliza possível realocação de capital entre exchanges ou shift em estratégia de investidores, potencialmente refletindo falta de confiança na plataforma ou busca de oportunidades melhores em outros venues. Saques elevados de ETH especificamente sugerem que traders estão movendo posições de Ethereum para carteiras pessoais ou exchanges alternativas, possível indicação de mudança em dinâmica de preço ou interesse em staking descentralizado. A Binance, maior exchange global de criptomoedas por volume, vem enfrentando pressão regulatória significativa, o que pode estar motivando alguns usuários a retirar fundos preventivamente. Para mercados de cripto, fluxos de saídas tão grandes podem impactar liquidez e dinâmicas de preço se continuarem. Analistas monitoram se o padrão representa reversão estrutural em confiança na Binance ou movimento tático temporário de traders. Cointelegraph" data-title="Binance registra saídas triplicadas para US$ 1,2 bilhão com saques de ETH em alta de 3 anos" data-share-url="https://cointelegraph.com/news/binance-outflows-1-23-billion-eth-withdrawals-3-year-high?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">05:33</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Binance registra saídas triplicadas para US$ 1,2 bilhão com saques de ETH em alta de 3 anos</div>
+        <div class="news-summary">A Binance registrou US$ 1,23 bilhões em saídas líquidas semanais, representando aumento de 207% comparado à semana anterior, enquanto saques de Ethereum atingiram níveis de três anos. O movimento massivo de saques sinaliza possível realocação de capital entre exchanges ou shift em estratégia de investidores, potencialmente refletindo falta de confiança na plataforma ou busca de oportunidades melhores em outros venues. Saques elevados de ETH especificamente sugerem que traders estão movendo posições de Ethereum para carteiras pessoais ou exchanges alternativas, possível indicação de mudança em dinâmica de preço ou interesse em staking descentralizado. A Binance, maior exchange global de criptomoedas por volume, vem enfrentando pressão regulatória significativa, o que pode estar motivando alguns usuários a retirar fundos preventivamente. Para mercados de cripto, fluxos de saídas tão grandes podem impactar liquidez e dinâmicas de preço se continuarem. Analistas monitoram se o padrão representa reversão estrutural em confiança na Binance ou movimento tático temporário de traders.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/binance-outflows-1-23-billion-eth-withdrawals-3-year-high?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="GRAM (antigo Toncoin): Previsão de preço – Investidores devem comprar agora ou aguardar US$ 1,50? O altcoin GRAM (antigo Toncoin) consolidou-se entre os níveis de US$ 1,50 e US$ 1,81 durante o último mês, sem ainda gerar pressão de compra suficiente para forçar ruptura decisiva. Traders enfrentam dilema: entrar em consolidação esperando breakout, ou aguardar recuo para US$ 1,50 para melhor entrada. GRAM é token nativo da blockchain Ton, originalmente desenvolvida pelo Telegram, com potencial ligado ao crescimento de adoção da plataforma. Análise técnica sugere que breakout acima de US$ 1,81 sinalizaria movimento bullish com potencial alvo de US$ 2,00 ou superior. Por outro lado, queda abaixo de US$ 1,50 indicaria pressão de venda maior, descartando cenário construtivo de curto prazo. Para investidores, timing é crítico; entrada durante consolidação oferece melhor relação risco-recompensa, mas acarreta risco maior de recuo. Narrativa de TON vinculada ao Telegram oferece potencial de longo prazo se plataforma de mensagem integrar funcionalidades blockchain e pagamentos. Decisão entre comprar agora ou aguardar depende de tolerância a risco e horizonte de investimento do trader. AMBCrypto" data-title="GRAM (antigo Toncoin): Previsão de preço – Investidores devem comprar agora ou aguardar US$ 1,50?" data-share-url="https://ambcrypto.com/gram-prev-toncoin-price-prediction-should-traders-buy-now-or-wait-for-1-50/">
+        <div class="news-meta">
+          <span class="news-date">05 jul 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">GRAM (antigo Toncoin): Previsão de preço – Investidores devem comprar agora ou aguardar US$ 1,50?</div>
+        <div class="news-summary">O altcoin GRAM (antigo Toncoin) consolidou-se entre os níveis de US$ 1,50 e US$ 1,81 durante o último mês, sem ainda gerar pressão de compra suficiente para forçar ruptura decisiva. Traders enfrentam dilema: entrar em consolidação esperando breakout, ou aguardar recuo para US$ 1,50 para melhor entrada. GRAM é token nativo da blockchain Ton, originalmente desenvolvida pelo Telegram, com potencial ligado ao crescimento de adoção da plataforma. Análise técnica sugere que breakout acima de US$ 1,81 sinalizaria movimento bullish com potencial alvo de US$ 2,00 ou superior. Por outro lado, queda abaixo de US$ 1,50 indicaria pressão de venda maior, descartando cenário construtivo de curto prazo. Para investidores, timing é crítico; entrada durante consolidação oferece melhor relação risco-recompensa, mas acarreta risco maior de recuo. Narrativa de TON vinculada ao Telegram oferece potencial de longo prazo se plataforma de mensagem integrar funcionalidades blockchain e pagamentos. Decisão entre comprar agora ou aguardar depende de tolerância a risco e horizonte de investimento do trader.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/gram-prev-toncoin-price-prediction-should-traders-buy-now-or-wait-for-1-50/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
