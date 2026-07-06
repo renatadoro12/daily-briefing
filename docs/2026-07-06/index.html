@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">6 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia é marcado por tensões geopolíticas críticas — funeral do Aiatolá Khamenei no Irã, ataques russos a Kyiv na véspera da cúpula da OTAN e testes de mísseis chineses — que reverberam nos mercados globais e impulsionam agendas de investimento em tecnologia e defesa. Enquanto isso, o setor de IA enfrenta um momento de contração, com Microsoft cortando 4.800 empregos e redirecionando bilhões para infraestrutura de inteligência artificial, sinalizando uma reorganização estrutural das prioridades tecnológicas. No mercado cripto, otimismo com altcoins retorna após volatilidade recente, com Bitcoin consolidado acima de $62k e movimentos significativos de tesourarias corporativas gerando debate sobre adoção institucional e sustentabilidade.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-07-05/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06" selected>2026-07-06</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Navios se movem dentro e fora do Golfo Pérsico, aliviando preços de petróleo Recuperação em fluxos de petróleo do Golfo Pérsico e promessa da OPEC Plus de bombear mais óleo bruto colocam pressão descendente em preços de energia globalmente. A reabertura de rotas marítimas críticas no Estreito de Ormuz alivia preocupações sobre interrupção de suprimentos que marcaram tensões recentes no Oriente Médio. Produtores sinalizam disposição em expandir oferta, respondendo a pressão política para estabilizar mercados. Transporte normalizado de petróleo reduz prêmio de risco que havia inflacionado preços. Esse alívio beneficia economias importadoras de óleo e reduz pressão inflacionária global. Preços mais baixos afetam países exportadores como Rússia, Venezuela e Arábia Saudita. Dinâmica de oferta-demanda favorece consumidores no curto prazo, embora incerteza geopolítica persista. NYT Business" data-title="Navios se movem dentro e fora do Golfo Pérsico, aliviando preços de petróleo" data-share-url="https://www.nytimes.com/2026/07/06/business/hormuz-strait-shipping-oil.html">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">11:12</span>
+          <span class="news-source">NYT Business</span>
+        </div>
+        <div class="news-title">Navios se movem dentro e fora do Golfo Pérsico, aliviando preços de petróleo</div>
+        <div class="news-summary">Recuperação em fluxos de petróleo do Golfo Pérsico e promessa da OPEC Plus de bombear mais óleo bruto colocam pressão descendente em preços de energia globalmente. A reabertura de rotas marítimas críticas no Estreito de Ormuz alivia preocupações sobre interrupção de suprimentos que marcaram tensões recentes no Oriente Médio. Produtores sinalizam disposição em expandir oferta, respondendo a pressão política para estabilizar mercados. Transporte normalizado de petróleo reduz prêmio de risco que havia inflacionado preços. Esse alívio beneficia economias importadoras de óleo e reduz pressão inflacionária global. Preços mais baixos afetam países exportadores como Rússia, Venezuela e Arábia Saudita. Dinâmica de oferta-demanda favorece consumidores no curto prazo, embora incerteza geopolítica persista.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/06/business/hormuz-strait-shipping-oil.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Setor de serviços dos EUA expande em ritmo mais lento, mas contratações aceleram O setor de serviços americano cresceu em junho em ritmo ligeiramente mais lento que o esperado, mas empresas compensaram com aumento nas contratações conforme pressões de custos diminuem. O PMI de serviços sinalizou expansão contínua mas moderada da maior economia mundial. O mercado de trabalho permanece resiliente, com firmas adicionando postos apesar de crescimento econômico mais tímido. Esse padrão sugere que a economia evita recessão mas perde momentum, mantendo Fed em alerta sobre próximas decisões de juros. Dados de desemprego baixo contrastam com sinais de desaceleração no crescimento real. O cenário reforça debate sobre sustentabilidade do crescimento econômico e timing de possíveis cortes de taxas. Investidores monitoram esse equilíbrio delicado entre trabalho forte e crescimento moderado. Bloomberg Economics" data-title="Setor de serviços dos EUA expande em ritmo mais lento, mas contratações aceleram" data-share-url="https://www.bloomberg.com/news/articles/2026-07-06/us-service-sector-expands-at-a-slower-pace-hiring-picks-up">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Setor de serviços dos EUA expande em ritmo mais lento, mas contratações aceleram</div>
+        <div class="news-summary">O setor de serviços americano cresceu em junho em ritmo ligeiramente mais lento que o esperado, mas empresas compensaram com aumento nas contratações conforme pressões de custos diminuem. O PMI de serviços sinalizou expansão contínua mas moderada da maior economia mundial. O mercado de trabalho permanece resiliente, com firmas adicionando postos apesar de crescimento econômico mais tímido. Esse padrão sugere que a economia evita recessão mas perde momentum, mantendo Fed em alerta sobre próximas decisões de juros. Dados de desemprego baixo contrastam com sinais de desaceleração no crescimento real. O cenário reforça debate sobre sustentabilidade do crescimento econômico e timing de possíveis cortes de taxas. Investidores monitoram esse equilíbrio delicado entre trabalho forte e crescimento moderado.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-06/us-service-sector-expands-at-a-slower-pace-hiring-picks-up" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Ataques russos devastam Kyiv na véspera da cúpula da OTAN Mísseis balísticos foram disparados contra a capital ucraniana em um dos maiores ataques russos em menos de uma semana, deixando pelo menos 12 pessoas mortas e dezenas feridas. O bombardeio acontece em momento crítico, na véspera de uma cúpula crucial da OTAN que discute reforço de defesa e apoio a Kyiv. As infraestruturas civis foram atingidas, incluindo edifícios residenciais e comerciais no coração da cidade. Este ataque segue uma escalada de violência que evidencia a determinação russa em pressionar a Ucrânia militarmente enquanto o Ocidente busca coordenar sua resposta. Analistas veem o timing como tentativa de Moscou de influenciar discussões na OTAN e demonstrar capacidade ofensiva contínua. As perdas civis ressaltam o custo humanitário crescente do conflito que já dura mais de dois anos. NYT World News" data-title="Ataques russos devastam Kyiv na véspera da cúpula da OTAN" data-share-url="https://www.nytimes.com/2026/07/05/world/europe/kyiv-ukraine-russia-attack-nato.html">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">10:18</span>
+          <span class="news-source">NYT World News</span>
+        </div>
+        <div class="news-title">Ataques russos devastam Kyiv na véspera da cúpula da OTAN</div>
+        <div class="news-summary">Mísseis balísticos foram disparados contra a capital ucraniana em um dos maiores ataques russos em menos de uma semana, deixando pelo menos 12 pessoas mortas e dezenas feridas. O bombardeio acontece em momento crítico, na véspera de uma cúpula crucial da OTAN que discute reforço de defesa e apoio a Kyiv. As infraestruturas civis foram atingidas, incluindo edifícios residenciais e comerciais no coração da cidade. Este ataque segue uma escalada de violência que evidencia a determinação russa em pressionar a Ucrânia militarmente enquanto o Ocidente busca coordenar sua resposta. Analistas veem o timing como tentativa de Moscou de influenciar discussões na OTAN e demonstrar capacidade ofensiva contínua. As perdas civis ressaltam o custo humanitário crescente do conflito que já dura mais de dois anos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/05/world/europe/kyiv-ukraine-russia-attack-nato.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="China testa lançamento de míssil balístico de longo alcance no Pacífico A China realizou teste de disparo de míssil balístico lançado de submarino no Oceano Pacífico, em movimento que preocupa países da região e reforça tensões com aliados ocidentais. O teste ocorre simultaneamente com esforços da Austrália em assegurar novos acordos de defesa com nações insulares do Pacífico. A demonstração de força militar chinesa é interpretada como resposta aos reforços defensivos no indo-Pacífico e como sinal de capacidade nuclear estratégica. Especialistas apontam que o timing não é acidental — coordena-se com outras ações geopolíticas globais que sinalizam competição acirrada entre potências. O incidente ressalta preocupações crescentes sobre segurança regional e corrida armamentista. Países como Austrália, Japão e Coreia do Sul intensificam coordenação militar em resposta a esses movimentos chineses. NYT World News" data-title="China testa lançamento de míssil balístico de longo alcance no Pacífico" data-share-url="https://www.nytimes.com/2026/07/06/world/asia/china-pacific-nuclear-missile-launch.html">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:26</span>
+          <span class="news-source">NYT World News</span>
+        </div>
+        <div class="news-title">China testa lançamento de míssil balístico de longo alcance no Pacífico</div>
+        <div class="news-summary">A China realizou teste de disparo de míssil balístico lançado de submarino no Oceano Pacífico, em movimento que preocupa países da região e reforça tensões com aliados ocidentais. O teste ocorre simultaneamente com esforços da Austrália em assegurar novos acordos de defesa com nações insulares do Pacífico. A demonstração de força militar chinesa é interpretada como resposta aos reforços defensivos no indo-Pacífico e como sinal de capacidade nuclear estratégica. Especialistas apontam que o timing não é acidental — coordena-se com outras ações geopolíticas globais que sinalizam competição acirrada entre potências. O incidente ressalta preocupações crescentes sobre segurança regional e corrida armamentista. Países como Austrália, Japão e Coreia do Sul intensificam coordenação militar em resposta a esses movimentos chineses.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/06/world/asia/china-pacific-nuclear-missile-launch.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Preço do petróleo russo cai para níveis pré-conflito iraniano em golpe ao Kremlin O petróleo da Rússia, principal fonte de receita externa, caiu para patamares observados antes do conflito no Oriente Médio, acumulando pressão crescente nas já combalidas finanças do Kremlin. A queda reflete recuperação de fluxos do Golfo Pérsico e promessas da OPEC Plus de aumentar produção. Esses preços mais baixos prejudicam diretamente o orçamento russo que depende de arrecadação de petróleo para financiar operações militares e pagamentos de dívida. Economistas apontam que sanções ocidentais somadas a queda de preços criam dupla pressão insustentável a longo prazo. A Rússia responde com cortes de produção, mas enfrenta limite por demanda global fraca. Esse cenário ressalta importância das commodities para economia russa e vulnerabilidade a choques externos. Analistas veem potencial para pressão crescente sobre moeda e inflação russas. Bloomberg Economics" data-title="Preço do petróleo russo cai para níveis pré-conflito iraniano em golpe ao Kremlin" data-share-url="https://www.bloomberg.com/news/articles/2026-07-06/russia-oil-price-falls-to-pre-iran-war-level-in-blow-to-kremlin">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:10</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Preço do petróleo russo cai para níveis pré-conflito iraniano em golpe ao Kremlin</div>
+        <div class="news-summary">O petróleo da Rússia, principal fonte de receita externa, caiu para patamares observados antes do conflito no Oriente Médio, acumulando pressão crescente nas já combalidas finanças do Kremlin. A queda reflete recuperação de fluxos do Golfo Pérsico e promessas da OPEC Plus de aumentar produção. Esses preços mais baixos prejudicam diretamente o orçamento russo que depende de arrecadação de petróleo para financiar operações militares e pagamentos de dívida. Economistas apontam que sanções ocidentais somadas a queda de preços criam dupla pressão insustentável a longo prazo. A Rússia responde com cortes de produção, mas enfrenta limite por demanda global fraca. Esse cenário ressalta importância das commodities para economia russa e vulnerabilidade a choques externos. Analistas veem potencial para pressão crescente sobre moeda e inflação russas.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-06/russia-oil-price-falls-to-pre-iran-war-level-in-blow-to-kremlin" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Sky adquire ITV por £1,6 bilhão em grande consolidação de mídia britânica A Sky, propriedade da Comcast, anunciou compra das divisões de mídia e entretenimento da ITV por £1,6 bilhão (aproximadamente $2,1 bilhões), marcando consolidação significativa no mercado de mídia britânico. O acordo combina duas das maiores emissoras do Reino Unido em um movimento para competir contra gigantes de streaming globais. Programas populares como 'I'm a Celebrity' permanecerão livres para assistir, conforme compromisso do novo proprietário. A transação oferece à Sky escala maior e portfólio de conteúdo mais robusto para enfrentar pressão de Netflix, Amazon e Disney+. Reguladores britânicos aprovaram o acordo após análise de concorrência. Este movimento reflete consolidação mais ampla no setor de mídia europeu sob pressão digital. A integração de conteúdo e audiência cria player significativo no mercado europeu de streaming e broadcast. BBC News" data-title="Sky adquire ITV por £1,6 bilhão em grande consolidação de mídia britânica" data-share-url="https://www.bbc.co.uk/news/articles/cx2wwgeg041o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:09</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Sky adquire ITV por £1,6 bilhão em grande consolidação de mídia britânica</div>
+        <div class="news-summary">A Sky, propriedade da Comcast, anunciou compra das divisões de mídia e entretenimento da ITV por £1,6 bilhão (aproximadamente $2,1 bilhões), marcando consolidação significativa no mercado de mídia britânico. O acordo combina duas das maiores emissoras do Reino Unido em um movimento para competir contra gigantes de streaming globais. Programas populares como 'I'm a Celebrity' permanecerão livres para assistir, conforme compromisso do novo proprietário. A transação oferece à Sky escala maior e portfólio de conteúdo mais robusto para enfrentar pressão de Netflix, Amazon e Disney+. Reguladores britânicos aprovaram o acordo após análise de concorrência. Este movimento reflete consolidação mais ampla no setor de mídia europeu sob pressão digital. A integração de conteúdo e audiência cria player significativo no mercado europeu de streaming e broadcast.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cx2wwgeg041o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Perspectiva de juros globais mais alta por choque Trump-Irã, alerta Bloomberg O conflito no Oriente Médio disparado por escalação Trump-Irã pode estar subsistindo, mas repercussões para bancos centrais globais permanecerão duradouras, elevando expectativas de taxa de juros por anos. Analistas identificam que guerra comercial, tensões geopolíticas e possível inflação de energia criaram piso para taxas mais altas estruturalmente. Inflação energética pode ressurgir se hostilidades se intensificarem novamente, forçando bancos centrais a manter postura menos acomodatícia. Fed, BCE e outras autoridades enfrentam dilema entre apoiar crescimento fraco e controlar pressões de preços. Mercados reprificam expectativas de trajetória de juros para cima, afetando títulos globais e investimentos. Essa dinâmica prejudica ativos sensíveis a taxas como crescimento e tecnologia. Hedge funds e investidores ajustam portfólios para cenário de juros estruturalmente mais altos. Bloomberg Economics" data-title="Perspectiva de juros globais mais alta por choque Trump-Irã, alerta Bloomberg" data-share-url="https://www.bloomberg.com/news/newsletters/2026-07-06/global-central-banks-trump-s-war-means-rate-path-is-higher-for-years-to-come">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">08:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Perspectiva de juros globais mais alta por choque Trump-Irã, alerta Bloomberg</div>
+        <div class="news-summary">O conflito no Oriente Médio disparado por escalação Trump-Irã pode estar subsistindo, mas repercussões para bancos centrais globais permanecerão duradouras, elevando expectativas de taxa de juros por anos. Analistas identificam que guerra comercial, tensões geopolíticas e possível inflação de energia criaram piso para taxas mais altas estruturalmente. Inflação energética pode ressurgir se hostilidades se intensificarem novamente, forçando bancos centrais a manter postura menos acomodatícia. Fed, BCE e outras autoridades enfrentam dilema entre apoiar crescimento fraco e controlar pressões de preços. Mercados reprificam expectativas de trajetória de juros para cima, afetando títulos globais e investimentos. Essa dinâmica prejudica ativos sensíveis a taxas como crescimento e tecnologia. Hedge funds e investidores ajustam portfólios para cenário de juros estruturalmente mais altos.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/newsletters/2026-07-06/global-central-banks-trump-s-war-means-rate-path-is-higher-for-years-to-come" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EasyJet concorda em princípio com acordo de aquisição de £5,2 bilhões A companhia aérea de baixo custo EasyJet concordou em princípio com aquisição pela empresa de investimento americana Castlelake em acordo avaliado em £5,2 bilhões, após rejeitar quatro ofertas anteriores. O acordo marca fim de negociações prolongadas que refletem desafio enfrentado por aéreas europeias tradicionais em manter valor e relevância. Castlelake busca consolidar operações europeias e expandir modelo de baixo custo em mercado altamente competitivo. A aquisição sinaliza interesse contínuo do capital privado em setor de aviação pós-pandemia. EasyJet permanecerá como marca operacional estabelecida enquanto Castlelake implementa estratégia de otimização operacional. Acordo ainda requer aprovações regulatórias finais e de acionistas. Transação reflete dinâmica de consolidação em indústria aérea europeia sob pressão de custos e competição. BBC News" data-title="EasyJet concorda em princípio com acordo de aquisição de £5,2 bilhões" data-share-url="https://www.bbc.co.uk/news/articles/cgjxx7ngz51o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">06:41</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">EasyJet concorda em princípio com acordo de aquisição de £5,2 bilhões</div>
+        <div class="news-summary">A companhia aérea de baixo custo EasyJet concordou em princípio com aquisição pela empresa de investimento americana Castlelake em acordo avaliado em £5,2 bilhões, após rejeitar quatro ofertas anteriores. O acordo marca fim de negociações prolongadas que refletem desafio enfrentado por aéreas europeias tradicionais em manter valor e relevância. Castlelake busca consolidar operações europeias e expandir modelo de baixo custo em mercado altamente competitivo. A aquisição sinaliza interesse contínuo do capital privado em setor de aviação pós-pandemia. EasyJet permanecerá como marca operacional estabelecida enquanto Castlelake implementa estratégia de otimização operacional. Acordo ainda requer aprovações regulatórias finais e de acionistas. Transação reflete dinâmica de consolidação em indústria aérea europeia sob pressão de custos e competição.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cgjxx7ngz51o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Nintendo interromperá vendas do Switch original na Europa em 2027 Nintendo anunciou que descontinuará venda do modelo original do Switch na Europa no próximo ano conforme transição para Switch 2 acelera. A nova versão europeia será equipada com bateria substituível — diferença significativa das versões de outros mercados — respondendo a regulação europeia sobre direito ao reparo. Descontinuação do modelo antigo reflete estratégia clara de transição geracional e maximização de margem do novo hardware. Europa lidera mundo em regulação de direito ao reparo e sustentabilidade de eletrônicos, forçando fabricantes a adaptar designs. Switch original foi enorme sucesso comercial (mais de 139 milhões de unidades vendidas globalmente), mas novo modelo promete gráficos melhorados e funcionalidades expandidas. Transição geracional é oportunidade de Nintendo capturar base de consumidores novamente. Movimento também sinaliza importância crescente de considerações ambientais e regulatórias no design de produtos. The Verge" data-title="Nintendo interromperá vendas do Switch original na Europa em 2027" data-share-url="https://www.theverge.com/games/961632/nintendo-switch-europe-discontinued">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">11:15</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Nintendo interromperá vendas do Switch original na Europa em 2027</div>
+        <div class="news-summary">Nintendo anunciou que descontinuará venda do modelo original do Switch na Europa no próximo ano conforme transição para Switch 2 acelera. A nova versão europeia será equipada com bateria substituível — diferença significativa das versões de outros mercados — respondendo a regulação europeia sobre direito ao reparo. Descontinuação do modelo antigo reflete estratégia clara de transição geracional e maximização de margem do novo hardware. Europa lidera mundo em regulação de direito ao reparo e sustentabilidade de eletrônicos, forçando fabricantes a adaptar designs. Switch original foi enorme sucesso comercial (mais de 139 milhões de unidades vendidas globalmente), mas novo modelo promete gráficos melhorados e funcionalidades expandidas. Transição geracional é oportunidade de Nintendo capturar base de consumidores novamente. Movimento também sinaliza importância crescente de considerações ambientais e regulatórias no design de produtos.</div>
+        <div class="news-link"><a href="https://www.theverge.com/games/961632/nintendo-switch-europe-discontinued" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="FCA alerta sobre grande mudança quando agentes de IA encontram dinheiro tokenizado Autoridades financeiras britânicas (FCA) emitiram alerta sobre possível transformação radical do sistema financeiro quando agentes de inteligência artificial autônoma se combinarem com ativos tokenizados e dinheiro programável. A visão da FCA aponta para futuro onde moeda programável e ativos tokenizados desempenham papel muito maior no ecossistema financeiro. Agentes de IA com capacidade de executar transações autonomamente criam novos riscos regulatórios e operacionais. Autoridades temem perda de controle sobre fluxos de capital se algoritmos autônomos gerenciarem fundos sem supervisão adequada. Interseção de IA e criptomoedas representa fronteira regulatória completamente nova, onde regras tradicionais podem se tornar obsoletas rapidamente. FCA sinalizou necessidade de novo marco regulatório para acomodar essa realidade emergente. Instituições financeiras já exploram essas tecnologias, criando urgência em definir guardrails. Essa convergência pode redefinir como mercados financeiros operam. Cointelegraph / CoinDesk" data-title="FCA alerta sobre grande mudança quando agentes de IA encontram dinheiro tokenizado" data-share-url="https://cointelegraph.com/news/fca-warns-of-major-shakeup-as-ai-agents-meet-tokenized-money?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">10:50</span>
+          <span class="news-source">Cointelegraph / CoinDesk</span>
+        </div>
+        <div class="news-title">FCA alerta sobre grande mudança quando agentes de IA encontram dinheiro tokenizado</div>
+        <div class="news-summary">Autoridades financeiras britânicas (FCA) emitiram alerta sobre possível transformação radical do sistema financeiro quando agentes de inteligência artificial autônoma se combinarem com ativos tokenizados e dinheiro programável. A visão da FCA aponta para futuro onde moeda programável e ativos tokenizados desempenham papel muito maior no ecossistema financeiro. Agentes de IA com capacidade de executar transações autonomamente criam novos riscos regulatórios e operacionais. Autoridades temem perda de controle sobre fluxos de capital se algoritmos autônomos gerenciarem fundos sem supervisão adequada. Interseção de IA e criptomoedas representa fronteira regulatória completamente nova, onde regras tradicionais podem se tornar obsoletas rapidamente. FCA sinalizou necessidade de novo marco regulatório para acomodar essa realidade emergente. Instituições financeiras já exploram essas tecnologias, criando urgência em definir guardrails. Essa convergência pode redefinir como mercados financeiros operam.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/fca-warns-of-major-shakeup-as-ai-agents-meet-tokenized-money?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Microsoft demite 4.800 funcionários e vende estúdios de videogame Microsoft anunciou corte massivo de 4.800 empregos, aproximadamente 10% da força de trabalho, focando realocação de recursos para inteligência artificial e computação em nuvem. Xbox enfrentará cortes ainda mais severos, com 3.200 postos eliminados (cerca de 20% da divisão) nos próximos 12 meses, enquanto estúdios como Compulsion Games, Double Fine, Undead Labs e Ninja Theory serão desinvestidos ou vendidos. A reorganização reflete prioridade estratégica clara: hiperscalers de IA ganham recursos enquanto divisões de videogame e entretenimento tradicionais enfrentam consolidação. Satya Nadella justificou cortes como necessários para manter competitividade em era de IA. Esse é segundo grande corte em pouco tempo — Microsoft havia cortado aproximadamente 9.100 empregos em 2023. Movimento sinaliza que gigantes de tech estão reorganizando completamente operações e força de trabalho em torno de IA. Investidores veem como sinal de comprometimento com infraestrutura de IA, mas mercado de trabalho tech enfrenta pressão contínua. The Verge / Bloomberg Technology" data-title="Microsoft demite 4.800 funcionários e vende estúdios de videogame" data-share-url="https://www.theverge.com/news/961528/microsoft-layoffs-july-2026-sales-xbox">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">10:30</span>
+          <span class="news-source">The Verge / Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Microsoft demite 4.800 funcionários e vende estúdios de videogame</div>
+        <div class="news-summary">Microsoft anunciou corte massivo de 4.800 empregos, aproximadamente 10% da força de trabalho, focando realocação de recursos para inteligência artificial e computação em nuvem. Xbox enfrentará cortes ainda mais severos, com 3.200 postos eliminados (cerca de 20% da divisão) nos próximos 12 meses, enquanto estúdios como Compulsion Games, Double Fine, Undead Labs e Ninja Theory serão desinvestidos ou vendidos. A reorganização reflete prioridade estratégica clara: hiperscalers de IA ganham recursos enquanto divisões de videogame e entretenimento tradicionais enfrentam consolidação. Satya Nadella justificou cortes como necessários para manter competitividade em era de IA. Esse é segundo grande corte em pouco tempo — Microsoft havia cortado aproximadamente 9.100 empregos em 2023. Movimento sinaliza que gigantes de tech estão reorganizando completamente operações e força de trabalho em torno de IA. Investidores veem como sinal de comprometimento com infraestrutura de IA, mas mercado de trabalho tech enfrenta pressão contínua.</div>
+        <div class="news-link"><a href="https://www.theverge.com/news/961528/microsoft-layoffs-july-2026-sales-xbox" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Hacks em cripto caem 47% no primeiro semestre, mas ecossistema não é mais seguro Hacks de criptomoedas caíram 47% no primeiro semestre de 2026 comparado ao período equivalente do ano anterior, segundo análise de segurança de CertiK, mas exploits cresceram 59% trimestral para $807,5 milhões em Q2. Paradoxo reflete que enquanto número de ataques diminuiu, sofisticação e escala dos exploits bem-sucedidos aumentou dramaticamente. Exploits de alto perfil como KelpDAO e Drift Protocol causaram perdas colossais mesmo em contexto de ataques menos frequentes. Padrão sinaliza que criminosos focam em alvo de maior valor, deixando plataformas menores menos expostas mas aumentando risco concentrado. Segurança de ecossistema cripto permanece preocupação fundamental apesar de melhorias em auditorias e práticas. Desenvolvedores e protocolos investem bilhões em segurança, mas sofisticação de vetores de ataque evolui rapidamente. Investidores institucionais continuam hesitantes em face de histórico de perdas, limitando adoção corporativa. Cointelegraph" data-title="Hacks em cripto caem 47% no primeiro semestre, mas ecossistema não é mais seguro" data-share-url="https://cointelegraph.com/news/crypto-hacks-fell-47-percent-in-h1-but-ecosystem-is-no-safer-certik?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Hacks em cripto caem 47% no primeiro semestre, mas ecossistema não é mais seguro</div>
+        <div class="news-summary">Hacks de criptomoedas caíram 47% no primeiro semestre de 2026 comparado ao período equivalente do ano anterior, segundo análise de segurança de CertiK, mas exploits cresceram 59% trimestral para $807,5 milhões em Q2. Paradoxo reflete que enquanto número de ataques diminuiu, sofisticação e escala dos exploits bem-sucedidos aumentou dramaticamente. Exploits de alto perfil como KelpDAO e Drift Protocol causaram perdas colossais mesmo em contexto de ataques menos frequentes. Padrão sinaliza que criminosos focam em alvo de maior valor, deixando plataformas menores menos expostas mas aumentando risco concentrado. Segurança de ecossistema cripto permanece preocupação fundamental apesar de melhorias em auditorias e práticas. Desenvolvedores e protocolos investem bilhões em segurança, mas sofisticação de vetores de ataque evolui rapidamente. Investidores institucionais continuam hesitantes em face de histórico de perdas, limitando adoção corporativa.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/crypto-hacks-fell-47-percent-in-h1-but-ecosystem-is-no-safer-certik?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ethereum se reinventa com maior reforma desde a Fusão, afirma Vitalik Buterin Vitalik Buterin, co-fundador do Ethereum, revelou que blockchain está entrando em fase de reinvenção fundamental, descrita como maior atualização desde 'The Merge' de 2022. Praticamente cada componente central do protocolo será reconstruído ao longo de três a quatro anos, com foco prioritário em segurança quântica e privacidade. Ethereum enfrenta pressão crescente de blockchains alternativos mais rápidos e eficientes, tornando modernização fundamental estratégia de sobrevivência de longo prazo. Melhorias planejadas incluem redefinição completa de como transações são processadas, como estado é gerenciado e como segurança é garantida contra ataques quânticos futuros. Comunidade de desenvolvedores já trabalha em especificações técnicas de mudanças propostas. Roadmap de múltiplos anos cria incerteza temporária mas demonstra comprometimento com evolução sustentável. Sucesso dessa modernização será crítico para Ethereum manter posição como principal blockchain de contrato inteligente enquanto concorrência intensifica. Decrypt" data-title="Ethereum se reinventa com maior reforma desde a Fusão, afirma Vitalik Buterin" data-share-url="https://decrypt.co/372803/ethereum-reinventing-itself-with-biggest-overhaul-since-the-merge-vitalik-buterin">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:51</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Ethereum se reinventa com maior reforma desde a Fusão, afirma Vitalik Buterin</div>
+        <div class="news-summary">Vitalik Buterin, co-fundador do Ethereum, revelou que blockchain está entrando em fase de reinvenção fundamental, descrita como maior atualização desde 'The Merge' de 2022. Praticamente cada componente central do protocolo será reconstruído ao longo de três a quatro anos, com foco prioritário em segurança quântica e privacidade. Ethereum enfrenta pressão crescente de blockchains alternativos mais rápidos e eficientes, tornando modernização fundamental estratégia de sobrevivência de longo prazo. Melhorias planejadas incluem redefinição completa de como transações são processadas, como estado é gerenciado e como segurança é garantida contra ataques quânticos futuros. Comunidade de desenvolvedores já trabalha em especificações técnicas de mudanças propostas. Roadmap de múltiplos anos cria incerteza temporária mas demonstra comprometimento com evolução sustentável. Sucesso dessa modernização será crítico para Ethereum manter posição como principal blockchain de contrato inteligente enquanto concorrência intensifica.</div>
+        <div class="news-link"><a href="https://decrypt.co/372803/ethereum-reinventing-itself-with-biggest-overhaul-since-the-merge-vitalik-buterin" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Broadcom e Apple expandem parceria até 2031 com chips customizados Broadcom anunciou expansão significativa de sua parceria com Apple, comprometendo-se a fornecer chips customizados para empresa de Cupertino até 2031 em acordo de longo prazo. A parceria aprofundada reflete dependência crescente de Apple em tecnologia de semicondutores customizada para seus produtos. Broadcom fornecerá componentes críticos de infraestrutura que alimentam serviços de cloud e IA da Apple. Acordo plurianual sinaliza confiança mútua e planejamento estratégico de longo prazo em face de competição de TSMC e outros fabricantes. Para Broadcom, significa receita previsível e relacionamento garantido com maior consumidor de chips do mundo. Contrato reforça tendência de gigantes de tech integrarem verticalmente design e manufatura de semicondutores. Apple investe bilhões em capacidade interna de chip design, reduzindo dependência de fornecedores tradicionais. Bloomberg Technology" data-title="Broadcom e Apple expandem parceria até 2031 com chips customizados" data-share-url="https://www.bloomberg.com/news/articles/2026-07-06/broadcom-expands-work-for-apple-supplying-products-through-2031">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:23</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Broadcom e Apple expandem parceria até 2031 com chips customizados</div>
+        <div class="news-summary">Broadcom anunciou expansão significativa de sua parceria com Apple, comprometendo-se a fornecer chips customizados para empresa de Cupertino até 2031 em acordo de longo prazo. A parceria aprofundada reflete dependência crescente de Apple em tecnologia de semicondutores customizada para seus produtos. Broadcom fornecerá componentes críticos de infraestrutura que alimentam serviços de cloud e IA da Apple. Acordo plurianual sinaliza confiança mútua e planejamento estratégico de longo prazo em face de competição de TSMC e outros fabricantes. Para Broadcom, significa receita previsível e relacionamento garantido com maior consumidor de chips do mundo. Contrato reforça tendência de gigantes de tech integrarem verticalmente design e manufatura de semicondutores. Apple investe bilhões em capacidade interna de chip design, reduzindo dependência de fornecedores tradicionais.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-06/broadcom-expands-work-for-apple-supplying-products-through-2031" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ações de tecnologia se recuperam conforme compradores de queda atacam retração de chips Ações de tecnologia rebateram segunda-feira conforme investidores aproveitaram queda acentuada em valores de semicondutores, demonstrando apetite contínuo por volatilidade em trade de IA de maior performance do ano. Índices de tech rebateram após sofrer uma das maiores quedas semanais em meses, refletindo tomada de lucros e repricing de expectativas de crescimento. Chipmakers como NVIDIA, Broadcom e outras sofreram perdas importantes, criando oportunidade para investidores contrários. Analistas debatem se queda representa correção saudável ou sinal de esgotamento em rally de IA que alimentou mercado em 2026. Momentum de rotação em e fora de tecnologia permanece volátil, criando oportunidades tanto para bulls quanto bears. Hiperscalers continuam investindo trilhões em infraestrutura de IA, suportando fundamentos de longo prazo. Volatilidade de curto prazo reflete incerteza sobre quando retorno de IA se materializará em lucros. Bloomberg Technology" data-title="Ações de tecnologia se recuperam conforme compradores de queda atacam retração de chips" data-share-url="https://www.bloomberg.com/news/articles/2026-07-06/tech-set-to-rebound-as-ai-leadership-faces-fresh-tests">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">08:51</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Ações de tecnologia se recuperam conforme compradores de queda atacam retração de chips</div>
+        <div class="news-summary">Ações de tecnologia rebateram segunda-feira conforme investidores aproveitaram queda acentuada em valores de semicondutores, demonstrando apetite contínuo por volatilidade em trade de IA de maior performance do ano. Índices de tech rebateram após sofrer uma das maiores quedas semanais em meses, refletindo tomada de lucros e repricing de expectativas de crescimento. Chipmakers como NVIDIA, Broadcom e outras sofreram perdas importantes, criando oportunidade para investidores contrários. Analistas debatem se queda representa correção saudável ou sinal de esgotamento em rally de IA que alimentou mercado em 2026. Momentum de rotação em e fora de tecnologia permanece volátil, criando oportunidades tanto para bulls quanto bears. Hiperscalers continuam investindo trilhões em infraestrutura de IA, suportando fundamentos de longo prazo. Volatilidade de curto prazo reflete incerteza sobre quando retorno de IA se materializará em lucros.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-06/tech-set-to-rebound-as-ai-leadership-faces-fresh-tests" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="SK Hynix inicia processo de listagem nos EUA de $28 bilhões SK Hynix, principal fabricante de chips de memória sul-coreano, iniciou processo formal de marketing para sua listagem nos mercados americanos, em movimento que capitaliza sobre investimento crescente em infraestrutura de IA e processamento de dados. Oferta é avaliada em aproximadamente $28 bilhões, tornando-a uma das maiores listagens do ano. A empresa busca accesso a capital americano para financiar expansão de capacidade de fabricação de chips de memória essenciais para IA. Sucesso potencial da IPO sinalizaria apetite forte de investidores por exposição a semicondutores. SK Hynix enfrenta pressão concorrencial de Samsung e outras fabricantes, mas competição por chips de memória intensifica com demanda de IA explosiva. Listagem americana também ofereceria hedge contra riscos geopolíticos envolvendo Coreia do Sul. Movimento reflete confiança de empresa em perspectivas de demanda de longo prazo. Bloomberg Technology" data-title="SK Hynix inicia processo de listagem nos EUA de $28 bilhões" data-share-url="https://www.bloomberg.com/news/articles/2026-07-06/memory-chipmaker-sk-hynix-starts-marketing-us-listing">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">07:36</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">SK Hynix inicia processo de listagem nos EUA de $28 bilhões</div>
+        <div class="news-summary">SK Hynix, principal fabricante de chips de memória sul-coreano, iniciou processo formal de marketing para sua listagem nos mercados americanos, em movimento que capitaliza sobre investimento crescente em infraestrutura de IA e processamento de dados. Oferta é avaliada em aproximadamente $28 bilhões, tornando-a uma das maiores listagens do ano. A empresa busca accesso a capital americano para financiar expansão de capacidade de fabricação de chips de memória essenciais para IA. Sucesso potencial da IPO sinalizaria apetite forte de investidores por exposição a semicondutores. SK Hynix enfrenta pressão concorrencial de Samsung e outras fabricantes, mas competição por chips de memória intensifica com demanda de IA explosiva. Listagem americana também ofereceria hedge contra riscos geopolíticos envolvendo Coreia do Sul. Movimento reflete confiança de empresa em perspectivas de demanda de longo prazo.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-06/memory-chipmaker-sk-hynix-starts-marketing-us-listing" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Coreia do Sul pondera ação contra Polymarket por preocupações com jogo Autoridades regulatórias de mídia e comunicações da Coreia do Sul anunciaram intenção de ouvir Polymarket antes de decidir se emite solicitação corretiva contra plataforma de previsão de mercado. Reguladores questionam se Polymarket opera como plataforma de apostas ilegais sob disfarce de mercado de previsão. A plataforma permite usuários fazer previsões sobre eventos políticos e econômicos com prêmios monetários, criando ambiguidade regulatória em múltiplas jurisdições. Coreia do Sul possui leis rigorosas sobre jogos de azar que proíbem maioria das formas de apostas sem licença estatal. Investigação sinaliza pressão regulatória crescente sobre plataformas de cripto e previsão em economias desenvolvidas. Polymarket defende que oferece mercados informativos que agregam conhecimento coletivo, não apostas tradicionais. Confrontação reflete tensão global entre reguladores querendo controlar atividades de jogo e plataformas blockchain descentralizadas operando sem permissão tradicional. Cointelegraph" data-title="Coreia do Sul pondera ação contra Polymarket por preocupações com jogo" data-share-url="https://cointelegraph.com/news/south-korea-polymarket-gambling-review-corrective-action?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">06:53</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Coreia do Sul pondera ação contra Polymarket por preocupações com jogo</div>
+        <div class="news-summary">Autoridades regulatórias de mídia e comunicações da Coreia do Sul anunciaram intenção de ouvir Polymarket antes de decidir se emite solicitação corretiva contra plataforma de previsão de mercado. Reguladores questionam se Polymarket opera como plataforma de apostas ilegais sob disfarce de mercado de previsão. A plataforma permite usuários fazer previsões sobre eventos políticos e econômicos com prêmios monetários, criando ambiguidade regulatória em múltiplas jurisdições. Coreia do Sul possui leis rigorosas sobre jogos de azar que proíbem maioria das formas de apostas sem licença estatal. Investigação sinaliza pressão regulatória crescente sobre plataformas de cripto e previsão em economias desenvolvidas. Polymarket defende que oferece mercados informativos que agregam conhecimento coletivo, não apostas tradicionais. Confrontação reflete tensão global entre reguladores querendo controlar atividades de jogo e plataformas blockchain descentralizadas operando sem permissão tradicional.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/south-korea-polymarket-gambling-review-corrective-action?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Startup Ornn levanta $33 milhões para transformar poder computacional em commodity Ornn, startup apoiada por Andreessen Horowitz (a16z), levantou rodada seed de $33 milhões para construir marketplace que permite negociar poder computacional como commodity financeira. Plataforma busca democratizar acesso a GPU e infraestrutura de computação necessária para treinamento de modelos de IA. Modelo permite proprietários de hardware vender capacidade não utilizada enquanto consumidores acessam poder computacional em termos mais flexíveis que arranjos tradicionais. Esse mercado fragmentado de poder de computação é crítico para economia de IA, já que demanda por GPUs supera oferta disponível significativamente. Ornn enfrenta competição de outras plataformas semelhantes, mas tração obtida com funding de a16z sinaliza validação de modelo de negócio. Plataforma economizaria custos para startups de IA e pesquisadores que são priced out de infraestrutura cara. Sucesso dessa abordagem poderia remodelar como recurso mais crítico para IA é alocado globalmente. Axios" data-title="Startup Ornn levanta $33 milhões para transformar poder computacional em commodity" data-share-url="https://www.axios.com/2026/07/06/ornn-gpu-compute-commodity">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">06:20</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Startup Ornn levanta $33 milhões para transformar poder computacional em commodity</div>
+        <div class="news-summary">Ornn, startup apoiada por Andreessen Horowitz (a16z), levantou rodada seed de $33 milhões para construir marketplace que permite negociar poder computacional como commodity financeira. Plataforma busca democratizar acesso a GPU e infraestrutura de computação necessária para treinamento de modelos de IA. Modelo permite proprietários de hardware vender capacidade não utilizada enquanto consumidores acessam poder computacional em termos mais flexíveis que arranjos tradicionais. Esse mercado fragmentado de poder de computação é crítico para economia de IA, já que demanda por GPUs supera oferta disponível significativamente. Ornn enfrenta competição de outras plataformas semelhantes, mas tração obtida com funding de a16z sinaliza validação de modelo de negócio. Plataforma economizaria custos para startups de IA e pesquisadores que são priced out de infraestrutura cara. Sucesso dessa abordagem poderia remodelar como recurso mais crítico para IA é alocado globalmente.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/07/06/ornn-gpu-compute-commodity" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Bachelores mais procurados da Coreia do Sul são trabalhadores de chips Em fenômeno social notável, trabalhadores de semicondutores de empresas como SK Hynix e Samsung tornaram-se 'solteiros mais quentes' da Coreia do Sul, demonstrando mudança em percepção de prestígio profissional. Empresas de matchmaking reportam demanda explosiva para conectar profissionais de tech com parceiros em mercado de relacionamentos altamente competitivo do país. O fascínio reflete salários altos, estabilidade de carreira e prestígio associado a trabalhar em indústrias de tecnologia crítica. SK Hynix e Samsung oferecem benefícios generosos e estabilidade que atraem tanto profissionais quanto famílias. Fenômeno sinaliza como indústria de chips tornou-se central à identidade econômica e social da Coreia do Sul. Pressão demográfica do país (baixa taxa de natalidade) intensifica competição por relacionamentos. Tendência também reflete como economia coreana depende crescentemente de talento tech qualificado. MIT Technology Review" data-title="Bachelores mais procurados da Coreia do Sul são trabalhadores de chips" data-share-url="https://www.technologyreview.com/2026/07/06/1140000/south-korea-bachelors-samsung-skhynix-chip-workers/">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Bachelores mais procurados da Coreia do Sul são trabalhadores de chips</div>
+        <div class="news-summary">Em fenômeno social notável, trabalhadores de semicondutores de empresas como SK Hynix e Samsung tornaram-se 'solteiros mais quentes' da Coreia do Sul, demonstrando mudança em percepção de prestígio profissional. Empresas de matchmaking reportam demanda explosiva para conectar profissionais de tech com parceiros em mercado de relacionamentos altamente competitivo do país. O fascínio reflete salários altos, estabilidade de carreira e prestígio associado a trabalhar em indústrias de tecnologia crítica. SK Hynix e Samsung oferecem benefícios generosos e estabilidade que atraem tanto profissionais quanto famílias. Fenômeno sinaliza como indústria de chips tornou-se central à identidade econômica e social da Coreia do Sul. Pressão demográfica do país (baixa taxa de natalidade) intensifica competição por relacionamentos. Tendência também reflete como economia coreana depende crescentemente de talento tech qualificado.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/07/06/1140000/south-korea-bachelors-samsung-skhynix-chip-workers/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Protocolo DeFi Summer.fi suspende vaults após exploit de $6 milhões Protocolo descentralizado de finanças Summer.fi foi forçado a suspender seus Lazy Summer vaults após descoberta de exploit de segurança que resultou em perda de $6 milhões em fundos de usuários. O token nativo SUMR desabou mais de 18% no mercado em resposta ao incidente, refletindo perda imediata de confiança. Summer.fi é plataforma DeFi que permite usuários ganhar rendimento em ativos de cripto através de estratégias automatizadas de farming. Exploit especificamente visou mecanismo de vault que falhou em proteger adequadamente posições de usuários contra manipulação. Investigação inicial sugere vulnerabilidade estava relacionada a lógica de smart contract ou problema de oracle que alimenta dados de preço. Equipe de Summer.fi ativou múltiplas medidas de mitigação e está trabalhando com auditores de segurança externos. Incidente é mais um na série contínua de perdas em DeFi que prejudicam confiança na segurança de aplicativos blockchain. Usuários pressionam por conformidade regulatória mais forte e testes de segurança mais rigorosos. CoinDesk" data-title="Protocolo DeFi Summer.fi suspende vaults após exploit de $6 milhões" data-share-url="https://www.coindesk.com/web3/2026/07/06/defi-protocol-summer-fi-halts-lazy-summer-vaults-after-usd6-million-exploit">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">10:42</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Protocolo DeFi Summer.fi suspende vaults após exploit de $6 milhões</div>
+        <div class="news-summary">Protocolo descentralizado de finanças Summer.fi foi forçado a suspender seus Lazy Summer vaults após descoberta de exploit de segurança que resultou em perda de $6 milhões em fundos de usuários. O token nativo SUMR desabou mais de 18% no mercado em resposta ao incidente, refletindo perda imediata de confiança. Summer.fi é plataforma DeFi que permite usuários ganhar rendimento em ativos de cripto através de estratégias automatizadas de farming. Exploit especificamente visou mecanismo de vault que falhou em proteger adequadamente posições de usuários contra manipulação. Investigação inicial sugere vulnerabilidade estava relacionada a lógica de smart contract ou problema de oracle que alimenta dados de preço. Equipe de Summer.fi ativou múltiplas medidas de mitigação e está trabalhando com auditores de segurança externos. Incidente é mais um na série contínua de perdas em DeFi que prejudicam confiança na segurança de aplicativos blockchain. Usuários pressionam por conformidade regulatória mais forte e testes de segurança mais rigorosos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/web3/2026/07/06/defi-protocol-summer-fi-halts-lazy-summer-vaults-after-usd6-million-exploit" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Tesouraria de Bitcoin da Bitmine adiciona mais $74 milhões em Ether conforme analista aposta em ganhos regulatórios Bitmine, segundo maior detentor corporativo de Bitcoin, expandiu suas compras de Ethereum adicionando $74 milhões em ETH enquanto mantém posição bullish no mercado cripto, em movimento interpretado como aposta em aprovação da Lei Clarity que simplificaria regulação de criptomoedas. Aceleração no ritmo de compras de ETH contrasta com atividade de Michael Saylor's MicroStrategy que vendeu agora $216 milhões em Bitcoin para financiar dividendos. Bitmine assume posição mais agressiva em Ethereum conforme confiança em narrativa regulatória cresce nos EUA. Movimento sinaliza que grandes acumuladores institucionais distinguem entre Bitcoin (como reserva de valor) e Ethereum (como ativo produtivo). Impacto acumulado de compras corporativas empurra preços cripto mais altos e telegrafam confiança institucional na aprovação de legislação favorável. Dinâmica entre diferentes tesourarias cripto reflete estratégias diversificadas conforme setor de cripto amadurece. CoinDesk" data-title="Tesouraria de Bitcoin da Bitmine adiciona mais $74 milhões em Ether conforme analista aposta em ganhos regulatórios" data-share-url="https://www.coindesk.com/business/2026/07/06/bitmine-added-another-usd74-million-in-ether-as-tom-lee-bets-on-clarity-act-boost">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:54</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Tesouraria de Bitcoin da Bitmine adiciona mais $74 milhões em Ether conforme analista aposta em ganhos regulatórios</div>
+        <div class="news-summary">Bitmine, segundo maior detentor corporativo de Bitcoin, expandiu suas compras de Ethereum adicionando $74 milhões em ETH enquanto mantém posição bullish no mercado cripto, em movimento interpretado como aposta em aprovação da Lei Clarity que simplificaria regulação de criptomoedas. Aceleração no ritmo de compras de ETH contrasta com atividade de Michael Saylor's MicroStrategy que vendeu agora $216 milhões em Bitcoin para financiar dividendos. Bitmine assume posição mais agressiva em Ethereum conforme confiança em narrativa regulatória cresce nos EUA. Movimento sinaliza que grandes acumuladores institucionais distinguem entre Bitcoin (como reserva de valor) e Ethereum (como ativo produtivo). Impacto acumulado de compras corporativas empurra preços cripto mais altos e telegrafam confiança institucional na aprovação de legislação favorável. Dinâmica entre diferentes tesourarias cripto reflete estratégias diversificadas conforme setor de cripto amadurece.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/06/bitmine-added-another-usd74-million-in-ether-as-tom-lee-bets-on-clarity-act-boost" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Tesouraria de cripto Bitwise vende $216 milhões em Bitcoin para financiar dividendos MicroStrategy de Michael Saylor, maior tesouraria corporativa de Bitcoin, executou venda agressiva de $216 milhões em Bitcoin na semana passada (3.588 BTC) para replenish seus reservas em dólares e financiar dividendos em sua ações preferenciais. Venda marca mudança significativa na estratégia de buy-and-hold que caracterizou abordagem de Saylor de coletar Bitcoin indefinidamente. Pressão de manter pagamentos aos detentores de ações preferenciais força a empresa a liquidar ativos cripto apesar de retórica bullish. MicroStrategy mantém ainda impressionante $2,55 bilhões em Bitcoin mesmo após venda, mas ritmo acelerado de liquidações levanta questões sobre sustentabilidade da estratégia. Analista Bernstein reafirmou previsão de preço de Bitcoin de $150 mil até fim do ano apesar de atividade de venda. Dinâmica reflete tensão entre acumulação de cripto e obrigações de dividendos corporativos. Movimento de Saylor sinalizará mercado sobre convicção real em Bitcoin a longo prazo. CoinDesk / Cointelegraph" data-title="Tesouraria de cripto Bitwise vende $216 milhões em Bitcoin para financiar dividendos" data-share-url="https://www.coindesk.com/markets/2026/07/06/michael-saylor-s-strategy-dramatically-ups-pace-of-bitcoin-sales-raising-usd216-million">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:16</span>
+          <span class="news-source">CoinDesk / Cointelegraph</span>
+        </div>
+        <div class="news-title">Tesouraria de cripto Bitwise vende $216 milhões em Bitcoin para financiar dividendos</div>
+        <div class="news-summary">MicroStrategy de Michael Saylor, maior tesouraria corporativa de Bitcoin, executou venda agressiva de $216 milhões em Bitcoin na semana passada (3.588 BTC) para replenish seus reservas em dólares e financiar dividendos em sua ações preferenciais. Venda marca mudança significativa na estratégia de buy-and-hold que caracterizou abordagem de Saylor de coletar Bitcoin indefinidamente. Pressão de manter pagamentos aos detentores de ações preferenciais força a empresa a liquidar ativos cripto apesar de retórica bullish. MicroStrategy mantém ainda impressionante $2,55 bilhões em Bitcoin mesmo após venda, mas ritmo acelerado de liquidações levanta questões sobre sustentabilidade da estratégia. Analista Bernstein reafirmou previsão de preço de Bitcoin de $150 mil até fim do ano apesar de atividade de venda. Dinâmica reflete tensão entre acumulação de cripto e obrigações de dividendos corporativos. Movimento de Saylor sinalizará mercado sobre convicção real em Bitcoin a longo prazo.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/06/michael-saylor-s-strategy-dramatically-ups-pace-of-bitcoin-sales-raising-usd216-million" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Regulador belga flageia 6 fornecedoras de cripto não autorizadas após prazo de MiCA Autoridade financeira belga (FSMA) adicionou seis fornecedoras de serviços de ativos cripto à sua lista de entidades fraudulentas apenas dias após encerramento do período de transição de MiCA. O flagging ocorre enquanto reguladores europeus implementam novo regime de conformidade para fornecedoras de cripto sob Lei de Mercados em Criptomoedas. Ação sinaliza prontidão de autoridades em remover players não conformes do mercado conforme prazos regulatórios expiram. Consumidores europeus são advertidos para não interagir com fornecedoras flagadas que não completaram processo de autorização. Dinâmica reflete desafio regulatório mais amplo de harmonizar conformidade com MiCA em 27 estados membros europeus. Alguns fornecedoras optaram por sair de mercados europeus em vez de cumprir com novo regime. Movimento belga estabelece precedente para outros reguladores europeus em policiamento ativo de conformidade. Cointelegraph" data-title="Regulador belga flageia 6 fornecedoras de cripto não autorizadas após prazo de MiCA" data-share-url="https://cointelegraph.com/news/belgium-unauthorized-crypto-firms-mica-deadline?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">09:15</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Regulador belga flageia 6 fornecedoras de cripto não autorizadas após prazo de MiCA</div>
+        <div class="news-summary">Autoridade financeira belga (FSMA) adicionou seis fornecedoras de serviços de ativos cripto à sua lista de entidades fraudulentas apenas dias após encerramento do período de transição de MiCA. O flagging ocorre enquanto reguladores europeus implementam novo regime de conformidade para fornecedoras de cripto sob Lei de Mercados em Criptomoedas. Ação sinaliza prontidão de autoridades em remover players não conformes do mercado conforme prazos regulatórios expiram. Consumidores europeus são advertidos para não interagir com fornecedoras flagadas que não completaram processo de autorização. Dinâmica reflete desafio regulatório mais amplo de harmonizar conformidade com MiCA em 27 estados membros europeus. Alguns fornecedoras optaram por sair de mercados europeus em vez de cumprir com novo regime. Movimento belga estabelece precedente para outros reguladores europeus em policiamento ativo de conformidade.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/belgium-unauthorized-crypto-firms-mica-deadline?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Banco maior da Rússia planeja lançamento de carteira de cripto conforme Moscou libera caminho para mercado Sberbank, maior banco da Rússia, anunciou planos de lançar serviços de carteira de criptomoedas integrados em aplicativos 'Sberbank Online' e 'SberInvestments' uma vez que Lei 'On Digital Currency and Digital Rights' entre em vigor em setembro. Movimento representa virada dramática na postura regulatória russa em relação a criptomoedas, que foram historicamente descobrajadas ou proibidas. Pressão de sanções ocidentais e isolamento financeiro forçaram Rússia a reconsiderar utilidade de criptomoedas para transações internacionais e preservação de valor. Sberbank tem posição única para oferecer serviços de cripto dada sua escala de varejo massiva e confiança do estado. Lançamento sinalizaria adoção oficial de criptomoedas como ferramenta financeira legítima na Rússia. Movimento pode encorajar outras instituições financeiras russas a entrar em espaço de cripto. Abertura potencial de mercado russo de $145 milhões de pessoas representa oportunidade significativa para exchanges de cripto e provedores de carteira. CoinDesk" data-title="Banco maior da Rússia planeja lançamento de carteira de cripto conforme Moscou libera caminho para mercado" data-share-url="https://www.coindesk.com/business/2026/07/06/russia-s-largest-bank-plans-crypto-wallet-launch-as-moscow-clears-market-path">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">08:36</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Banco maior da Rússia planeja lançamento de carteira de cripto conforme Moscou libera caminho para mercado</div>
+        <div class="news-summary">Sberbank, maior banco da Rússia, anunciou planos de lançar serviços de carteira de criptomoedas integrados em aplicativos 'Sberbank Online' e 'SberInvestments' uma vez que Lei 'On Digital Currency and Digital Rights' entre em vigor em setembro. Movimento representa virada dramática na postura regulatória russa em relação a criptomoedas, que foram historicamente descobrajadas ou proibidas. Pressão de sanções ocidentais e isolamento financeiro forçaram Rússia a reconsiderar utilidade de criptomoedas para transações internacionais e preservação de valor. Sberbank tem posição única para oferecer serviços de cripto dada sua escala de varejo massiva e confiança do estado. Lançamento sinalizaria adoção oficial de criptomoedas como ferramenta financeira legítima na Rússia. Movimento pode encorajar outras instituições financeiras russas a entrar em espaço de cripto. Abertura potencial de mercado russo de $145 milhões de pessoas representa oportunidade significativa para exchanges de cripto e provedores de carteira.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/06/russia-s-largest-bank-plans-crypto-wallet-launch-as-moscow-clears-market-path" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Maior IPO de sempre SpaceX é incluída no Nasdaq 100 com aviso histórico de volatilidade SpaceX completou sua inclusão no Nasdaq 100 Index após maior IPO da história, mas entrada no índice é acompanhada por avisos de volatilidade histórica baseados em precedentes anteriores. Inclusões de índices de mega-cap como Palantir e MicroStrategy experimentaram volatilidade extrema em dias seguintes à adição em vez de ganhos estáveis típicos de inclusões de índice. Dinâmica sugere que entrada de massa capital passivo através de rebalanceamento de índice pode criar desiquilibro temporário de oferta-demanda. SpaceX valorizada em centenas de bilhões torna-se empresa mais cara adicionada ao Nasdaq 100 jamais. Aumento de liquidez esperado da inclusão pode ser ofuscado por volatilidade de curto prazo conforme diferentes categorias de investidores rebalanceiam posições. Analistas sugerem investidores prepararem-se para potencial movimento volátil nas semanas seguintes à inclusão. CoinDesk" data-title="Maior IPO de sempre SpaceX é incluída no Nasdaq 100 com aviso histórico de volatilidade" data-share-url="https://www.coindesk.com/markets/2026/07/06/spacex-s-nasdaq-100-inclusion-comes-with-a-historical-warning">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">08:16</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Maior IPO de sempre SpaceX é incluída no Nasdaq 100 com aviso histórico de volatilidade</div>
+        <div class="news-summary">SpaceX completou sua inclusão no Nasdaq 100 Index após maior IPO da história, mas entrada no índice é acompanhada por avisos de volatilidade histórica baseados em precedentes anteriores. Inclusões de índices de mega-cap como Palantir e MicroStrategy experimentaram volatilidade extrema em dias seguintes à adição em vez de ganhos estáveis típicos de inclusões de índice. Dinâmica sugere que entrada de massa capital passivo através de rebalanceamento de índice pode criar desiquilibro temporário de oferta-demanda. SpaceX valorizada em centenas de bilhões torna-se empresa mais cara adicionada ao Nasdaq 100 jamais. Aumento de liquidez esperado da inclusão pode ser ofuscado por volatilidade de curto prazo conforme diferentes categorias de investidores rebalanceiam posições. Analistas sugerem investidores prepararem-se para potencial movimento volátil nas semanas seguintes à inclusão.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/06/spacex-s-nasdaq-100-inclusion-comes-with-a-historical-warning" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Perspectiva de inflação dos EUA ampara bulls de Bitcoin após melhor semana desde março Bitcoin experimentou sua melhor semana desde março conforme perspectiva de inflação dos EUA continua a ampará-lo, oferecendo suporte fundamental para tese de Bitcoin como hedge contra inflação. Análise de dinâmica macroeconômica mostra que preocupações com estabilidade fiscal americana e trajetórias de juros mais altas globalmente tornam Bitcoin mais atrativo relativamente. Expectativas de que Fed mantenha ambiente de juros mais altos por mais tempo estão impulsionando busca por ativos de proteção de valor como Bitcoin e ouro. Dinâmica de buscas por Bitcoin como reserva de valor ganha tração conforme investidores se preocupam com erosão de poder de compra de moedas fiat. Narrativa de Bitcoin como 'ouro digital' que protege contra pressão inflacionária ressurgiu como tema dominante. Semana de ganho sugere mudança de sentimento conforme pessimismo anterior deixa espaço para consideração de casos bullish de longo prazo. CoinDesk" data-title="Perspectiva de inflação dos EUA ampara bulls de Bitcoin após melhor semana desde março" data-share-url="https://www.coindesk.com/daybook-us/2026/07/06/u-s-inflation-outlook-underpins-bitcoin-bulls-after-best-week-since-march">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">08:15</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Perspectiva de inflação dos EUA ampara bulls de Bitcoin após melhor semana desde março</div>
+        <div class="news-summary">Bitcoin experimentou sua melhor semana desde março conforme perspectiva de inflação dos EUA continua a ampará-lo, oferecendo suporte fundamental para tese de Bitcoin como hedge contra inflação. Análise de dinâmica macroeconômica mostra que preocupações com estabilidade fiscal americana e trajetórias de juros mais altas globalmente tornam Bitcoin mais atrativo relativamente. Expectativas de que Fed mantenha ambiente de juros mais altos por mais tempo estão impulsionando busca por ativos de proteção de valor como Bitcoin e ouro. Dinâmica de buscas por Bitcoin como reserva de valor ganha tração conforme investidores se preocupam com erosão de poder de compra de moedas fiat. Narrativa de Bitcoin como 'ouro digital' que protege contra pressão inflacionária ressurgiu como tema dominante. Semana de ganho sugere mudança de sentimento conforme pessimismo anterior deixa espaço para consideração de casos bullish de longo prazo.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/daybook-us/2026/07/06/u-s-inflation-outlook-underpins-bitcoin-bulls-after-best-week-since-march" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Cripto salta de volta enquanto otimismo com altcoins retorna apesar de pontos fracos Mercado de criptmoedas rebateu de perto ao abismo na semana anterior conforme Bitcoin consolida acima de $62.800 após ter tocado níveis de $58.000, demonstrando apoio substancial para preço em níveis mais baixos. Altcoins mostram otimismo renovado com LIT surging 50% e o Altcoin Season Indicator atingindo sua leitura mais alta em três meses. O ressurgimento de confiança em altcoins sugere que mercado se recupera de pânico anterior e investidores retomam busca por ganhos em ativos de risco. Consolidação de Bitcoin acima de $60k é positiva tecnicamente e psicologicamente, suportando narrativa de resistência do ativo. Sinais técnicos múltiplos apontam para possível formação de fundo em crash anterior e início de nova fase de recuperação. Otimismo em altcoins é notavelmente presente dado enfraquecimento típico em ciclos anteriores. Dinâmica sugere confiança renovada em fundamentais de cripto e casos de uso de blockchain. CoinDesk" data-title="Cripto salta de volta enquanto otimismo com altcoins retorna apesar de pontos fracos" data-share-url="https://www.coindesk.com/markets/2026/07/06/crypto-bounces-back-from-the-brink-as-altcoin-optimism-returns-despite-pockets-of-weakness">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">07:44</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Cripto salta de volta enquanto otimismo com altcoins retorna apesar de pontos fracos</div>
+        <div class="news-summary">Mercado de criptmoedas rebateu de perto ao abismo na semana anterior conforme Bitcoin consolida acima de $62.800 após ter tocado níveis de $58.000, demonstrando apoio substancial para preço em níveis mais baixos. Altcoins mostram otimismo renovado com LIT surging 50% e o Altcoin Season Indicator atingindo sua leitura mais alta em três meses. O ressurgimento de confiança em altcoins sugere que mercado se recupera de pânico anterior e investidores retomam busca por ganhos em ativos de risco. Consolidação de Bitcoin acima de $60k é positiva tecnicamente e psicologicamente, suportando narrativa de resistência do ativo. Sinais técnicos múltiplos apontam para possível formação de fundo em crash anterior e início de nova fase de recuperação. Otimismo em altcoins é notavelmente presente dado enfraquecimento típico em ciclos anteriores. Dinâmica sugere confiança renovada em fundamentais de cripto e casos de uso de blockchain.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/06/crypto-bounces-back-from-the-brink-as-altcoin-optimism-returns-despite-pockets-of-weakness" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="$60.4k se torna a área mais importante para Bitcoin conforme bulls buscam inflexão de tendência Analistas identificam o nível de preço de $60.400 como 'zona mais importante' para Bitcoin esta semana enquanto mercado busca confirmar inflexão de tendência após volatilidade recente. Alguns observadores argumentam que bulls precisam empurrar Bitcoin acima de $65 mil para sinalizar verdadeira mudança de sentimento de mercado. Consolidação ao redor de $62.800 representa tentativa de encontrar piso após queda anterior que testou $58 mil. Suportes técnicos no nível de $60k-$61k são sendo vigorosamente defendidos por compradores, sugerindo âncora psicológica significativa. Próximas semanas serão críticas em determinar se mercado estabelece novo piso em níveis mais altos ou se há risco de retest de suportes anteriores. Dinâmica de volume e interesse de varejo podem oferecer pistas sobre sustentabilidade de recuperação. Cinco coisas principais que observadores de Bitcoin devem monitorar esta semana foram identificadas por analistas. Cointelegraph" data-title="$60.4k se torna a área mais importante para Bitcoin conforme bulls buscam inflexão de tendência" data-share-url="https://cointelegraph.com/markets/604k-becomes-most-important-area-five-things-to-know-in-bitcoin-this-week?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">07:25</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">$60.4k se torna a área mais importante para Bitcoin conforme bulls buscam inflexão de tendência</div>
+        <div class="news-summary">Analistas identificam o nível de preço de $60.400 como 'zona mais importante' para Bitcoin esta semana enquanto mercado busca confirmar inflexão de tendência após volatilidade recente. Alguns observadores argumentam que bulls precisam empurrar Bitcoin acima de $65 mil para sinalizar verdadeira mudança de sentimento de mercado. Consolidação ao redor de $62.800 representa tentativa de encontrar piso após queda anterior que testou $58 mil. Suportes técnicos no nível de $60k-$61k são sendo vigorosamente defendidos por compradores, sugerindo âncora psicológica significativa. Próximas semanas serão críticas em determinar se mercado estabelece novo piso em níveis mais altos ou se há risco de retest de suportes anteriores. Dinâmica de volume e interesse de varejo podem oferecer pistas sobre sustentabilidade de recuperação. Cinco coisas principais que observadores de Bitcoin devem monitorar esta semana foram identificadas por analistas.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/604k-becomes-most-important-area-five-things-to-know-in-bitcoin-this-week?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin toca maior nível em quase duas semanas apesar de Sharpe Ratio cair para mínimo desde 2022 Bitcoin rebateu para seus maiores níveis em quase duas semanas, consolidando acima de $62.800, mas a métrica de Sharpe Ratio deslizou para seu nível mais baixo desde 2022, sugerindo que volatilidade em relação a ganhos não justifica exposição ao risco. Uma leitura tão negativa do Sharpe Ratio implica que investidores teriam melhor desempenho em ativos livres de risco como títulos do Tesouro de 10 anos. O paradoxo reflete realidade de mercado de cripto onde rally de preço é acompanhado por volatilidade extrema que não compensa estrategicamente o risco. Sharpe Ratio negativo levanta questões sobre atratividade de Bitcoin para investidores avessos ao risco em contexto de ambiente de juros mais altos. Métrica é contrária a narrativa bullish que domina mercado cripto, criando conflito entre análise técnica e análise de risco-ajustado. Debate mais amplo sobre se Bitcoin é investimento apropriado em diferentes ambientes macroeconômicos intensifica conforme Fed sinaliza expectativa de juros mais altos. CoinDesk" data-title="Bitcoin toca maior nível em quase duas semanas apesar de Sharpe Ratio cair para mínimo desde 2022" data-share-url="https://www.coindesk.com/markets/2026/07/06/bitcoin-s-sharpe-ratio-slides-to-lowest-since-2022-here-s-what-it-means">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">07:19</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin toca maior nível em quase duas semanas apesar de Sharpe Ratio cair para mínimo desde 2022</div>
+        <div class="news-summary">Bitcoin rebateu para seus maiores níveis em quase duas semanas, consolidando acima de $62.800, mas a métrica de Sharpe Ratio deslizou para seu nível mais baixo desde 2022, sugerindo que volatilidade em relação a ganhos não justifica exposição ao risco. Uma leitura tão negativa do Sharpe Ratio implica que investidores teriam melhor desempenho em ativos livres de risco como títulos do Tesouro de 10 anos. O paradoxo reflete realidade de mercado de cripto onde rally de preço é acompanhado por volatilidade extrema que não compensa estrategicamente o risco. Sharpe Ratio negativo levanta questões sobre atratividade de Bitcoin para investidores avessos ao risco em contexto de ambiente de juros mais altos. Métrica é contrária a narrativa bullish que domina mercado cripto, criando conflito entre análise técnica e análise de risco-ajustado. Debate mais amplo sobre se Bitcoin é investimento apropriado em diferentes ambientes macroeconômicos intensifica conforme Fed sinaliza expectativa de juros mais altos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/06/bitcoin-s-sharpe-ratio-slides-to-lowest-since-2022-here-s-what-it-means" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Licença de Ripple em Luxemburgo é aprimorada de preliminar para completamente em conformidade Ripple recebeu aprovação para upgrade de sua licença preliminar de fornecedor de ativos cripto em Luxemburgo para status plenamente em conformidade com regulação MiCA da Europa. Aprovação significa que Ripple agora está totalmente autorizado a operar com conformidade MiCA para pagamentos, instituições financeiras, corporativos e negócios em todos os 30 Espaços Econômicos Europeus. Conquista representa vitória regulatória significativa para empresa que enfrenta litígio prolongado com SEC dos EUA sobre classificação do XRP. Conformidade MiCA europeia oferece a Ripple plataforma estabelecida para expandir operações de forma legítima em maior bloco econômico do mundo. Status aprimorado sinaliza confiança de reguladores europeus em práticas operacionais e compliance de Ripple. Sucesso europeu contrasta com pressão regulatória nos EUA, criando assimetria geográfica em capacidade de Ripple operar. MiCA estabeleceu novo padrão global para regulação de cripto que outros reguladores observam de perto. CoinDesk" data-title="Licença de Ripple em Luxemburgo é aprimorada de preliminar para completamente em conformidade" data-share-url="https://www.coindesk.com/policy/2026/07/06/ripple-s-preliminary-crypto-asset-provider-license-in-luxembourg-upgraded-to-fully-compliant">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">07:01</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Licença de Ripple em Luxemburgo é aprimorada de preliminar para completamente em conformidade</div>
+        <div class="news-summary">Ripple recebeu aprovação para upgrade de sua licença preliminar de fornecedor de ativos cripto em Luxemburgo para status plenamente em conformidade com regulação MiCA da Europa. Aprovação significa que Ripple agora está totalmente autorizado a operar com conformidade MiCA para pagamentos, instituições financeiras, corporativos e negócios em todos os 30 Espaços Econômicos Europeus. Conquista representa vitória regulatória significativa para empresa que enfrenta litígio prolongado com SEC dos EUA sobre classificação do XRP. Conformidade MiCA europeia oferece a Ripple plataforma estabelecida para expandir operações de forma legítima em maior bloco econômico do mundo. Status aprimorado sinaliza confiança de reguladores europeus em práticas operacionais e compliance de Ripple. Sucesso europeu contrasta com pressão regulatória nos EUA, criando assimetria geográfica em capacidade de Ripple operar. MiCA estabeleceu novo padrão global para regulação de cripto que outros reguladores observam de perto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/06/ripple-s-preliminary-crypto-asset-provider-license-in-luxembourg-upgraded-to-fully-compliant" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Dormant Bitcoin de $1,9 milhão ligado a ação judicial de Nova York se move após quase 15 anos Endereço de Bitcoin dormant por quase 15 anos moveu $1,9 milhão em BTC conforme ação legal em Nova York busca propriedade de milhares de holdings inativos de criptomoedas. O movimento de ativos antigos levanta questões sobre propriedade real, regras de limite de tempo e como sistema legal americano trata propriedade de cripto sem dono ou esquecida. Ação legal sugere que pode haver bilhões de dólares em Bitcoin e outras criptomoedas dormantes cujo status de propriedade é ambíguo ou contestado. Ressurgimento de Bitcoin antigo tipicamente está ligado a eventos legais ou descoberta de credenciais de carteira antigas. Caso estabelecerá precedente sobre como cortes tratam propriedade de cripto histórica. Questões mais amplas sobre Bitcoin 'perdido' ou 'esquecido' permanecem fundamentalmente não resolvidas na lei americana. Cointelegraph" data-title="Dormant Bitcoin de $1,9 milhão ligado a ação judicial de Nova York se move após quase 15 anos" data-share-url="https://cointelegraph.com/news/dormant-bitcoin-new-york-lawsuit-moved-15-years?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">06 jul 2026</span>
+          <span class="news-time">06:20</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Dormant Bitcoin de $1,9 milhão ligado a ação judicial de Nova York se move após quase 15 anos</div>
+        <div class="news-summary">Endereço de Bitcoin dormant por quase 15 anos moveu $1,9 milhão em BTC conforme ação legal em Nova York busca propriedade de milhares de holdings inativos de criptomoedas. O movimento de ativos antigos levanta questões sobre propriedade real, regras de limite de tempo e como sistema legal americano trata propriedade de cripto sem dono ou esquecida. Ação legal sugere que pode haver bilhões de dólares em Bitcoin e outras criptomoedas dormantes cujo status de propriedade é ambíguo ou contestado. Ressurgimento de Bitcoin antigo tipicamente está ligado a eventos legais ou descoberta de credenciais de carteira antigas. Caso estabelecerá precedente sobre como cortes tratam propriedade de cripto histórica. Questões mais amplas sobre Bitcoin 'perdido' ou 'esquecido' permanecem fundamentalmente não resolvidas na lei americana.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/dormant-bitcoin-new-york-lawsuit-moved-15-years?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
