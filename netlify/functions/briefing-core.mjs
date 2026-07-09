@@ -154,7 +154,9 @@ function normalizeTopic(t) {
 
 export async function fetchArticles() {
   const parser = new Parser({ timeout: 10000 });
-  const cutoff = new Date(Date.now() - 6 * 60 * 60 * 1000);
+  // Roda 1x/dia (21h BRT) — janela cobre as últimas 24h a partir do horário
+  // de execução, recalculada a cada rodada (nunca é fixa, sempre "hoje até agora").
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   const tasks = [];
   for (const [topic, urls] of Object.entries(FEEDS)) {
@@ -191,8 +193,19 @@ export async function fetchArticles() {
     }
   }
 
-  console.log(`Total coletado: ${articles.length} artigos`);
-  return articles;
+  // Remove notícias repetidas entre fontes diferentes (mesmo título) antes
+  // de montar o lote enviado ao Claude, mantendo a primeira ocorrência.
+  const seenTitles = new Set();
+  const deduped = [];
+  for (const a of articles) {
+    const key = a.title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+    if (seenTitles.has(key)) continue;
+    seenTitles.add(key);
+    deduped.push(a);
+  }
+
+  console.log(`Total coletado: ${articles.length} artigos (${deduped.length} após remover duplicatas)`);
+  return deduped;
 }
 
 // ─── CLAUDE SELECT + SUMMARIZE ─────────────────────────────────────────────
