@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">11 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">A escalada militar no Oriente Médio entre EUA e Irã domina as agendas geopolítica e econômica, afetando desde os mercados de petróleo até a confiança nos ativos de risco, enquanto o setor de tecnologia enfrenta tensões internas com disputas judiciais entre gigantes como Apple e OpenAI sobre talentos de IA, e o mercado cripto responde com volatilidade diante das incertezas macroeconômicas e exploits de segurança em protocolos.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-07-10/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11" selected>2026-07-11</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EUA realizan ataques contra o Irã após disparos em navio no Estreito de Ormuz Os EUA iniciaram uma nova rodada de ataques contra o Irã após um ataque iraniano contra um navio porta-contêineres no Estreito de Ormuz, uma das rotas comerciais mais críticas do mundo. O incidente ocorreu horas após uma reunião entre os ministros das Relações Exteriores do Irã e Omã, que discutiam a reabertura do estreito para o tráfego comercial. Segundo o Centcom (Comando Central dos EUA), os bombardeios começaram às 19h15 (horário da costa leste americana), marcando uma escalada significativa nas tensões entre Washington e Teerã. O ataque iraniano ao navio portador de contêineres foi interpretado como um desafio direto aos esforços diplomáticos, elevando o risco geopolítico global. A ação dos EUA representa uma resposta militar direta que pode levar a uma espiral de escalação regional, potencialmente afetando o fornecimento de energia global e o comércio internacional. Os mercados reagiram com preocupação, e analistas alertam para possíveis implicações econômicas duradouras caso as hostilidades continuem a intensificar-se. New York Times / InfoMoney" data-title="EUA realizan ataques contra o Irã após disparos em navio no Estreito de Ormuz" data-share-url="https://www.nytimes.com/2026/07/11/world/middleeast/iran-araghchi-oman-iran-strait-of-hormuz.html">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">22:08</span>
+          <span class="news-source">New York Times / InfoMoney</span>
+        </div>
+        <div class="news-title">EUA realizan ataques contra o Irã após disparos em navio no Estreito de Ormuz</div>
+        <div class="news-summary">Os EUA iniciaram uma nova rodada de ataques contra o Irã após um ataque iraniano contra um navio porta-contêineres no Estreito de Ormuz, uma das rotas comerciais mais críticas do mundo. O incidente ocorreu horas após uma reunião entre os ministros das Relações Exteriores do Irã e Omã, que discutiam a reabertura do estreito para o tráfego comercial. Segundo o Centcom (Comando Central dos EUA), os bombardeios começaram às 19h15 (horário da costa leste americana), marcando uma escalada significativa nas tensões entre Washington e Teerã. O ataque iraniano ao navio portador de contêineres foi interpretado como um desafio direto aos esforços diplomáticos, elevando o risco geopolítico global. A ação dos EUA representa uma resposta militar direta que pode levar a uma espiral de escalação regional, potencialmente afetando o fornecimento de energia global e o comércio internacional. Os mercados reagiram com preocupação, e analistas alertam para possíveis implicações econômicas duradouras caso as hostilidades continuem a intensificar-se.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/11/world/middleeast/iran-araghchi-oman-iran-strait-of-hormuz.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Presidente da Fed Kevin Warsh apresentará sua primeira audiência no Congresso com novos dados de inflação dos EUA Kevin Warsh, novo presidente do Federal Reserve, fará sua primeira aparição ante o Congresso para prestar depoimento sobre a situação econômica americana, justamente quando novos dados de inflação americana estarão disponíveis. A audiência de dois dias será crucial para estabelecer o tom e as prioridades da Fed sob sua liderança, especialmente quanto à posição sobre taxas de juros em julho. Os mercados observam atentamente as sinalizações de Warsh sobre a trajetória de política monetária, inflação e crescimento econômico. Sua abordagem e as informações econômicas que apresentará influenciarão significativamente as expectativas do mercado sobre futuras decisões de taxas de juros. A audiência ocorre em um momento de incerteza geopolítica crescente due aos conflitos no Oriente Médio, que já estão afetando os preços de commodities e a inflação global. O desempenho de Warsh e suas respostas às questões do Congresso definirão a credibilidade de sua liderança e o direcionamento da política econômica americana nos próximos meses. Bloomberg Economics" data-title="Presidente da Fed Kevin Warsh apresentará sua primeira audiência no Congresso com novos dados de inflação dos EUA" data-share-url="https://www.bloomberg.com/news/articles/2026-07-11/warsh-and-us-inflation-will-set-tone-for-july-fed-decision">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">17:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Presidente da Fed Kevin Warsh apresentará sua primeira audiência no Congresso com novos dados de inflação dos EUA</div>
+        <div class="news-summary">Kevin Warsh, novo presidente do Federal Reserve, fará sua primeira aparição ante o Congresso para prestar depoimento sobre a situação econômica americana, justamente quando novos dados de inflação americana estarão disponíveis. A audiência de dois dias será crucial para estabelecer o tom e as prioridades da Fed sob sua liderança, especialmente quanto à posição sobre taxas de juros em julho. Os mercados observam atentamente as sinalizações de Warsh sobre a trajetória de política monetária, inflação e crescimento econômico. Sua abordagem e as informações econômicas que apresentará influenciarão significativamente as expectativas do mercado sobre futuras decisões de taxas de juros. A audiência ocorre em um momento de incerteza geopolítica crescente due aos conflitos no Oriente Médio, que já estão afetando os preços de commodities e a inflação global. O desempenho de Warsh e suas respostas às questões do Congresso definirão a credibilidade de sua liderança e o direcionamento da política econômica americana nos próximos meses.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-11/warsh-and-us-inflation-will-set-tone-for-july-fed-decision" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Bancos estabelecem recorde histórico em posição vendida de títulos, levantando questões sobre mercado de dívida Pela primeira vez em histórico recente, os dealers primários (bancos) que negociam com o Fed assumiram uma posição net short (vendida) em títulos da dívida americana, reversendo uma tendência de longa data de manter bilhões em posições compradas. Esse movimento é altamente significativo, pois esses dealers tradicionalmente mantêm estoques substanciais de obrigações para facilitar a liquidez do mercado de renda fixa. A mudança levanta questões sobre a saúde subjacente do mercado de títulos, a confiança dos dealers na direção dos preços e possíveis pressões de funding que podem estar afetando as estratégias de risco. Analistas tentam entender se essa posição vendida reflete uma visão do mercado sobre inflação futura, decisões da Fed ou preocupações mais amplas sobre a sustentabilidade da dívida federal americana. O movimento pode ter implicações significativas para a liquidez e volatilidade do mercado de renda fixa se for mantido por um período prolongado. A situação está sendo monitorada de perto pelos reguladores e participantes do mercado, pois pode sinalizar mudanças nas dinâmicas fundamentais do mercado de títulos americano. Bloomberg Economics" data-title="Bancos estabelecem recorde histórico em posição vendida de títulos, levantando questões sobre mercado de dívida" data-share-url="https://www.bloomberg.com/news/articles/2026-07-11/banks-record-bond-short-sparks-quest-for-answers-credit-weekly">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">16:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Bancos estabelecem recorde histórico em posição vendida de títulos, levantando questões sobre mercado de dívida</div>
+        <div class="news-summary">Pela primeira vez em histórico recente, os dealers primários (bancos) que negociam com o Fed assumiram uma posição net short (vendida) em títulos da dívida americana, reversendo uma tendência de longa data de manter bilhões em posições compradas. Esse movimento é altamente significativo, pois esses dealers tradicionalmente mantêm estoques substanciais de obrigações para facilitar a liquidez do mercado de renda fixa. A mudança levanta questões sobre a saúde subjacente do mercado de títulos, a confiança dos dealers na direção dos preços e possíveis pressões de funding que podem estar afetando as estratégias de risco. Analistas tentam entender se essa posição vendida reflete uma visão do mercado sobre inflação futura, decisões da Fed ou preocupações mais amplas sobre a sustentabilidade da dívida federal americana. O movimento pode ter implicações significativas para a liquidez e volatilidade do mercado de renda fixa se for mantido por um período prolongado. A situação está sendo monitorada de perto pelos reguladores e participantes do mercado, pois pode sinalizar mudanças nas dinâmicas fundamentais do mercado de títulos americano.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-11/banks-record-bond-short-sparks-quest-for-answers-credit-weekly" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Boom de contratações para Copa do Mundo nos EUA ainda não se materializou Ao contrário das expectativas iniciais, a Copa do Mundo FIFA sendo sediada nos EUA ainda não gerou o boom de contratações que economistas e analistas previam. Tradicionalmente, eventos esportivos globais de grande magnitude estimulam contratações temporárias e permanentes em setores como hospitalidade, varejo e construção. Porém, dados recentes sugerem que o mercado de trabalho não experimentou o impulso esperado, possivelmente devido a fatores como incerteza econômica macro, inflação e cautela empresarial. A ausência do boom de empregos representa uma decepção para cidades anfitriãs como Kansas City, que investiram em infraestrutura esperando retornos econômicos substanciais. Analistas apontam para questões estruturais no mercado de trabalho americano, incluindo dificuldades de recrutamento e retenção de talentos, além de preocupações sobre demanda futura. O fenômeno sugere que fatores macroeconômicos mais amplos podem estar sobrepujando os efeitos positivos de eventos globais isolados. A situação levanta questões sobre o retorno econômico real de sediar grandes eventos esportivos e como as comunidades podem melhor capitalizar essas oportunidades. Bloomberg Economics" data-title="Boom de contratações para Copa do Mundo nos EUA ainda não se materializou" data-share-url="https://www.bloomberg.com/news/articles/2026-07-11/help-not-wanted-world-cup-hiring-boost-has-yet-to-materialize">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Boom de contratações para Copa do Mundo nos EUA ainda não se materializou</div>
+        <div class="news-summary">Ao contrário das expectativas iniciais, a Copa do Mundo FIFA sendo sediada nos EUA ainda não gerou o boom de contratações que economistas e analistas previam. Tradicionalmente, eventos esportivos globais de grande magnitude estimulam contratações temporárias e permanentes em setores como hospitalidade, varejo e construção. Porém, dados recentes sugerem que o mercado de trabalho não experimentou o impulso esperado, possivelmente devido a fatores como incerteza econômica macro, inflação e cautela empresarial. A ausência do boom de empregos representa uma decepção para cidades anfitriãs como Kansas City, que investiram em infraestrutura esperando retornos econômicos substanciais. Analistas apontam para questões estruturais no mercado de trabalho americano, incluindo dificuldades de recrutamento e retenção de talentos, além de preocupações sobre demanda futura. O fenômeno sugere que fatores macroeconômicos mais amplos podem estar sobrepujando os efeitos positivos de eventos globais isolados. A situação levanta questões sobre o retorno econômico real de sediar grandes eventos esportivos e como as comunidades podem melhor capitalizar essas oportunidades.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-11/help-not-wanted-world-cup-hiring-boost-has-yet-to-materialize" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Israel atacou instalação siderúrgica iraniana em possível alvo militar controverso Israel realizou um ataque contra uma instalação siderúrgica iraniana durante o conflito, alegando que a fábrica fornecia receita e meios para a produção de armas para as forças militares iranianas. Porém, a ação levantou questões significativas sobre a classificação do alvo como militar versus civil, uma vez que a instalação também emprega civis e é importante para a economia local. Especialistas em direito internacional debatem a legitimidade do ataque sob a ótica das convenções de guerra, particularmente quanto ao impacto colateral sobre infraestruturas civis essenciais. O ataque reflete a estratégia mais ampla de Israel de degradar a capacidade econômica e militar do Irã simultaneamente, visando reduzir sua capacidade de financiar atividades militares. A decisão de alvejar infraestruturas econômicas gera preocupações humanitárias e pode ter implicações para precedentes no direito de conflito armado contemporâneo. O incidente destaca as complexidades éticas e legais enfrentadas em conflitos modernos onde as linhas entre alvos militares e civis frequentemente se borram. New York Times" data-title="Israel atacou instalação siderúrgica iraniana em possível alvo militar controverso" data-share-url="https://www.nytimes.com/2026/07/11/world/middleeast/iran-steel-plant-civilian-military.html">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">10:26</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Israel atacou instalação siderúrgica iraniana em possível alvo militar controverso</div>
+        <div class="news-summary">Israel realizou um ataque contra uma instalação siderúrgica iraniana durante o conflito, alegando que a fábrica fornecia receita e meios para a produção de armas para as forças militares iranianas. Porém, a ação levantou questões significativas sobre a classificação do alvo como militar versus civil, uma vez que a instalação também emprega civis e é importante para a economia local. Especialistas em direito internacional debatem a legitimidade do ataque sob a ótica das convenções de guerra, particularmente quanto ao impacto colateral sobre infraestruturas civis essenciais. O ataque reflete a estratégia mais ampla de Israel de degradar a capacidade econômica e militar do Irã simultaneamente, visando reduzir sua capacidade de financiar atividades militares. A decisão de alvejar infraestruturas econômicas gera preocupações humanitárias e pode ter implicações para precedentes no direito de conflito armado contemporâneo. O incidente destaca as complexidades éticas e legais enfrentadas em conflitos modernos onde as linhas entre alvos militares e civis frequentemente se borram.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/11/world/middleeast/iran-steel-plant-civilian-military.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Fábrica secreta que fornece drones de guerra para Ucrânia ilustra mudança profunda nos gastos militares Uma startup alemã chamada Helsing SE opera uma fábrica secreta que produz drones de guerra movidos por IA para a Ucrânia, ilustrando uma mudança profunda em como as nações modernas conduzem operações militares e alocam recursos de defesa. A empresa produz máquinas de guerra baratas e em massa, usando tecnologia de inteligência artificial para capacidades autônomas, redefinindo a relação custo-benefício da guerra moderna. O modelo de negócio da Helsing destaca como empresas de tecnologia estão se tornando cruciais para os esforços bélicos nacionais, com implicações significativas para orçamentos de defesa e estratégia militar global. A produção em massa de drones com IA representa uma democratização parcial das capacidades militares avançadas, permitindo que nações menores e com orçamentos limitados obtenham capacidades que antes eram exclusivas de superpotências. A Helsing e empresas similares estão transformando a natureza da guerra, substituindo armamentos caros e plataformas legadas por sistemas mais ágeis, baratos e alimentados por dados. Essa tendência tem implicações profundas para gastos militares globais, industria de defesa tradicional e futuro dos conflitos armados. New York Times" data-title="Fábrica secreta que fornece drones de guerra para Ucrânia ilustra mudança profunda nos gastos militares" data-share-url="https://www.nytimes.com/2026/07/11/business/dealbook/drone-factory-helsing.html">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Fábrica secreta que fornece drones de guerra para Ucrânia ilustra mudança profunda nos gastos militares</div>
+        <div class="news-summary">Uma startup alemã chamada Helsing SE opera uma fábrica secreta que produz drones de guerra movidos por IA para a Ucrânia, ilustrando uma mudança profunda em como as nações modernas conduzem operações militares e alocam recursos de defesa. A empresa produz máquinas de guerra baratas e em massa, usando tecnologia de inteligência artificial para capacidades autônomas, redefinindo a relação custo-benefício da guerra moderna. O modelo de negócio da Helsing destaca como empresas de tecnologia estão se tornando cruciais para os esforços bélicos nacionais, com implicações significativas para orçamentos de defesa e estratégia militar global. A produção em massa de drones com IA representa uma democratização parcial das capacidades militares avançadas, permitindo que nações menores e com orçamentos limitados obtenham capacidades que antes eram exclusivas de superpotências. A Helsing e empresas similares estão transformando a natureza da guerra, substituindo armamentos caros e plataformas legadas por sistemas mais ágeis, baratos e alimentados por dados. Essa tendência tem implicações profundas para gastos militares globais, industria de defesa tradicional e futuro dos conflitos armados.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/11/business/dealbook/drone-factory-helsing.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Nova lei americana de habitação marca o maior esforço em décadas para aumentar a oferta de casas Uma nova lei foi sancionada em 11 de julho marcando o esforço mais significativo em décadas para aumentar a oferta de habitações nos EUA e potencialmente reduzir os preços das casas. A legislação oferece incentivos a governos locais e construtoras para realizarem mudanças incrementais que facilitem a construção de novas unidades habitacionais. Embora não seja uma medida tão abrangente quanto programas históricos como a Great Society, a lei busca enfrentar a crise de habitação que tem afetado gerações de americanos. A lei não foi assinada pessoalmente pelo presidente Trump, mas se tornou lei mesmo assim, refletindo amplo apoio legislativo ao tema. A iniciativa aborda questões críticas como regulamentações de zoneamento restritivas e burocracias que limitam a construção de novas unidades. Especialistas em economia urbana e habitação veem a lei como um passo importante, mas reconhecem que desafios estruturais maiores ainda precisam ser superados. O impacto econômico será observado nos próximos anos, com potencial para afetar preços imobiliários, aluguel e o custo de vida em regiões urbanas. New York Times / Bloomberg Economics" data-title="Nova lei americana de habitação marca o maior esforço em décadas para aumentar a oferta de casas" data-share-url="https://www.nytimes.com/2026/07/11/business/economy/housing-bill-affordability.html">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">New York Times / Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Nova lei americana de habitação marca o maior esforço em décadas para aumentar a oferta de casas</div>
+        <div class="news-summary">Uma nova lei foi sancionada em 11 de julho marcando o esforço mais significativo em décadas para aumentar a oferta de habitações nos EUA e potencialmente reduzir os preços das casas. A legislação oferece incentivos a governos locais e construtoras para realizarem mudanças incrementais que facilitem a construção de novas unidades habitacionais. Embora não seja uma medida tão abrangente quanto programas históricos como a Great Society, a lei busca enfrentar a crise de habitação que tem afetado gerações de americanos. A lei não foi assinada pessoalmente pelo presidente Trump, mas se tornou lei mesmo assim, refletindo amplo apoio legislativo ao tema. A iniciativa aborda questões críticas como regulamentações de zoneamento restritivas e burocracias que limitam a construção de novas unidades. Especialistas em economia urbana e habitação veem a lei como um passo importante, mas reconhecem que desafios estruturais maiores ainda precisam ser superados. O impacto econômico será observado nos próximos anos, com potencial para afetar preços imobiliários, aluguel e o custo de vida em regiões urbanas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/11/business/economy/housing-bill-affordability.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Perspectiva da economia global fica mais incerta conforme tensões EUA-Irã aumentam A perspectiva para a economia global cresceu significativamente mais incerta esta semana à medida que tensões militares entre EUA e Irã escalam no Oriente Médio. Conflitos geopolíticos dessa magnitude afetam diretamente os preços de petróleo, que impactam custos de energia em toda a economia global, inflação e expectativas de crescimento econômico. A incerteza criada por possibilidades de escalação adicional leva a que empresas e investidores adotem posturas mais cautelosas, adiando decisões de investimento e contratação. Os mercados de commodities, especialmente petróleo e gás, experimentaram volatilidade significativa, com implicações para inflação em economias desenvolvidas e em desenvolvimento. Economistas estão revisando para baixo suas projeções de crescimento global, citando riscos de perturbação do comércio, aumento de custos de energia e possível demanda reduzida. A situação é complicada pelo fato de muitas economias já enfrentarem desafios de inflação persistente, e choques de oferta de petróleo poderiam piorar significativamente a situação. A comunidade econômica internacional está observando atentamente desenvolvimentos diplomáticos esperando uma desescalada antes de implicações econômicas mais graves se materializarem. Bloomberg Economics" data-title="Perspectiva da economia global fica mais incerta conforme tensões EUA-Irã aumentam" data-share-url="https://www.bloomberg.com/news/articles/2026-07-11/charting-the-global-economy-iran-war-continues-to-cloud-outlook">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Perspectiva da economia global fica mais incerta conforme tensões EUA-Irã aumentam</div>
+        <div class="news-summary">A perspectiva para a economia global cresceu significativamente mais incerta esta semana à medida que tensões militares entre EUA e Irã escalam no Oriente Médio. Conflitos geopolíticos dessa magnitude afetam diretamente os preços de petróleo, que impactam custos de energia em toda a economia global, inflação e expectativas de crescimento econômico. A incerteza criada por possibilidades de escalação adicional leva a que empresas e investidores adotem posturas mais cautelosas, adiando decisões de investimento e contratação. Os mercados de commodities, especialmente petróleo e gás, experimentaram volatilidade significativa, com implicações para inflação em economias desenvolvidas e em desenvolvimento. Economistas estão revisando para baixo suas projeções de crescimento global, citando riscos de perturbação do comércio, aumento de custos de energia e possível demanda reduzida. A situação é complicada pelo fato de muitas economias já enfrentarem desafios de inflação persistente, e choques de oferta de petróleo poderiam piorar significativamente a situação. A comunidade econômica internacional está observando atentamente desenvolvimentos diplomáticos esperando uma desescalada antes de implicações econômicas mais graves se materializarem.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-11/charting-the-global-economy-iran-war-continues-to-cloud-outlook" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Processo de síntese Nopia viral finalmente próximo de conclusão após anos de brincadeira O sintetizador Nopia viral, que causou sensação no canto de gear musical da internet em 2023 com sua primeira demonstração, está agora basicamente concluído após anos de desenvolvimento contínuo. O sintetizador de cor verde menta capturou a imaginação de músicos e entusiastas de gear, gerando antecipação considerável pela disponibilidade comercial real. A história de desenvolvimento prolongado do Nopia reflete desafios reais que fabricantes de instrumentos musicais enfrentam ao levar produtos inovadores de conceito para mercado em escala. O sintetizador representa uma combinação de design estético notável com funcionalidade musical, atraindo atenção tanto de músicos profissionais quanto amadores e colecionadores de instrumentos. A conclusão iminente do Nopia levanta questões sobre preço, data de lançamento e disponibilidade, informações que geradores de buzz especulam ativamente. A história do Nopia ilustra como memes de internet e viral moments podem traduzir em demanda real de produtos físicos quando os produtos entregam qualidade e funcionalidade. O lançamento do Nopia será um teste de quão bem a hype viral inicial traduz em adoção comercial real para instrumentos musicais especializados. The Verge" data-title="Processo de síntese Nopia viral finalmente próximo de conclusão após anos de brincadeira" data-share-url="https://www.theverge.com/gadgets/964499/nopia-viral-synth-finished-price-release-demo">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">17:57</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Processo de síntese Nopia viral finalmente próximo de conclusão após anos de brincadeira</div>
+        <div class="news-summary">O sintetizador Nopia viral, que causou sensação no canto de gear musical da internet em 2023 com sua primeira demonstração, está agora basicamente concluído após anos de desenvolvimento contínuo. O sintetizador de cor verde menta capturou a imaginação de músicos e entusiastas de gear, gerando antecipação considerável pela disponibilidade comercial real. A história de desenvolvimento prolongado do Nopia reflete desafios reais que fabricantes de instrumentos musicais enfrentam ao levar produtos inovadores de conceito para mercado em escala. O sintetizador representa uma combinação de design estético notável com funcionalidade musical, atraindo atenção tanto de músicos profissionais quanto amadores e colecionadores de instrumentos. A conclusão iminente do Nopia levanta questões sobre preço, data de lançamento e disponibilidade, informações que geradores de buzz especulam ativamente. A história do Nopia ilustra como memes de internet e viral moments podem traduzir em demanda real de produtos físicos quando os produtos entregam qualidade e funcionalidade. O lançamento do Nopia será um teste de quão bem a hype viral inicial traduz em adoção comercial real para instrumentos musicais especializados.</div>
+        <div class="news-link"><a href="https://www.theverge.com/gadgets/964499/nopia-viral-synth-finished-price-release-demo" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Apple processa OpenAI por roubo de segredos comerciais Apple apresentou uma ação judicial contra a OpenAI, acusando a empresa de roubarem segredos comerciais da empresa Maçã. Segundo a Apple, as duas companhias haviam celebrado um acordo em 2024 para oferecer serviços de IA nos dispositivos Apple, mas essa parceria azedou com o tempo. A ação reflete tensões crescentes entre as duas gigantes de tecnologia sobre propriedade intelectual, talentos e direcionamento estratégico de produtos de IA. Especificamente, a Apple alega que engenheiros-chave que trabalhavam em projetos proprietários deixaram a empresa para trabalhar na divisão nascente de hardware da OpenAI, supostamente levando conhecimentos e informações confidenciais. O caso é significativo porque ilustra como a competição por talentos e recursos no espaço de IA tem se tornada agressiva e, ocasionalmente, legal. A disputa entre Apple e OpenAI também reflete preocupações maiores da indústria sobre espionagem corporativa e proteção de propriedade intelectual em um setor que se move rapidamente. O resultado dessa ação pode estabelecer precedentes importantes sobre responsabilidades de engenheiros que mudam de emprego e proteções que empresas devem implementar para salvaguardar segredos comerciais. New York Times / Bloomberg Technology" data-title="Apple processa OpenAI por roubo de segredos comerciais" data-share-url="https://www.nytimes.com/2026/07/10/technology/apple-openai-lawsuit.html">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">15:00</span>
+          <span class="news-source">New York Times / Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Apple processa OpenAI por roubo de segredos comerciais</div>
+        <div class="news-summary">Apple apresentou uma ação judicial contra a OpenAI, acusando a empresa de roubarem segredos comerciais da empresa Maçã. Segundo a Apple, as duas companhias haviam celebrado um acordo em 2024 para oferecer serviços de IA nos dispositivos Apple, mas essa parceria azedou com o tempo. A ação reflete tensões crescentes entre as duas gigantes de tecnologia sobre propriedade intelectual, talentos e direcionamento estratégico de produtos de IA. Especificamente, a Apple alega que engenheiros-chave que trabalhavam em projetos proprietários deixaram a empresa para trabalhar na divisão nascente de hardware da OpenAI, supostamente levando conhecimentos e informações confidenciais. O caso é significativo porque ilustra como a competição por talentos e recursos no espaço de IA tem se tornada agressiva e, ocasionalmente, legal. A disputa entre Apple e OpenAI também reflete preocupações maiores da indústria sobre espionagem corporativa e proteção de propriedade intelectual em um setor que se move rapidamente. O resultado dessa ação pode estabelecer precedentes importantes sobre responsabilidades de engenheiros que mudam de emprego e proteções que empresas devem implementar para salvaguardar segredos comerciais.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/10/technology/apple-openai-lawsuit.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Estúdio FL Studio busca feedback no Reddit enquanto moderniza plataforma de produção musical Constantin Koehncke, CEO da Image Line (desenvolvedora do FL Studio), está usando Reddit para solicitar feedback e envolver a comunidade de usuários enquanto a empresa moderniza sua popular plataforma de produção musical. Essa abordagem direta de engajamento comunitário representa uma mudança em como desenvolvedoras de software de áudio buscam input de usuários para guiar desenvolvimento de produtos. O FL Studio é uma plataforma icônica que moldou a música eletrônica e hip-hop, com uma base de usuários extremamente leal que inclui produtores profissionais e amadores. A decisão de Koehncke de ir ao Reddit demonstra reconhecimento da importância de comunidades de usuários em desenvolvimento de software criativo e a preferência de usuários por canais de comunicação diretos e transparentes. A estratégia de modernização provavelmente envolve atualizar a interface para padrões contemporâneos enquanto mantém a familiaridade que usuários veteranos valorizam. A abordagem colaborativa de Koehncke contrasta com algumas desenvolvedoras de software que implementam mudanças sem consulta extensiva de usuários, frequentemente resultando em reações negativas. O engajamento no Reddit oferece à Image Line perspectivas valiosas sobre quais recursos e mudanças seus usuários realmente querem, potencialmente levando a um produto mais bem alinhado com necessidades do mercado. The Verge" data-title="Estúdio FL Studio busca feedback no Reddit enquanto moderniza plataforma de produção musical" data-share-url="https://www.theverge.com/entertainment/963509/image-line-ceo-constantin-koehncke-fl-studio-interview">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">12:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Estúdio FL Studio busca feedback no Reddit enquanto moderniza plataforma de produção musical</div>
+        <div class="news-summary">Constantin Koehncke, CEO da Image Line (desenvolvedora do FL Studio), está usando Reddit para solicitar feedback e envolver a comunidade de usuários enquanto a empresa moderniza sua popular plataforma de produção musical. Essa abordagem direta de engajamento comunitário representa uma mudança em como desenvolvedoras de software de áudio buscam input de usuários para guiar desenvolvimento de produtos. O FL Studio é uma plataforma icônica que moldou a música eletrônica e hip-hop, com uma base de usuários extremamente leal que inclui produtores profissionais e amadores. A decisão de Koehncke de ir ao Reddit demonstra reconhecimento da importância de comunidades de usuários em desenvolvimento de software criativo e a preferência de usuários por canais de comunicação diretos e transparentes. A estratégia de modernização provavelmente envolve atualizar a interface para padrões contemporâneos enquanto mantém a familiaridade que usuários veteranos valorizam. A abordagem colaborativa de Koehncke contrasta com algumas desenvolvedoras de software que implementam mudanças sem consulta extensiva de usuários, frequentemente resultando em reações negativas. O engajamento no Reddit oferece à Image Line perspectivas valiosas sobre quais recursos e mudanças seus usuários realmente querem, potencialmente levando a um produto mais bem alinhado com necessidades do mercado.</div>
+        <div class="news-link"><a href="https://www.theverge.com/entertainment/963509/image-line-ceo-constantin-koehncke-fl-studio-interview" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Casa Branca designa astrophysicist que alerta sobre alienígenas para chefiar grupo de UAPs A Casa Branca nomeou o astrophysicist de Harvard Avi Loeb para chefiar o Conselho Consultivo de Ciência sobre UAPs (Unidentified Anomalous Phenomena) estabelecido pela Casa Branca, Pentágono e Gabinete do Diretor de Inteligência Nacional. Loeb é controverso na comunidade científica, conhecido por seus escritos e defensia pública da possibilidade de vida extraterrestre e por ter argumentado que alguns fenômenos poderia ser tecnologia alienígena. A designação de Loeb para esse papel de responsabilidade é surpreendente para muitos na comunidade científica que o veem como tendo uma abordagem pouco convencional para evidência científica. Porém, a nomeação também reflete uma mudança maior no governo americano em tomar fenômenos de UAPs e suas investigações com mais seriedade, afastando-se de décadas de desprezo institucional. O histórico de Loeb em defender teses não-mainstream sobre UFOs não o descredencia necessariamente para investigar fenômenos reais que agências governamentais reconhecem que não entendem completamente. A designação levanta questões sobre como aproximar rigor científico com abertura a possibilidades não convencionais na investigação de fenômenos genuinamente misteriosos. A nomeação será de interesse para comunidades de ufologia e aqueles preocupados com a verdade por trás de relatos de UAPs. The Verge" data-title="Casa Branca designa astrophysicist que alerta sobre alienígenas para chefiar grupo de UAPs" data-share-url="https://www.theverge.com/science/964478/white-house-avi-loeb-aliens-ufo-uap-council">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">11:18</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Casa Branca designa astrophysicist que alerta sobre alienígenas para chefiar grupo de UAPs</div>
+        <div class="news-summary">A Casa Branca nomeou o astrophysicist de Harvard Avi Loeb para chefiar o Conselho Consultivo de Ciência sobre UAPs (Unidentified Anomalous Phenomena) estabelecido pela Casa Branca, Pentágono e Gabinete do Diretor de Inteligência Nacional. Loeb é controverso na comunidade científica, conhecido por seus escritos e defensia pública da possibilidade de vida extraterrestre e por ter argumentado que alguns fenômenos poderia ser tecnologia alienígena. A designação de Loeb para esse papel de responsabilidade é surpreendente para muitos na comunidade científica que o veem como tendo uma abordagem pouco convencional para evidência científica. Porém, a nomeação também reflete uma mudança maior no governo americano em tomar fenômenos de UAPs e suas investigações com mais seriedade, afastando-se de décadas de desprezo institucional. O histórico de Loeb em defender teses não-mainstream sobre UFOs não o descredencia necessariamente para investigar fenômenos reais que agências governamentais reconhecem que não entendem completamente. A designação levanta questões sobre como aproximar rigor científico com abertura a possibilidades não convencionais na investigação de fenômenos genuinamente misteriosos. A nomeação será de interesse para comunidades de ufologia e aqueles preocupados com a verdade por trás de relatos de UAPs.</div>
+        <div class="news-link"><a href="https://www.theverge.com/science/964478/white-house-avi-loeb-aliens-ufo-uap-council" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI aposta em famílias à medida que ChatGPT se aprofunda nos lares americanos A OpenAI está expandindo estrategicamente sua presença no mercado de consumidor familiar, contratando um gerente de produto dedicado para desenvolver experiências específicas para famílias, cuidadores e adultos mais velhos. Essa iniciativa representa uma mudança deliberada na estratégia da empresa de expandir além de usuários profissionais e desenvolvedores para penetrar o mercado de consumo familiar mais amplo. A OpenAI reconhece que ChatGPT e suas capacidades de IA têm potencial para beneficiar uma ampla gama demográfica, desde crianças aprendendo até idosos buscando suporte e companheirismo digital. A decisão reflete uma oportunidade de mercado significativa, pois a adoção de IA em lares pode gerar novos modelos de receita através de subscriptions familiares e produtos integrados. A iniciativa também posiciona a OpenAI em competição direta com outros gigantes de tecnologia que estão tentando integrar IA em experiências familiares, incluindo Apple, Google e Meta. A abordagem de design centrado em famílias requer considerações especiais sobre segurança, apropriação de idade e consentido parental, tornando esse segmento mais complexo de atender. O sucesso nesse mercado pode transformar ChatGPT de uma ferramenta profissional em um assistente ubíquo em lares americanos, com implicações profundas para como as famílias interagem com tecnologia. TechCrunch" data-title="OpenAI aposta em famílias à medida que ChatGPT se aprofunda nos lares americanos" data-share-url="https://techcrunch.com/2026/07/11/openai-bets-on-families-as-chatgpt-goes-deeper-into-households/">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">11:13</span>
+          <span class="news-source">TechCrunch</span>
+        </div>
+        <div class="news-title">OpenAI aposta em famílias à medida que ChatGPT se aprofunda nos lares americanos</div>
+        <div class="news-summary">A OpenAI está expandindo estrategicamente sua presença no mercado de consumidor familiar, contratando um gerente de produto dedicado para desenvolver experiências específicas para famílias, cuidadores e adultos mais velhos. Essa iniciativa representa uma mudança deliberada na estratégia da empresa de expandir além de usuários profissionais e desenvolvedores para penetrar o mercado de consumo familiar mais amplo. A OpenAI reconhece que ChatGPT e suas capacidades de IA têm potencial para beneficiar uma ampla gama demográfica, desde crianças aprendendo até idosos buscando suporte e companheirismo digital. A decisão reflete uma oportunidade de mercado significativa, pois a adoção de IA em lares pode gerar novos modelos de receita através de subscriptions familiares e produtos integrados. A iniciativa também posiciona a OpenAI em competição direta com outros gigantes de tecnologia que estão tentando integrar IA em experiências familiares, incluindo Apple, Google e Meta. A abordagem de design centrado em famílias requer considerações especiais sobre segurança, apropriação de idade e consentido parental, tornando esse segmento mais complexo de atender. O sucesso nesse mercado pode transformar ChatGPT de uma ferramenta profissional em um assistente ubíquo em lares americanos, com implicações profundas para como as famílias interagem com tecnologia.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/07/11/openai-bets-on-families-as-chatgpt-goes-deeper-into-households/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Engenheiro da OpenAI deixa Apple após incidente revelador documentado em processo Documentos de processo revelam que um engenheiro de iPhone da Apple, Chang Liu, deixou a empresa para ingressar na divisão nascente de hardware da OpenAI. O caso ganhou atenção particular devido a um incidente descrito como um momento 'LOL' (laughing out loud) que, segundo Apple, marcou o ponto de inflexão para Liu considerar deixar a empresa. Esse detalhe humano ilustra como decisões de engenheiros altamente qualificados sobre mudar de empregador podem ser influenciadas por fatores pequenos e culturais além apenas compensação monetária. A Apple contesta que Liu deixou a empresa levando consigo mais do que apenas anos de experiência, sugerindo que informações proprietárias ou conceitos foram transferidos. O caso é exemplificativo de uma guerra de talentos acirrada no setor de IA, onde engenheiros experientes em hardware e software são extremamente cobiçados por múltiplas empresas. A importância de reter talentos em tecnologia não pode ser subestimada, particularmente em áreas como IA onde expertise é concentrada em um grupo relativamente pequeno de profissionais. O incidente levanta questões sobre direitos de empregados, propriedade intelectual e como empresas devem estruturar ambientes de trabalho para reter talentos essenciais. Bloomberg Technology" data-title="Engenheiro da OpenAI deixa Apple após incidente revelador documentado em processo" data-share-url="https://www.bloomberg.com/news/articles/2026-07-11/openai-engineer-s-lol-moment-set-stage-for-legal-fight-with-apple">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">10:59</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Engenheiro da OpenAI deixa Apple após incidente revelador documentado em processo</div>
+        <div class="news-summary">Documentos de processo revelam que um engenheiro de iPhone da Apple, Chang Liu, deixou a empresa para ingressar na divisão nascente de hardware da OpenAI. O caso ganhou atenção particular devido a um incidente descrito como um momento 'LOL' (laughing out loud) que, segundo Apple, marcou o ponto de inflexão para Liu considerar deixar a empresa. Esse detalhe humano ilustra como decisões de engenheiros altamente qualificados sobre mudar de empregador podem ser influenciadas por fatores pequenos e culturais além apenas compensação monetária. A Apple contesta que Liu deixou a empresa levando consigo mais do que apenas anos de experiência, sugerindo que informações proprietárias ou conceitos foram transferidos. O caso é exemplificativo de uma guerra de talentos acirrada no setor de IA, onde engenheiros experientes em hardware e software são extremamente cobiçados por múltiplas empresas. A importância de reter talentos em tecnologia não pode ser subestimada, particularmente em áreas como IA onde expertise é concentrada em um grupo relativamente pequeno de profissionais. O incidente levanta questões sobre direitos de empregados, propriedade intelectual e como empresas devem estruturar ambientes de trabalho para reter talentos essenciais.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-11/openai-engineer-s-lol-moment-set-stage-for-legal-fight-with-apple" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta remove recurso de IA no Instagram após dias de reação negativa Meta removeu precipitadamente um recurso de IA chamado Muse Image do Instagram após apenas dias de lançamento, enfrentando reações negativas significativas de usuários e agências de Hollywood. O recurso generativo de imagens alimentado por IA enfrentou preocupações críticas sobre privacidade e copyright, com críticos argumentando que o modelo foi treinado em obras artísticas existentes sem compensação apropriada aos criadores originais. A rápida reversão da Meta demonstra a sensibilidade do público e da indústria criativa em relação ao treinamento de modelos de IA em dados proprietários. O incidente reflete tensões mais amplas sobre como empresas de tecnologia podem usar dados e criações de terceiros para treinar modelos de IA, uma questão que se tornou cada vez mais litigiosa. A decisão da Meta de remover o recurso sugere que a empresa reconheceu que os riscos legais e de reputação superavam os benefícios de prosseguir com a funcionalidade. O caso serve como um alerta para outras empresas de tecnologia desenvolvendo recursos de IA generativa sobre a importância de considerar questões de copyright, privacidade e consentimento desde o início. A situação também destaca o papel crescente de pressão pública e advocacy na formação de decisões corporativas sobre tecnologia. New York Times" data-title="Meta remove recurso de IA no Instagram após dias de reação negativa" data-share-url="https://www.nytimes.com/2026/07/10/technology/meta-muse-images-instagram-removal.html">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">09:34</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Meta remove recurso de IA no Instagram após dias de reação negativa</div>
+        <div class="news-summary">Meta removeu precipitadamente um recurso de IA chamado Muse Image do Instagram após apenas dias de lançamento, enfrentando reações negativas significativas de usuários e agências de Hollywood. O recurso generativo de imagens alimentado por IA enfrentou preocupações críticas sobre privacidade e copyright, com críticos argumentando que o modelo foi treinado em obras artísticas existentes sem compensação apropriada aos criadores originais. A rápida reversão da Meta demonstra a sensibilidade do público e da indústria criativa em relação ao treinamento de modelos de IA em dados proprietários. O incidente reflete tensões mais amplas sobre como empresas de tecnologia podem usar dados e criações de terceiros para treinar modelos de IA, uma questão que se tornou cada vez mais litigiosa. A decisão da Meta de remover o recurso sugere que a empresa reconheceu que os riscos legais e de reputação superavam os benefícios de prosseguir com a funcionalidade. O caso serve como um alerta para outras empresas de tecnologia desenvolvendo recursos de IA generativa sobre a importância de considerar questões de copyright, privacidade e consentimento desde o início. A situação também destaca o papel crescente de pressão pública e advocacy na formação de decisões corporativas sobre tecnologia.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/10/technology/meta-muse-images-instagram-removal.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Equipes de seleção de tarefas do Fed da presidência de Warsh trazem credibilidade e apoio O presidente do Federal Reserve Kevin Warsh selecionou consultores externos respeitados para liderar cinco novas força-tarefas criadas sob sua liderança, movimentos que trazem credibilidade a seus esforços de reforma e modernização da instituição. As nomeações escolhidas sugerem que Warsh está buscando experiência variada e perspectivas diversas para enfrentar desafios econômicos e tecnológicos contemporâneos. Cada membro selecionado traz expertise específico relevante aos desafios que o Fed enfrenta, incluindo inovação tecnológica, inflação, mercados financeiros e economia digital. A estratégia de Warsh de buscar consultores externos proeminentes sugere uma abordagem mais aberta e colaborativa em relação a como o Fed obtém expertise e forma políticas. As seleções foram bem recebidas pelos mercados, que viram as nomeações como indicadores positivos de que Warsh possui apoio da comunidade econômica mais ampla. A composição das força-tarefas pode sinalizar prioridades de Warsh, como aumentar foco em tecnologia, regulação e riscos emergentes no sistema financeiro. Os nomes específicos escolhidos elevaram expectativas de que a Fed sob Warsh será mais inovadora e responsiva a mudanças estruturais na economia americana. Bloomberg Economics" data-title="Equipes de seleção de tarefas do Fed da presidência de Warsh trazem credibilidade e apoio" data-share-url="https://www.bloomberg.com/news/articles/2026-07-11/fed-task-force-picks-bring-credibility-and-support-for-warsh">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">09:30</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Equipes de seleção de tarefas do Fed da presidência de Warsh trazem credibilidade e apoio</div>
+        <div class="news-summary">O presidente do Federal Reserve Kevin Warsh selecionou consultores externos respeitados para liderar cinco novas força-tarefas criadas sob sua liderança, movimentos que trazem credibilidade a seus esforços de reforma e modernização da instituição. As nomeações escolhidas sugerem que Warsh está buscando experiência variada e perspectivas diversas para enfrentar desafios econômicos e tecnológicos contemporâneos. Cada membro selecionado traz expertise específico relevante aos desafios que o Fed enfrenta, incluindo inovação tecnológica, inflação, mercados financeiros e economia digital. A estratégia de Warsh de buscar consultores externos proeminentes sugere uma abordagem mais aberta e colaborativa em relação a como o Fed obtém expertise e forma políticas. As seleções foram bem recebidas pelos mercados, que viram as nomeações como indicadores positivos de que Warsh possui apoio da comunidade econômica mais ampla. A composição das força-tarefas pode sinalizar prioridades de Warsh, como aumentar foco em tecnologia, regulação e riscos emergentes no sistema financeiro. Os nomes específicos escolhidos elevaram expectativas de que a Fed sob Warsh será mais inovadora e responsiva a mudanças estruturais na economia americana.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-11/fed-task-force-picks-bring-credibility-and-support-for-warsh" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="IA encontrou bug no Ethereum que poderia desconectar validadores, mas humanos precisaram provar A Ethereum Foundation coordenou agentes de IA para investigar o software que seus validadores executam e descobriu um bug remotamente acionável que poderia causar crash de validadores. Esse achado destaca como ferramentas de IA podem ser usadas para encontrar vulnerabilidades de segurança em sistemas críticos, mas também demonstra que especialistas humanos ainda são necessários para validar e reproduzir achados de IA. O bug descoberto é significativo porque validadores do Ethereum são críticos para a segurança e operação da rede blockchain, e qualquer vulnerabilidade que pudesse desconectá-los em massa representaria um risco sistêmico grave. A abordagem de usar agentes de IA coordenados para testes de segurança abre novas possibilidades para como projetos de software críticos podem identificar problemas antes de serem explorados malevolentemente. Porém, o caso também ilustra as limitações atuais de agentes de IA: embora possam identificar anomalias e padrões suspeitos, ainda necessitam de humanos para validar descobertas, entender contexto e determinar significância real. O incidente será provavelmente levado como exemplo de melhores práticas em testes de segurança de software, especialmente para sistemas críticos de infraestrutura digital e blockchain. A colaboração entre ferramentas de IA e especialistas humanos está emergindo como o modelo ideal para segurança crítica. CoinDesk" data-title="IA encontrou bug no Ethereum que poderia desconectar validadores, mas humanos precisaram provar" data-share-url="https://www.coindesk.com/tech/2026/07/10/ai-found-an-ethereum-bug-that-could-take-validators-offline-but-humans-had-to-prove-it">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">IA encontrou bug no Ethereum que poderia desconectar validadores, mas humanos precisaram provar</div>
+        <div class="news-summary">A Ethereum Foundation coordenou agentes de IA para investigar o software que seus validadores executam e descobriu um bug remotamente acionável que poderia causar crash de validadores. Esse achado destaca como ferramentas de IA podem ser usadas para encontrar vulnerabilidades de segurança em sistemas críticos, mas também demonstra que especialistas humanos ainda são necessários para validar e reproduzir achados de IA. O bug descoberto é significativo porque validadores do Ethereum são críticos para a segurança e operação da rede blockchain, e qualquer vulnerabilidade que pudesse desconectá-los em massa representaria um risco sistêmico grave. A abordagem de usar agentes de IA coordenados para testes de segurança abre novas possibilidades para como projetos de software críticos podem identificar problemas antes de serem explorados malevolentemente. Porém, o caso também ilustra as limitações atuais de agentes de IA: embora possam identificar anomalias e padrões suspeitos, ainda necessitam de humanos para validar descobertas, entender contexto e determinar significância real. O incidente será provavelmente levado como exemplo de melhores práticas em testes de segurança de software, especialmente para sistemas críticos de infraestrutura digital e blockchain. A colaboração entre ferramentas de IA e especialistas humanos está emergindo como o modelo ideal para segurança crítica.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/07/10/ai-found-an-ethereum-bug-that-could-take-validators-offline-but-humans-had-to-prove-it" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Líder supremo vietnamita Tô Lâm tem grande visão para nação após promóção a status de renda média-alta O líder supremo vietnamita Tô Lâm apresenta uma visão ambiciosa para o futuro da nação, especialmente após o Banco Mundial recentemente elevar o Vietnã ao status de país de renda média-alta. Essa promoção de status marca um marco significativo no desenvolvimento econômico vietnamita, refletindo décadas de crescimento e industrialização. Tô Lâm aparentemente tem planos ainda mais grandiosos para a nação, além dos sucessos já alcançados, sugerindo uma agenda de modernização e transformação econômica contínua. Os planos do líder vietnamita provavelmente incluem diversificação econômica, investimento em tecnologia e educação, e integração mais profunda nas cadeias de valor globais. O Vietnã tem sido um beneficiário significativo da reorganização das cadeias de suprimentos globais, particularmente à medida que empresas buscam reduzir dependência da China. A visão de Tô Lâm para o Vietnã ocorre em um contexto de competição intensificada pela liderança econômica regional na Ásia do Sudeste. Investidores globais estão observando atentamente para ver como as políticas do Vietnã evoluem, particularmente em relação à abertura para investimento estrangeiro e reforma regulatória. O sucesso na realização da visão de Tô Lâm poderia posicionar o Vietnã como uma das economias de crescimento mais rápido do mundo nas próximas décadas. Bloomberg Economics" data-title="Líder supremo vietnamita Tô Lâm tem grande visão para nação após promóção a status de renda média-alta" data-share-url="https://www.bloomberg.com/news/newsletters/2026-07-11/vietnam-s-paramount-leader-to-lam-has-a-grand-plan-for-his-nation-new-economy">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">07:45</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Líder supremo vietnamita Tô Lâm tem grande visão para nação após promóção a status de renda média-alta</div>
+        <div class="news-summary">O líder supremo vietnamita Tô Lâm apresenta uma visão ambiciosa para o futuro da nação, especialmente após o Banco Mundial recentemente elevar o Vietnã ao status de país de renda média-alta. Essa promoção de status marca um marco significativo no desenvolvimento econômico vietnamita, refletindo décadas de crescimento e industrialização. Tô Lâm aparentemente tem planos ainda mais grandiosos para a nação, além dos sucessos já alcançados, sugerindo uma agenda de modernização e transformação econômica contínua. Os planos do líder vietnamita provavelmente incluem diversificação econômica, investimento em tecnologia e educação, e integração mais profunda nas cadeias de valor globais. O Vietnã tem sido um beneficiário significativo da reorganização das cadeias de suprimentos globais, particularmente à medida que empresas buscam reduzir dependência da China. A visão de Tô Lâm para o Vietnã ocorre em um contexto de competição intensificada pela liderança econômica regional na Ásia do Sudeste. Investidores globais estão observando atentamente para ver como as políticas do Vietnã evoluem, particularmente em relação à abertura para investimento estrangeiro e reforma regulatória. O sucesso na realização da visão de Tô Lâm poderia posicionar o Vietnã como uma das economias de crescimento mais rápido do mundo nas próximas décadas.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/newsletters/2026-07-11/vietnam-s-paramount-leader-to-lam-has-a-grand-plan-for-his-nation-new-economy" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Robinhood anuncia que recurso de agente de IA em breve estará auxiliando traders de cripto A Robinhood anunciou que seu recurso inovador de agente de IA logo estará disponível para auxiliar traders de criptomoedas, expandindo a aplicação de tecnologia agentic autônoma para o setor de ativos digitais. A empresa já demonstrou sucesso com mais de 70.000 contas agentic criadas por traders de ações e opções desde lançamento beta em maio. Os agentes de IA da Robinhood executam trades automaticamente com base em critérios e estratégias definidas pelo usuário, potencialmente democratizando o acesso a estratégias de trading sofisticadas. A expansão para cripto representa uma evolução natural, pois o mercado de criptomoedas opera 24/7 sem interrupções, tornando agentes autônomos particularmente valiosos para monitoramento e execução contínuos. A implementação da tecnologia agentic em trading de cripto pode reduzir a necessidade de participação manual constante, permitindo que traders gerenciem posições mesmo enquanto dormem ou focam em outras atividades. Porém, a disponibilização de agentes autônomos também levanta questões sobre risco, controle e responsabilidade se os agentes executarem trades que resultam em perdas significativas. A iniciativa da Robinhood é parte de tendência maior de integração de IA no setor fintech e cripto, com implicações potenciais para como o trading é conduzido no futuro. Cointelegraph" data-title="Robinhood anuncia que recurso de agente de IA em breve estará auxiliando traders de cripto" data-share-url="https://cointelegraph.com/news/robinhood-says-ai-agents-will-be-trading-for-crypto-users-soon?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">01:12</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Robinhood anuncia que recurso de agente de IA em breve estará auxiliando traders de cripto</div>
+        <div class="news-summary">A Robinhood anunciou que seu recurso inovador de agente de IA logo estará disponível para auxiliar traders de criptomoedas, expandindo a aplicação de tecnologia agentic autônoma para o setor de ativos digitais. A empresa já demonstrou sucesso com mais de 70.000 contas agentic criadas por traders de ações e opções desde lançamento beta em maio. Os agentes de IA da Robinhood executam trades automaticamente com base em critérios e estratégias definidas pelo usuário, potencialmente democratizando o acesso a estratégias de trading sofisticadas. A expansão para cripto representa uma evolução natural, pois o mercado de criptomoedas opera 24/7 sem interrupções, tornando agentes autônomos particularmente valiosos para monitoramento e execução contínuos. A implementação da tecnologia agentic em trading de cripto pode reduzir a necessidade de participação manual constante, permitindo que traders gerenciem posições mesmo enquanto dormem ou focam em outras atividades. Porém, a disponibilização de agentes autônomos também levanta questões sobre risco, controle e responsabilidade se os agentes executarem trades que resultam em perdas significativas. A iniciativa da Robinhood é parte de tendência maior de integração de IA no setor fintech e cripto, com implicações potenciais para como o trading é conduzido no futuro.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/robinhood-says-ai-agents-will-be-trading-for-crypto-users-soon?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Protocolo de empréstimo Bonzo perde 77% do volume bloqueado após exploit de oráculo em Hedera O protocolo de empréstimo Bonzo sofreu um exploit de segurança significativo que resultou na perda de aproximadamente 9,05 milhões de dólares, causando uma queda de 77% no total de valor trancado (TVL) na plataforma. O ataque explorou uma falha de verificação em um contrato de oráculo de terceiros fornecido pela Supra na rede Hedera, permitindo que um atacante manipulasse preços de ativos para emprestar fundos usando garantias inflacionadas. Especificamente, o atacante manipulou o preço do token SAUCE, usando-o como garantia para emprestar 9 milhões de dólares em diversos ativos do protocolo. Uma segunda carteira que também explorou a vulnerabilidade levantou aproximadamente 1 milhão, mas identificou-se como white hat hacker e sinalizou intenção de devolver os fundos. O incidente destaca riscos sistêmicos na infraestrutura de oráculo, que é crítica para protocololos DeFi pois fornece dados de preço em cadeia para determinar validez de transações. O exploit levanta questões sobre testes de segurança de contratos de terceiros e como protocolos devem validar feeds de preço antes de integração em sistemas críticos. A queda de 77% no TVL sugere que usuários rapidamente removeram fundos por medo de que outras vulnerabilidades pudessem ser exploradas. O incidente será estudado como um caso de como falhas em componentes de terceiros podem derramar falhas em protocololos aparentemente seguros. CoinDesk / Cointelegraph / The Block" data-title="Protocolo de empréstimo Bonzo perde 77% do volume bloqueado após exploit de oráculo em Hedera" data-share-url="https://www.coindesk.com/web3/2026/07/11/lending-protocol-bonzo-loses-77-of-value-locked-as-usd9-million-oracle-exploit-rattles-hedera">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">15:06</span>
+          <span class="news-source">CoinDesk / Cointelegraph / The Block</span>
+        </div>
+        <div class="news-title">Protocolo de empréstimo Bonzo perde 77% do volume bloqueado após exploit de oráculo em Hedera</div>
+        <div class="news-summary">O protocolo de empréstimo Bonzo sofreu um exploit de segurança significativo que resultou na perda de aproximadamente 9,05 milhões de dólares, causando uma queda de 77% no total de valor trancado (TVL) na plataforma. O ataque explorou uma falha de verificação em um contrato de oráculo de terceiros fornecido pela Supra na rede Hedera, permitindo que um atacante manipulasse preços de ativos para emprestar fundos usando garantias inflacionadas. Especificamente, o atacante manipulou o preço do token SAUCE, usando-o como garantia para emprestar 9 milhões de dólares em diversos ativos do protocolo. Uma segunda carteira que também explorou a vulnerabilidade levantou aproximadamente 1 milhão, mas identificou-se como white hat hacker e sinalizou intenção de devolver os fundos. O incidente destaca riscos sistêmicos na infraestrutura de oráculo, que é crítica para protocololos DeFi pois fornece dados de preço em cadeia para determinar validez de transações. O exploit levanta questões sobre testes de segurança de contratos de terceiros e como protocolos devem validar feeds de preço antes de integração em sistemas críticos. A queda de 77% no TVL sugere que usuários rapidamente removeram fundos por medo de que outras vulnerabilidades pudessem ser exploradas. O incidente será estudado como um caso de como falhas em componentes de terceiros podem derramar falhas em protocololos aparentemente seguros.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/web3/2026/07/11/lending-protocol-bonzo-loses-77-of-value-locked-as-usd9-million-oracle-exploit-rattles-hedera" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercado cripto IPO desacelera enquanto capital rotaciona para IA e incerteza macro pesa O mercado de ofertas públicas iniciais (IPOs) de empresas cripto está em desaceleração significativa, com consultora Cohen &amp; Company Capital Markets citando restrições de financiamento e cautela de investidores como motivos principais, mais do que regulação per se. A rotação de capital para setor de IA está deixando menos capital disponível para empresas de cripto buscando ir a público. A desaceleração representa um contraste marcante com o entusiasmo anterior por IPOs de cripto, demonstrando como ciclos de capital investidor favorecem diferentes setores em diferentes momentos. A incerteza macro, incluindo geopolítica e políticas de bancos centrais, também está deixando investidores menos dispostos a tomar riscos em empresas cripto relativamente novas. Dados de Christian Lopez da Cohen &amp; Company sugerem que a questão não é barreiras regulatórias, mas preferências de investidor e disponibilidade de capital. Essa dinâmica favorece empresas cripto maduras e bem capitalizadas, enquanto comprime oportunidades para startups menores. A desaceleração em IPOs cripto também reflete questionamento por mercados sobre sustentabilidade de múltiplas valuation em setor cripto. Futuro do mercado de IPO cripto provavelmente dependerá de restauração de sentimento investidor em ativos de risco e rotação de capital de volta para cripto em relação a IA. CoinDesk" data-title="Mercado cripto IPO desacelera enquanto capital rotaciona para IA e incerteza macro pesa" data-share-url="https://www.coindesk.com/business/2026/07/08/crypto-ipo-market-stalls-as-capital-rotates-to-ai-and-macro-uncertainty-weighs">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">14:07</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mercado cripto IPO desacelera enquanto capital rotaciona para IA e incerteza macro pesa</div>
+        <div class="news-summary">O mercado de ofertas públicas iniciais (IPOs) de empresas cripto está em desaceleração significativa, com consultora Cohen &amp; Company Capital Markets citando restrições de financiamento e cautela de investidores como motivos principais, mais do que regulação per se. A rotação de capital para setor de IA está deixando menos capital disponível para empresas de cripto buscando ir a público. A desaceleração representa um contraste marcante com o entusiasmo anterior por IPOs de cripto, demonstrando como ciclos de capital investidor favorecem diferentes setores em diferentes momentos. A incerteza macro, incluindo geopolítica e políticas de bancos centrais, também está deixando investidores menos dispostos a tomar riscos em empresas cripto relativamente novas. Dados de Christian Lopez da Cohen &amp; Company sugerem que a questão não é barreiras regulatórias, mas preferências de investidor e disponibilidade de capital. Essa dinâmica favorece empresas cripto maduras e bem capitalizadas, enquanto comprime oportunidades para startups menores. A desaceleração em IPOs cripto também reflete questionamento por mercados sobre sustentabilidade de múltiplas valuation em setor cripto. Futuro do mercado de IPO cripto provavelmente dependerá de restauração de sentimento investidor em ativos de risco e rotação de capital de volta para cripto em relação a IA.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/08/crypto-ipo-market-stalls-as-capital-rotates-to-ai-and-macro-uncertainty-weighs" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="ETFs de Bitcoin e Ethereum encerram rajadas de fluxo de saída de oito semanas com 282 milhões em inflows ETFs de Bitcoin e Ethereum combinados experimentaram entradas de capital de 282 milhões de dólares esta semana, encerrando uma sequência de oito semanas consecutivas de saídas de fundos. Os fluxos positivos marcam uma reversão potencialmente significativa do sentimento de investidores institucionais que haviam estado reduzindo sistematicamente posições em ativos de cripto. As oito semanas anteriores haviam drenado um total combinado de 9,46 bilhões de dólares dos ETFs de Bitcoin e Ethereum juntos, representando pressão de venda institucional significativa. O retorno de fluxos positivos sugere que alguns investidores podem estar vendo preços atuais como mais atrativos ou que o sentimento está começando a melhorar. Porém, é importante contextualizar que os 282 milhões desta semana representam apenas cerca de 3% recuperação das perdas acumuladas nas oito semanas anteriores. Os fluxos ainda permanecem significativamente negativos no contexto de longo prazo, indicando que pressões de venda não foram completamente revertidas. O padrão de fluxos sugere um mercado em transição, onde decisões institucionais estão mudando mas não decisivamente tão ainda. Analistas estarão observando próximas semanas para determinar se a entrada desta semana marca um ponto de inflexão ou apenas um alívio técnico temporário em contexto de pressão contínua de venda. The Block" data-title="ETFs de Bitcoin e Ethereum encerram rajadas de fluxo de saída de oito semanas com 282 milhões em inflows" data-share-url="https://www.theblock.co/post/407957/bitcoin-ether-etfs-snap-eight-week-outflow-streaks-with-282-million-combined-inflow?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">12:19</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">ETFs de Bitcoin e Ethereum encerram rajadas de fluxo de saída de oito semanas com 282 milhões em inflows</div>
+        <div class="news-summary">ETFs de Bitcoin e Ethereum combinados experimentaram entradas de capital de 282 milhões de dólares esta semana, encerrando uma sequência de oito semanas consecutivas de saídas de fundos. Os fluxos positivos marcam uma reversão potencialmente significativa do sentimento de investidores institucionais que haviam estado reduzindo sistematicamente posições em ativos de cripto. As oito semanas anteriores haviam drenado um total combinado de 9,46 bilhões de dólares dos ETFs de Bitcoin e Ethereum juntos, representando pressão de venda institucional significativa. O retorno de fluxos positivos sugere que alguns investidores podem estar vendo preços atuais como mais atrativos ou que o sentimento está começando a melhorar. Porém, é importante contextualizar que os 282 milhões desta semana representam apenas cerca de 3% recuperação das perdas acumuladas nas oito semanas anteriores. Os fluxos ainda permanecem significativamente negativos no contexto de longo prazo, indicando que pressões de venda não foram completamente revertidas. O padrão de fluxos sugere um mercado em transição, onde decisões institucionais estão mudando mas não decisivamente tão ainda. Analistas estarão observando próximas semanas para determinar se a entrada desta semana marca um ponto de inflexão ou apenas um alívio técnico temporário em contexto de pressão contínua de venda.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/407957/bitcoin-ether-etfs-snap-eight-week-outflow-streaks-with-282-million-combined-inflow?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Reino Unido finalmente demonstra estar sério com cripto após múltiplos passos regulatórios recentes Vários passos regulatórios recentes indicam que o Reino Unido finalmente pode estar parando de arrastar pés quando se trata de adoção e regulação de cripto, segundo Chet Shah, CEO do exchange Wirex. O padrão de regulação positiva contrasta com a abordagem historicamente mais cautelosa do Reino Unido em relação ao setor. A mudança sugere que o Reino Unido pode estar posicionando-se para competir melhor com jurisdições como El Salvador, Malta e Singapura que haviam abraçado cripto mais completamente. O movimento regulatório positivo do Reino Unido é significativo porque o país possui mercados financeiros sofisticados e infraestrutura regulatória robusta que poderia fornecer estrutura confiável para ecossistema cripto. A comentário de Shah é importante porque executa perspectiva insider sobre como políticas estão evoluindo em jurisdição importante. O Regno Unido sendo mais receptivo a cripto poderia atrair mais empresas e talento para o país, criando benefícios econômicos potenciais. A regulação positiva também oferece proteções de consumidor maiores em relação a jurisdições inteiramente não-reguladas. A tendência do Reino Unido se alinhando com sinais de múltiplas jurisdições desenvolvidas reconhecendo valor de adoção cripto de maneira regulada. CoinDesk" data-title="Reino Unido finalmente demonstra estar sério com cripto após múltiplos passos regulatórios recentes" data-share-url="https://www.coindesk.com/opinion/2026/07/11/the-uk-has-finally-shown-it-s-serious-about-crypto">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">12:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Reino Unido finalmente demonstra estar sério com cripto após múltiplos passos regulatórios recentes</div>
+        <div class="news-summary">Vários passos regulatórios recentes indicam que o Reino Unido finalmente pode estar parando de arrastar pés quando se trata de adoção e regulação de cripto, segundo Chet Shah, CEO do exchange Wirex. O padrão de regulação positiva contrasta com a abordagem historicamente mais cautelosa do Reino Unido em relação ao setor. A mudança sugere que o Reino Unido pode estar posicionando-se para competir melhor com jurisdições como El Salvador, Malta e Singapura que haviam abraçado cripto mais completamente. O movimento regulatório positivo do Reino Unido é significativo porque o país possui mercados financeiros sofisticados e infraestrutura regulatória robusta que poderia fornecer estrutura confiável para ecossistema cripto. A comentário de Shah é importante porque executa perspectiva insider sobre como políticas estão evoluindo em jurisdição importante. O Regno Unido sendo mais receptivo a cripto poderia atrair mais empresas e talento para o país, criando benefícios econômicos potenciais. A regulação positiva também oferece proteções de consumidor maiores em relação a jurisdições inteiramente não-reguladas. A tendência do Reino Unido se alinhando com sinais de múltiplas jurisdições desenvolvidas reconhecendo valor de adoção cripto de maneira regulada.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/opinion/2026/07/11/the-uk-has-finally-shown-it-s-serious-about-crypto" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin perto dos estágios finais de mercado de urso: Jamie Coutts, Real Vision Jamie Coutts, analista-chefe de cripto da Real Vision, sugeriu que Bitcoin está se aproximando dos estágios finais de seu mercado de urso atual, oferecendo uma perspectiva menos pessimista que alguns analistas que veem riscos contínuos de queda. Coutts argumenta que embora seja muito cedo para validar previsões agressivas como Bitcoin chegando a 1 milhão por 2030, ele permanece confiante de que Bitcoin poderia atingir 250.000 em futuro próximo, provavelmente dentro de alguns anos. A análise de Coutts é baseada em ciclos históricos de Bitcoin e em padrões que sugerem que os piores da queda de preço pode já ter ocorrido ou estar muito próximo. A perspectiva é importante porque sugere que pacientes long-term holders podem estar perto de ser recompensados, criando uma narrativa potencial que poderia atrair mais capital. Porém, Coutts também reconhece que múltiplos riscos ainda existem, incluindo regulação, competição de altcoins e incerteza macro. Sua previsão de 250.000 implicaria ganho de aproximadamente 6-7 vezes dos preços atuais, representando retorno extraordinário se alcançado. O comentário de Coutts está em linha com análises cíclicas de Bitcoin que sugerem reversão eventual após mercados de urso, embora timing e magnitude continuem incertos. Cointelegraph" data-title="Bitcoin perto dos estágios finais de mercado de urso: Jamie Coutts, Real Vision" data-share-url="https://cointelegraph.com/features/bitcoin-is-approaching-the-second-half-of-the-bear-market-jamie-coutts?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">10:30</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin perto dos estágios finais de mercado de urso: Jamie Coutts, Real Vision</div>
+        <div class="news-summary">Jamie Coutts, analista-chefe de cripto da Real Vision, sugeriu que Bitcoin está se aproximando dos estágios finais de seu mercado de urso atual, oferecendo uma perspectiva menos pessimista que alguns analistas que veem riscos contínuos de queda. Coutts argumenta que embora seja muito cedo para validar previsões agressivas como Bitcoin chegando a 1 milhão por 2030, ele permanece confiante de que Bitcoin poderia atingir 250.000 em futuro próximo, provavelmente dentro de alguns anos. A análise de Coutts é baseada em ciclos históricos de Bitcoin e em padrões que sugerem que os piores da queda de preço pode já ter ocorrido ou estar muito próximo. A perspectiva é importante porque sugere que pacientes long-term holders podem estar perto de ser recompensados, criando uma narrativa potencial que poderia atrair mais capital. Porém, Coutts também reconhece que múltiplos riscos ainda existem, incluindo regulação, competição de altcoins e incerteza macro. Sua previsão de 250.000 implicaria ganho de aproximadamente 6-7 vezes dos preços atuais, representando retorno extraordinário se alcançado. O comentário de Coutts está em linha com análises cíclicas de Bitcoin que sugerem reversão eventual após mercados de urso, embora timing e magnitude continuem incertos.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/features/bitcoin-is-approaching-the-second-half-of-the-bear-market-jamie-coutts?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ethereum sobe 3% em boom de tokenização: podem touros empurrar ETH acima de 1.800? Ethereum experimentou ganhos de 3% dentro de um contexto de atividade crescente de tokenização, particularmente envolvendo ativos do mundo real sendo representados como tokens em blockchains. O boom de tokenização reflete interesse institucional crescente em trazer ativos tradicionais para blockchains, criando oportunidades de liquidez 24/7 e propriedade fracionada. Porém, apesar dos ganhos de preço e otimismo sobre narrativa de tokenização, dados on-chain e derivativos sugerem posição fraca que deixa Ethereum vulnerável a reteste do nível de suporte de 1.700. A acumulação institucional pode estar ocorrendo em alguns segmentos, mas a falta de volume de varejo forte sugere que os ganhos podem ser frágeis. Analistas veem 1.800 como nível psicológico importante que, se atingido, poderia atrair mais volume de compra e uma possível movimentação mais forte para cima. Porém, tal movimentação dependeria de confirmação sustentada com volume de negociação que ainda não se materializou. O preço de Ethereum reflete conflito entre narrativa positiva de tokenização e sinais técnicos e comportamentais que sugerem cautela. A próxima semana será importante para determinar se os ganhos de 3% podem sustentar ou se Ethereum recua para testar suportes inferiores. Cointelegraph" data-title="Ethereum sobe 3% em boom de tokenização: podem touros empurrar ETH acima de 1.800?" data-share-url="https://cointelegraph.com/markets/ethereum-climbs-3-on-tokenization-boom-can-bulls-push-eth-price-past-1800?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">09:55</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Ethereum sobe 3% em boom de tokenização: podem touros empurrar ETH acima de 1.800?</div>
+        <div class="news-summary">Ethereum experimentou ganhos de 3% dentro de um contexto de atividade crescente de tokenização, particularmente envolvendo ativos do mundo real sendo representados como tokens em blockchains. O boom de tokenização reflete interesse institucional crescente em trazer ativos tradicionais para blockchains, criando oportunidades de liquidez 24/7 e propriedade fracionada. Porém, apesar dos ganhos de preço e otimismo sobre narrativa de tokenização, dados on-chain e derivativos sugerem posição fraca que deixa Ethereum vulnerável a reteste do nível de suporte de 1.700. A acumulação institucional pode estar ocorrendo em alguns segmentos, mas a falta de volume de varejo forte sugere que os ganhos podem ser frágeis. Analistas veem 1.800 como nível psicológico importante que, se atingido, poderia atrair mais volume de compra e uma possível movimentação mais forte para cima. Porém, tal movimentação dependeria de confirmação sustentada com volume de negociação que ainda não se materializou. O preço de Ethereum reflete conflito entre narrativa positiva de tokenização e sinais técnicos e comportamentais que sugerem cautela. A próxima semana será importante para determinar se os ganhos de 3% podem sustentar ou se Ethereum recua para testar suportes inferiores.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/ethereum-climbs-3-on-tokenization-boom-can-bulls-push-eth-price-past-1800?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Empresa de tesouro Bitcoin Empery Digital vende aproximadamente metade de sua pilha de BTC A Empery Digital, uma empresa que havia posicionado Bitcoin como reserva estratégica de tesouro, vendeu aproximadamente metade de sua pilha de Bitcoin para financiar um novo projeto de data center voltado para IA. A mudança representa um abandono significativo da estratégia de tesouro de Bitcoin que havia sido central ao posicionamento e narrativa de investimento da empresa. A venda ocorre meses após um acionista importante da Empery havia demandado que a empresa desistisse de sua estratégia de tesouro Bitcoin e forçasse a resignação do CEO. Essa pressão de acionistas bem pode ter contribuído para a decisão de desfazer-se de Bitcoin em favor de investimentos em infraestrutura de IA, uma narrativa que atualmente atrai mais capital de investimento. O movimento da Empery Digital reflete tendência mais ampla de capital rotacionando de cripto para IA, particularmente à medida que mercados questionam sustentabilidade do ciclo de cripto atual. As ações da Empery Digital subiram após o anúncio de venda de Bitcoin e planos de data center de IA, sugerindo que mercado favoreça o novo direcionamento estratégico. O incidente ilustra como pressão de acionistas e dinâmicas de mercado podem forçar mudanças estratégicas significativas em empresas, mesmo aquelas que haviam feito compromissos públicos com Bitcoin. CoinDesk / Cointelegraph" data-title="Empresa de tesouro Bitcoin Empery Digital vende aproximadamente metade de sua pilha de BTC" data-share-url="https://www.coindesk.com/markets/2026/07/11/bitcoin-treasury-company-empery-digital-sold-about-half-of-btc-stack">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">09:25</span>
+          <span class="news-source">CoinDesk / Cointelegraph</span>
+        </div>
+        <div class="news-title">Empresa de tesouro Bitcoin Empery Digital vende aproximadamente metade de sua pilha de BTC</div>
+        <div class="news-summary">A Empery Digital, uma empresa que havia posicionado Bitcoin como reserva estratégica de tesouro, vendeu aproximadamente metade de sua pilha de Bitcoin para financiar um novo projeto de data center voltado para IA. A mudança representa um abandono significativo da estratégia de tesouro de Bitcoin que havia sido central ao posicionamento e narrativa de investimento da empresa. A venda ocorre meses após um acionista importante da Empery havia demandado que a empresa desistisse de sua estratégia de tesouro Bitcoin e forçasse a resignação do CEO. Essa pressão de acionistas bem pode ter contribuído para a decisão de desfazer-se de Bitcoin em favor de investimentos em infraestrutura de IA, uma narrativa que atualmente atrai mais capital de investimento. O movimento da Empery Digital reflete tendência mais ampla de capital rotacionando de cripto para IA, particularmente à medida que mercados questionam sustentabilidade do ciclo de cripto atual. As ações da Empery Digital subiram após o anúncio de venda de Bitcoin e planos de data center de IA, sugerindo que mercado favoreça o novo direcionamento estratégico. O incidente ilustra como pressão de acionistas e dinâmicas de mercado podem forçar mudanças estratégicas significativas em empresas, mesmo aquelas que haviam feito compromissos públicos com Bitcoin.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/11/bitcoin-treasury-company-empery-digital-sold-about-half-of-btc-stack" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin sobe 10% em julho, mas traders ainda veem BTC copiando mercado de urso de 2022 Bitcoin experimentou ganhos de quase 10% no primeiro mês de julho, recuperando-se de níveis mais baixos para demonstrar certa força de preço. Porém, apesar desses ganhos iniciais de mês, traders e analistas ainda expressam preocupação de que Bitcoin poderia estar replicando o padrão de mercado de urso visto em 2022, particularmente com risco de queda renovada a partir de agosto em diante. Os ganhos de julho podem representar um alívio técnico em um mercado de urso maior, em vez de confirmação de inversão de tendência de longo prazo. Analistas citam fraqueza técnica subjacente, incluindo sinais on-chain que sugerem distribuição contínua de Bitcoin por detentores antigos e dados de derivativos que não mostram convicção compradora. O contexto macro também é desafiador, com incerteza geopolítica relacionada a conflitos entre EUA e Irã criando headwinds para ativos de risco como criptomoedas. Muitos traders estão esperando confirmação clara de que o mercado de urso terminou antes de aumentar significativamente suas posições em Bitcoin. Os ganhos de julho podem estar atraindo vendedores a preços mais altos, resultado em distribuição ao invés de acumulação institucional. A analogia com 2022 é preocupante porque Bitcoin caiu aproximadamente 65% em 2022 após ganhos iniciais no primeiro trimestre. Cointelegraph" data-title="Bitcoin sobe 10% em julho, mas traders ainda veem BTC copiando mercado de urso de 2022" data-share-url="https://cointelegraph.com/markets/bitcoin-price-gains-nearly-10-in-july-but-traders-still-see-btc-copying-2022-bear-market?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">08:21</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin sobe 10% em julho, mas traders ainda veem BTC copiando mercado de urso de 2022</div>
+        <div class="news-summary">Bitcoin experimentou ganhos de quase 10% no primeiro mês de julho, recuperando-se de níveis mais baixos para demonstrar certa força de preço. Porém, apesar desses ganhos iniciais de mês, traders e analistas ainda expressam preocupação de que Bitcoin poderia estar replicando o padrão de mercado de urso visto em 2022, particularmente com risco de queda renovada a partir de agosto em diante. Os ganhos de julho podem representar um alívio técnico em um mercado de urso maior, em vez de confirmação de inversão de tendência de longo prazo. Analistas citam fraqueza técnica subjacente, incluindo sinais on-chain que sugerem distribuição contínua de Bitcoin por detentores antigos e dados de derivativos que não mostram convicção compradora. O contexto macro também é desafiador, com incerteza geopolítica relacionada a conflitos entre EUA e Irã criando headwinds para ativos de risco como criptomoedas. Muitos traders estão esperando confirmação clara de que o mercado de urso terminou antes de aumentar significativamente suas posições em Bitcoin. Os ganhos de julho podem estar atraindo vendedores a preços mais altos, resultado em distribuição ao invés de acumulação institucional. A analogia com 2022 é preocupante porque Bitcoin caiu aproximadamente 65% em 2022 após ganhos iniciais no primeiro trimestre.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-price-gains-nearly-10-in-july-but-traders-still-see-btc-copying-2022-bear-market?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Stablecoins em dólares poderiam melhorar acesso a câmbio, mas amplificar corridas de moeda: papel do FMI Um artigo de trabalho do Fundo Monetário Internacional argumenta que stablecoins denominadas em dólares poderiam melhorar o acesso a câmbio estrangeiro para países e indivíduos, mas também poderiam amplificar riscos de 'corridas de moeda' onde fluxos de saída coordenados ocorrem rapidamente de moedas locais. A análise do FMI oferece perspectiva equilibrada sobre stablecoins, reconhecendo benefícios potenciais enquanto sinalizando riscos sistêmicos significativos. Especificamente, o papel sugere que stablecoins dólares oferecem uma maneira para pessoas em países com moedas instáveis obterem acesso a ativos mais estáveis, melhorando potencialmente bem-estar econômico. Porém, se decisões de saída de moedas locais para stablecoins dólares forem coordenadas, isso poderia desencadear crises de moeda severas em países vulneráveis. O FMI está efetivamente advertindo que proliferação descontrolada de stablecoins dólares poderia criar risco sistêmico novo para economia global e estabilidade de moedas locais. A análise sugere que regulação cuidadosa de stablecoins é necessária para capturar benefícios enquanto mitigar riscos de corridas de moeda. O artigo é significativo porque o FMI é uma instituição chave global sobre questões monetárias, e sua perspectiva influencia como governos pensam sobre regulação de cripto. As conclusões sugerem que stablecoins não devem ser vistas simplesmente como equivalentes aos depósitos bancários, mas como potencialmente poderosos instrumentos que poderiam afetar estabilidade monetária global. Cointelegraph" data-title="Stablecoins em dólares poderiam melhorar acesso a câmbio, mas amplificar corridas de moeda: papel do FMI" data-share-url="https://cointelegraph.com/news/imf-stablecoins-fx-access-currency-runs?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">06:14</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Stablecoins em dólares poderiam melhorar acesso a câmbio, mas amplificar corridas de moeda: papel do FMI</div>
+        <div class="news-summary">Um artigo de trabalho do Fundo Monetário Internacional argumenta que stablecoins denominadas em dólares poderiam melhorar o acesso a câmbio estrangeiro para países e indivíduos, mas também poderiam amplificar riscos de 'corridas de moeda' onde fluxos de saída coordenados ocorrem rapidamente de moedas locais. A análise do FMI oferece perspectiva equilibrada sobre stablecoins, reconhecendo benefícios potenciais enquanto sinalizando riscos sistêmicos significativos. Especificamente, o papel sugere que stablecoins dólares oferecem uma maneira para pessoas em países com moedas instáveis obterem acesso a ativos mais estáveis, melhorando potencialmente bem-estar econômico. Porém, se decisões de saída de moedas locais para stablecoins dólares forem coordenadas, isso poderia desencadear crises de moeda severas em países vulneráveis. O FMI está efetivamente advertindo que proliferação descontrolada de stablecoins dólares poderia criar risco sistêmico novo para economia global e estabilidade de moedas locais. A análise sugere que regulação cuidadosa de stablecoins é necessária para capturar benefícios enquanto mitigar riscos de corridas de moeda. O artigo é significativo porque o FMI é uma instituição chave global sobre questões monetárias, e sua perspectiva influencia como governos pensam sobre regulação de cripto. As conclusões sugerem que stablecoins não devem ser vistas simplesmente como equivalentes aos depósitos bancários, mas como potencialmente poderosos instrumentos que poderiam afetar estabilidade monetária global.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/imf-stablecoins-fx-access-currency-runs?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Lei de habitação que inclui proibição de CBDC é sancionada sem assinatura de Trump A Lei de Estradas do Século 21 para Habitação (21st Century ROAD to Housing Act) foi sancionada e se tornou lei, mesmo sem a assinatura pessoal do Presidente Trump. A lei inclui uma provisão específica que proíbe o Federal Reserve de emitir uma moeda digital do banco central (CBDC), representando uma vitória significativa para criptoentusiastas e críticos de CBDC. A proibição de CBDC tem implicações importantes para a política monetária americana futura e para o desenvolvimento de moedas digitais em geral. A comunidade de cripto havia-se mobilizado contra propostas de CBDC, argumentando que tais moedas governamentais poderiam comprometer privacidade e permitir vigilância excessiva de transações. A inclusão de proibição de CBDC em uma lei maior de habitação, em vez de legislação focada especificamente em cripto, sugere como questões de blockchain e cripto estão se tornando entrelaçadas com legislação maior. O fato de a lei ter se tornado lei sem assinatura presidencial (permitindo que se torne lei sem assinar) sugere que tinha amplo apoio bipartidário no Congresso. A vitória contra CBDC federais pode ser permanente ou durar apenas enquanto essa legislação estiver em vigor, dependendo de futuras disposições legislativas. O desenvolvimento é significativo para futuros de criptomoedas e bitcoins como possíveis alternativas a sistemas monetários controlados pelo governo. The Block" data-title="Lei de habitação que inclui proibição de CBDC é sancionada sem assinatura de Trump" data-share-url="https://www.theblock.co/post/406548/housing-bill-cbdc-ban-passed-into-law-without-trump-signature?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">01:08</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Lei de habitação que inclui proibição de CBDC é sancionada sem assinatura de Trump</div>
+        <div class="news-summary">A Lei de Estradas do Século 21 para Habitação (21st Century ROAD to Housing Act) foi sancionada e se tornou lei, mesmo sem a assinatura pessoal do Presidente Trump. A lei inclui uma provisão específica que proíbe o Federal Reserve de emitir uma moeda digital do banco central (CBDC), representando uma vitória significativa para criptoentusiastas e críticos de CBDC. A proibição de CBDC tem implicações importantes para a política monetária americana futura e para o desenvolvimento de moedas digitais em geral. A comunidade de cripto havia-se mobilizado contra propostas de CBDC, argumentando que tais moedas governamentais poderiam comprometer privacidade e permitir vigilância excessiva de transações. A inclusão de proibição de CBDC em uma lei maior de habitação, em vez de legislação focada especificamente em cripto, sugere como questões de blockchain e cripto estão se tornando entrelaçadas com legislação maior. O fato de a lei ter se tornado lei sem assinatura presidencial (permitindo que se torne lei sem assinar) sugere que tinha amplo apoio bipartidário no Congresso. A vitória contra CBDC federais pode ser permanente ou durar apenas enquanto essa legislação estiver em vigor, dependendo de futuras disposições legislativas. O desenvolvimento é significativo para futuros de criptomoedas e bitcoins como possíveis alternativas a sistemas monetários controlados pelo governo.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/406548/housing-bill-cbdc-ban-passed-into-law-without-trump-signature?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="EUA bloqueia transferência de receita de petróleo de 500 milhões para pressionar grupos apoiados pelo Irã Os EUA bloquearam uma transferência de 500 milhões de dólares em receita de petróleo iraniana destinada a grupos apoiados pelo Irã, como parte de esforço contínuo de pressão econômica e sanções contra o Irã e seus aliados regionais. A ação é parte de estratégia mais ampla de sanções secundárias visando reduzir financiamento para atividades militares e proxies iranianas. A ação pode potencialmente intensificar tensões geopolíticas entre EUA e Irã, criando risco de escalação adicional. A medida também afeta mercados de petróleo globais, pois reduções na receita iraniana de petróleo podem impactar investimentos em produção futura, afetando oferta global a longo prazo. A ação dos EUA reflete como sanções econômicas estão se tornando ferramenta central de geopolítica, particularmente no contexto de conflitos com Irã. O bloqueio de transferências de receita de petróleo também demonstra como sistemas financeiros globais podem ser usados como instrumentos de política externa, uma tendência que tem implicações para dolarização e estruturas de finanças globais. O desenvolvimento é significativo para cripto, pois alguns argumentam que criptomoedas e blockchains poderiam potencialmente permitir estruturas de pagamento alternativas que contornam sanções, um tópico de interesse crescente para economistas de política de sanções. Crypto Briefing" data-title="EUA bloqueia transferência de receita de petróleo de 500 milhões para pressionar grupos apoiados pelo Irã" data-share-url="https://cryptobriefing.com/us-blocks-500m-oil-revenue-transfer-to-pressure-iran-backed-groups/">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">00:20</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">EUA bloqueia transferência de receita de petróleo de 500 milhões para pressionar grupos apoiados pelo Irã</div>
+        <div class="news-summary">Os EUA bloquearam uma transferência de 500 milhões de dólares em receita de petróleo iraniana destinada a grupos apoiados pelo Irã, como parte de esforço contínuo de pressão econômica e sanções contra o Irã e seus aliados regionais. A ação é parte de estratégia mais ampla de sanções secundárias visando reduzir financiamento para atividades militares e proxies iranianas. A ação pode potencialmente intensificar tensões geopolíticas entre EUA e Irã, criando risco de escalação adicional. A medida também afeta mercados de petróleo globais, pois reduções na receita iraniana de petróleo podem impactar investimentos em produção futura, afetando oferta global a longo prazo. A ação dos EUA reflete como sanções econômicas estão se tornando ferramenta central de geopolítica, particularmente no contexto de conflitos com Irã. O bloqueio de transferências de receita de petróleo também demonstra como sistemas financeiros globais podem ser usados como instrumentos de política externa, uma tendência que tem implicações para dolarização e estruturas de finanças globais. O desenvolvimento é significativo para cripto, pois alguns argumentam que criptomoedas e blockchains poderiam potencialmente permitir estruturas de pagamento alternativas que contornam sanções, um tópico de interesse crescente para economistas de política de sanções.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/us-blocks-500m-oil-revenue-transfer-to-pressure-iran-backed-groups/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Protocolo Chronicle reconstrói infraestrutura de oráculo para fundo BUIDL do BlackRock O Protocolo Chronicle está reconstruindo sua infraestrutura de oráculo especificamente para suportar o fundo BUIDL do BlackRock, uma iniciativa de tokenização de títulos do BlackRock. A integração do Chronicle com o fundo BUIDL representa um passo significativo na adoção institucional de oráculos blockchain para ativos do mundo real tokenizados. O fundo BUIDL do BlackRock é um dos maiores fundos de ativos tokenizados, tornando a seleção de infraestrutura de oráculo uma decisão importante que estabelece padrões para a indústria. A integração de Chronicle sugere que a empresa acredita sua solução de oráculo atende aos padrões de segurança, confiabilidade e transparência exigidos por instituições tão grandes quanto BlackRock. A integração também pode estabelecer novos padrões da indústria para como oráculos devem ser verificáveis e transparentes, potencialmente levando competidores a aprimorar suas ofertas. O foco do Chronicle em transparência de verificação é particularmente relevante dado exploits recentes em oráculos, como o que afetou Bonzo Lend. A parceria BlackRock-Chronicle é significativa porque demonstra como grandes instituições financeiras estão escolhendo soluções de cripto e blockchain específicas para seus projetos de tokenização. O sucesso dessa integração poderia atrair mais ativos e projetos para infraestrutura Chronicle, aumentando seu valor e importância. Crypto Briefing" data-title="Protocolo Chronicle reconstrói infraestrutura de oráculo para fundo BUIDL do BlackRock" data-share-url="https://cryptobriefing.com/chronicle-protocol-blackrock-buidl-oracle/">
+        <div class="news-meta">
+          <span class="news-date">11 jul 2026</span>
+          <span class="news-time">00:19</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Protocolo Chronicle reconstrói infraestrutura de oráculo para fundo BUIDL do BlackRock</div>
+        <div class="news-summary">O Protocolo Chronicle está reconstruindo sua infraestrutura de oráculo especificamente para suportar o fundo BUIDL do BlackRock, uma iniciativa de tokenização de títulos do BlackRock. A integração do Chronicle com o fundo BUIDL representa um passo significativo na adoção institucional de oráculos blockchain para ativos do mundo real tokenizados. O fundo BUIDL do BlackRock é um dos maiores fundos de ativos tokenizados, tornando a seleção de infraestrutura de oráculo uma decisão importante que estabelece padrões para a indústria. A integração de Chronicle sugere que a empresa acredita sua solução de oráculo atende aos padrões de segurança, confiabilidade e transparência exigidos por instituições tão grandes quanto BlackRock. A integração também pode estabelecer novos padrões da indústria para como oráculos devem ser verificáveis e transparentes, potencialmente levando competidores a aprimorar suas ofertas. O foco do Chronicle em transparência de verificação é particularmente relevante dado exploits recentes em oráculos, como o que afetou Bonzo Lend. A parceria BlackRock-Chronicle é significativa porque demonstra como grandes instituições financeiras estão escolhendo soluções de cripto e blockchain específicas para seus projetos de tokenização. O sucesso dessa integração poderia atrair mais ativos e projetos para infraestrutura Chronicle, aumentando seu valor e importância.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/chronicle-protocol-blackrock-buidl-oracle/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
