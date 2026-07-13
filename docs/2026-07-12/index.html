@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">12 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">A escalada de tensões entre EUA e Irã no Estreito de Ormuz reverbera simultaneamente pelos mercados de petróleo, criptomoedas e tecnologia, enquanto Brasil e mundo enfrentam pressões inflacionárias e geopolíticas sem precedentes. A corrida por IA eficiente, regulação cripto e adoção institucional de Bitcoin convivem com crises energéticas que ameaçam a estabilidade econômica global, forçando governos, empresas e investidores a recalibrar estratégias em tempo real.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-07-11/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12" selected>2026-07-12</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Gibraltar remove controles de fronteira de 118 anos com Espanha, esperando impulso econômico Após 118 anos de controles fronteiriços rígidos, Gibraltar e Espanha implementaram formalmente a livre circulação de pessoas e bens neste fim de semana. A remoção desses entraves representa uma virada diplomática significativa e promete trazer benefícios econômicos substanciais para ambos os territórios. O fim da burocracia fronteiriça reduzirá custos de comércio, facilitará turismo, e permitirá mobilidade laboral que estimulará crescimento econômico em ambos os lados. Para Gibraltar, especialmente dependente de comércio e serviços financeiros, a abertura oferece acesso a mercado espanhol e europeu ampliado. Analistas esperam que a integração econômica aumente receitas fiscais e criem empregos em setores como hotelaria e retail. A mudança também sinaliza melhoria nas relações diplomáticas pós-Brexit entre Reino Unido, Espanha e Gibraltar, reduzindo tensões geopolíticas regionais que duravam gerações. BBC News" data-title="Gibraltar remove controles de fronteira de 118 anos com Espanha, esperando impulso econômico" data-share-url="https://www.bbc.co.uk/news/articles/cwydz60j3eno?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">20:29</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Gibraltar remove controles de fronteira de 118 anos com Espanha, esperando impulso econômico</div>
+        <div class="news-summary">Após 118 anos de controles fronteiriços rígidos, Gibraltar e Espanha implementaram formalmente a livre circulação de pessoas e bens neste fim de semana. A remoção desses entraves representa uma virada diplomática significativa e promete trazer benefícios econômicos substanciais para ambos os territórios. O fim da burocracia fronteiriça reduzirá custos de comércio, facilitará turismo, e permitirá mobilidade laboral que estimulará crescimento econômico em ambos os lados. Para Gibraltar, especialmente dependente de comércio e serviços financeiros, a abertura oferece acesso a mercado espanhol e europeu ampliado. Analistas esperam que a integração econômica aumente receitas fiscais e criem empregos em setores como hotelaria e retail. A mudança também sinaliza melhoria nas relações diplomáticas pós-Brexit entre Reino Unido, Espanha e Gibraltar, reduzindo tensões geopolíticas regionais que duravam gerações.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cwydz60j3eno?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Preço do petróleo sobe forte após EUA e Irã trocarem ataques Os mercados de petróleo responderam com volatilidade significativa ao novo ciclo de hostilidades entre EUA e Irã no domingo. O preço do barril registrou alta substancial, impulsionado pelo risco renovado de perturbação no Estreito de Ormuz, através do qual passa cerca de 20% do petróleo comercializado globalmente. O Irã alegou ter fechado o estreito até novo aviso, enquanto Washington nega a viabilidade dessa afirmação. Analistas temem que uma escalação mais severa pudesse empurrar o petróleo a níveis recordes, afetando custos de transporte, aquecimento e derivados em todo o mundo. A incerteza também afeta mercados futuros, com investidores buscando hedges contra inflação energética. Mercados de ações em Nova York abriram instáveis, refletindo a preocupação com os impactos econômicos de um possível colapso total das rotas comerciais no Golfo Pérsico. InfoMoney" data-title="Preço do petróleo sobe forte após EUA e Irã trocarem ataques" data-share-url="https://www.infomoney.com.br/mercados/petroleo-sobe-forte-apos-eua-e-ira-trocarem-ataques-e-divergirem-sobre-ormuz/">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">20:15</span>
+          <span class="news-source">InfoMoney</span>
+        </div>
+        <div class="news-title">Preço do petróleo sobe forte após EUA e Irã trocarem ataques</div>
+        <div class="news-summary">Os mercados de petróleo responderam com volatilidade significativa ao novo ciclo de hostilidades entre EUA e Irã no domingo. O preço do barril registrou alta substancial, impulsionado pelo risco renovado de perturbação no Estreito de Ormuz, através do qual passa cerca de 20% do petróleo comercializado globalmente. O Irã alegou ter fechado o estreito até novo aviso, enquanto Washington nega a viabilidade dessa afirmação. Analistas temem que uma escalação mais severa pudesse empurrar o petróleo a níveis recordes, afetando custos de transporte, aquecimento e derivados em todo o mundo. A incerteza também afeta mercados futuros, com investidores buscando hedges contra inflação energética. Mercados de ações em Nova York abriram instáveis, refletindo a preocupação com os impactos econômicos de um possível colapso total das rotas comerciais no Golfo Pérsico.</div>
+        <div class="news-link"><a href="https://www.infomoney.com.br/mercados/petroleo-sobe-forte-apos-eua-e-ira-trocarem-ataques-e-divergirem-sobre-ormuz/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Procuradorias estaduais preparam ação judicial para bloquear fusão Paramount-Warner Bros Um grupo de procuradores-gerais estaduais dos EUA está preparando uma ação judicial para bloquear a fusão de USD 111 bilhões entre Paramount e Warner Bros, uma das maiores transações de mídia jamais propostas. As autoridades alegam que a consolidação violaria leis antitruste, reduzindo competição no segmento de entretenimento e streaming. A ação judicial deve ser apresentada esta semana, representando um obstáculo significativo aos planos das duas gigantes de mídia. Analistas apontam que a administração Biden adotou postura mais agressiva contra fusões em setores concentrados, alterando o cenário regulatório para o setor de tecnologia e mídia. A possível rejeição criaria incerteza para ambas as companhias, potencialmente afetando seus valores de mercado e estratégias de longo prazo. Essa disputa reflete tensões mais amplas sobre concentração corporativa e poder de mercado. NYT &gt; Business" data-title="Procuradorias estaduais preparam ação judicial para bloquear fusão Paramount-Warner Bros" data-share-url="https://www.nytimes.com/2026/07/12/business/state-ag-lawsuit-paramount-warner-bros.html">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">17:17</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Procuradorias estaduais preparam ação judicial para bloquear fusão Paramount-Warner Bros</div>
+        <div class="news-summary">Um grupo de procuradores-gerais estaduais dos EUA está preparando uma ação judicial para bloquear a fusão de USD 111 bilhões entre Paramount e Warner Bros, uma das maiores transações de mídia jamais propostas. As autoridades alegam que a consolidação violaria leis antitruste, reduzindo competição no segmento de entretenimento e streaming. A ação judicial deve ser apresentada esta semana, representando um obstáculo significativo aos planos das duas gigantes de mídia. Analistas apontam que a administração Biden adotou postura mais agressiva contra fusões em setores concentrados, alterando o cenário regulatório para o setor de tecnologia e mídia. A possível rejeição criaria incerteza para ambas as companhias, potencialmente afetando seus valores de mercado e estratégias de longo prazo. Essa disputa reflete tensões mais amplas sobre concentração corporativa e poder de mercado.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/12/business/state-ag-lawsuit-paramount-warner-bros.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Moana ao vivo fracassa no cinema, questionando fórmula da Disney O remake em live-action de Moana arrecadou aproximadamente USD 43 milhões durante o fim de semana na América do Norte, cerca de 30% menos do que a Disney havia projetado. O desempenho abaixo das expectativas levanta questões sobre a saturação do mercado de remakes e a fadiga dos espectadores com adaptações de filmes animados clássicos. Analistas apontam que o público pode estar preferindo conteúdo original ou francamente fantástico em vez de recriações nostalgia-dirigidas. A decepção de Moana contrasta com sucessos recentes como Michael, que ultrapassou USD 1 bilhão em receitas globais pela Lionsgate, sugerindo volatilidade no mercado de entretenimento. A Disney pode ser forçada a reavaliar sua estratégia agressiva de remakes e investir mais em inovação narrativa. Esse resultado também impacta perspectivas de receita futura da companhia para 2026 e 2027. NYT &gt; Business" data-title="Moana ao vivo fracassa no cinema, questionando fórmula da Disney" data-share-url="https://www.nytimes.com/2026/07/12/business/media/moana-box-office-disney.html">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">14:39</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Moana ao vivo fracassa no cinema, questionando fórmula da Disney</div>
+        <div class="news-summary">O remake em live-action de Moana arrecadou aproximadamente USD 43 milhões durante o fim de semana na América do Norte, cerca de 30% menos do que a Disney havia projetado. O desempenho abaixo das expectativas levanta questões sobre a saturação do mercado de remakes e a fadiga dos espectadores com adaptações de filmes animados clássicos. Analistas apontam que o público pode estar preferindo conteúdo original ou francamente fantástico em vez de recriações nostalgia-dirigidas. A decepção de Moana contrasta com sucessos recentes como Michael, que ultrapassou USD 1 bilhão em receitas globais pela Lionsgate, sugerindo volatilidade no mercado de entretenimento. A Disney pode ser forçada a reavaliar sua estratégia agressiva de remakes e investir mais em inovação narrativa. Esse resultado também impacta perspectivas de receita futura da companhia para 2026 e 2027.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/12/business/media/moana-box-office-disney.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Putin converteu Japão em centro de espionagem russa para obter tecnologia bélica Documentos e relatos de inteligência revelam que a Rússia estabeleceu uma rede sofisticada de espiões em Tóquio, operando a partir de um prédio comercial de alta segurança. Essa unidade de inteligência militar russa tem como missão principal localizar e contrabandear equipamentos de alta tecnologia essenciais para a continuação da guerra na Ucrânia. Servidores eletrônicos, chips avançados e componentes de drones são sistematicamente adquiridos e enviados para Moscou, contornando sanções ocidentais. A operação funciona sob o radar das autoridades japonesas há anos, explorando brechas legais e a expertise comercial do Japão em eletrônica. Essa descoberta marca um ponto de tensão adicional entre Tóquio, Washington e Moscou, ampliando a percepção de que nenhuma região está verdadeiramente isolada do conflito russo-ucraniano. Especialistas alertam que o Japão pode se ver forçado a revisar sua postura de neutralidade. NYT &gt; World News" data-title="Putin converteu Japão em centro de espionagem russa para obter tecnologia bélica" data-share-url="https://www.nytimes.com/2026/07/12/world/asia/russia-spies-japan-war-drones-electronics.html">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">09:14</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Putin converteu Japão em centro de espionagem russa para obter tecnologia bélica</div>
+        <div class="news-summary">Documentos e relatos de inteligência revelam que a Rússia estabeleceu uma rede sofisticada de espiões em Tóquio, operando a partir de um prédio comercial de alta segurança. Essa unidade de inteligência militar russa tem como missão principal localizar e contrabandear equipamentos de alta tecnologia essenciais para a continuação da guerra na Ucrânia. Servidores eletrônicos, chips avançados e componentes de drones são sistematicamente adquiridos e enviados para Moscou, contornando sanções ocidentais. A operação funciona sob o radar das autoridades japonesas há anos, explorando brechas legais e a expertise comercial do Japão em eletrônica. Essa descoberta marca um ponto de tensão adicional entre Tóquio, Washington e Moscou, ampliando a percepção de que nenhuma região está verdadeiramente isolada do conflito russo-ucraniano. Especialistas alertam que o Japão pode se ver forçado a revisar sua postura de neutralidade.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/12/world/asia/russia-spies-japan-war-drones-electronics.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Michael ultrapassa USD 1 bilhão no cinema global, Lionsgate ressurge O filme Michael, produzido pela Lionsgate, alcançou a marca de USD 1 bilhão em receitas globais, representando um sucesso impressionante para um estúdio independente que outros grandes nomes do cinema haviam considerado muito arriscado. Esse desempenho marca um ressurgimento notável da Lionsgate após anos de dificuldades financeiras e competição acirrada com majors como Disney, Warner Bros e Paramount. O sucesso de Michael sugere que existe público global robusto para narrativas audaciosas fora dos circuitos convencionais. Analistas veem esse resultado como validação de que a diversificação de conteúdo e a tomada de riscos calculados podem gerar retornos extraordinários. A vitória da Lionsgate pode inspirar outros estúdios menores a investir mais agressivamente em projetos originais, alterando dinâmicas de mercado. O filme também beneficiou de fenômeno de boca-a-boca e distribuição global eficiente. NYT &gt; Business" data-title="Michael ultrapassa USD 1 bilhão no cinema global, Lionsgate ressurge" data-share-url="https://www.nytimes.com/2026/07/12/business/media/michael-movie-lionsgate.html">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Michael ultrapassa USD 1 bilhão no cinema global, Lionsgate ressurge</div>
+        <div class="news-summary">O filme Michael, produzido pela Lionsgate, alcançou a marca de USD 1 bilhão em receitas globais, representando um sucesso impressionante para um estúdio independente que outros grandes nomes do cinema haviam considerado muito arriscado. Esse desempenho marca um ressurgimento notável da Lionsgate após anos de dificuldades financeiras e competição acirrada com majors como Disney, Warner Bros e Paramount. O sucesso de Michael sugere que existe público global robusto para narrativas audaciosas fora dos circuitos convencionais. Analistas veem esse resultado como validação de que a diversificação de conteúdo e a tomada de riscos calculados podem gerar retornos extraordinários. A vitória da Lionsgate pode inspirar outros estúdios menores a investir mais agressivamente em projetos originais, alterando dinâmicas de mercado. O filme também beneficiou de fenômeno de boca-a-boca e distribuição global eficiente.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/12/business/media/michael-movie-lionsgate.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Aldi investe USD 9 bilhões nos EUA, desafia Walmart com modelo de desconto O supermercado alemão Aldi está executando uma expansão agressiva nos EUA com investimento de USD 9 bilhões, focando especialmente em mercados urbanos como Manhattan. A estratégia da Aldi é desafiar gigantes como Walmart e Target oferecendo produtos de marca própria de qualidade a preços notavelmente menores—como manteiga de amêndoa por USD 4, versus preços muito superiores em concorrentes. Essa ofensiva representa uma mudança significativa no varejo americano, introduzindo competição europeia robusta no segmento de desconto. Analistas observam que a pressão inflacionária e recessão econômica aumentam apetite do consumidor por alternativas de baixo custo, criando oportunidade estratégica para Aldi. A companhia está recrutando localmente, abrindo lojas-piloto e adaptando sua logística para as realidades do mercado norte-americano. Sucesso da Aldi poderia forçar Walmart e Target a ajustarem margens e estratégias de precificação. BBC News" data-title="Aldi investe USD 9 bilhões nos EUA, desafia Walmart com modelo de desconto" data-share-url="https://www.bbc.co.uk/news/articles/cly0l5d5xn7o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">02:00</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Aldi investe USD 9 bilhões nos EUA, desafia Walmart com modelo de desconto</div>
+        <div class="news-summary">O supermercado alemão Aldi está executando uma expansão agressiva nos EUA com investimento de USD 9 bilhões, focando especialmente em mercados urbanos como Manhattan. A estratégia da Aldi é desafiar gigantes como Walmart e Target oferecendo produtos de marca própria de qualidade a preços notavelmente menores—como manteiga de amêndoa por USD 4, versus preços muito superiores em concorrentes. Essa ofensiva representa uma mudança significativa no varejo americano, introduzindo competição europeia robusta no segmento de desconto. Analistas observam que a pressão inflacionária e recessão econômica aumentam apetite do consumidor por alternativas de baixo custo, criando oportunidade estratégica para Aldi. A companhia está recrutando localmente, abrindo lojas-piloto e adaptando sua logística para as realidades do mercado norte-americano. Sucesso da Aldi poderia forçar Walmart e Target a ajustarem margens e estratégias de precificação.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cly0l5d5xn7o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Cessar-fogo se desmorona enquanto EUA e Irã trocam novos ataques Um novo ciclo de ataques militares entre EUA e Irã eclodiu no domingo, marcando a continuação de uma escalada que já dura semanas. Os norte-americanos lançaram ataques aéreos agressivos contra alvos iranianos, enquanto Teerã respondeu com strikes contra nações do Golfo e alegou ter fechado o Estreito de Ormuz. O conflito, alimentado por disputas sobre o controle dessa crucial via de navegação marítima, coloca em risco o comércio global de petróleo e energia. Diplomatas da ONU expressaram profunda preocupação com a possibilidade de um retorno a hostilidades em larga escala, que teria consequências catastróficas para a economia mundial. A Rússia e China observam atentamente o desenrolar dos eventos. Analistas apontam que cada novo ataque aumenta o risco de escalação incontrolável e impactos duradouros nos mercados energéticos, inflação e confiança geopolítica. NYT &gt; World News" data-title="Cessar-fogo se desmorona enquanto EUA e Irã trocam novos ataques" data-share-url="https://www.nytimes.com/live/2026/07/12/us/iran-war-trump-hormuz">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">00:13</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Cessar-fogo se desmorona enquanto EUA e Irã trocam novos ataques</div>
+        <div class="news-summary">Um novo ciclo de ataques militares entre EUA e Irã eclodiu no domingo, marcando a continuação de uma escalada que já dura semanas. Os norte-americanos lançaram ataques aéreos agressivos contra alvos iranianos, enquanto Teerã respondeu com strikes contra nações do Golfo e alegou ter fechado o Estreito de Ormuz. O conflito, alimentado por disputas sobre o controle dessa crucial via de navegação marítima, coloca em risco o comércio global de petróleo e energia. Diplomatas da ONU expressaram profunda preocupação com a possibilidade de um retorno a hostilidades em larga escala, que teria consequências catastróficas para a economia mundial. A Rússia e China observam atentamente o desenrolar dos eventos. Analistas apontam que cada novo ataque aumenta o risco de escalação incontrolável e impactos duradouros nos mercados energéticos, inflação e confiança geopolítica.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/07/12/us/iran-war-trump-hormuz" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Trabalhadores de Hyundai entram em greve parcial de 3 dias por bônus e segurança contra robots Funcionários da Hyundai Motor iniciaram segunda-feira greve parcial de 3 dias em protesto contra compensação insuficiente e preocupações sobre perda de empregos para automação e IA. O sindicato exige bônus maiores seguindo acordos históricos conquistados por trabalhadores do setor de semicondutores em negociações recentes. A Hyundai está acelerando adoção de robótica e IA nas linhas de produção, substituindo mão-de-obra manual tradicional. Funcionários temem que pressões de eficiência corporativa levem a demissões em massa. A greve ocorre em contexto de transformação mais ampla na indústria automotiva global, onde eletrificação, condução autônoma, e manufatura robótica convergem para reduzir emprego de linha de produção. Analistas veem essa disputa como primeira de muitas confrontações entre labor e capital sobre divisão de benefícios de ganhos produtivos derivados de IA. Resultado das negociações na Hyundai pode estabelecer precedentes regionais. Bloomberg Technology" data-title="Trabalhadores de Hyundai entram em greve parcial de 3 dias por bônus e segurança contra robots" data-share-url="https://www.bloomberg.com/news/articles/2026-07-13/hyundai-hymtf-workers-strike-over-bonuses-ai-robot-job-security">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">23:32</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Trabalhadores de Hyundai entram em greve parcial de 3 dias por bônus e segurança contra robots</div>
+        <div class="news-summary">Funcionários da Hyundai Motor iniciaram segunda-feira greve parcial de 3 dias em protesto contra compensação insuficiente e preocupações sobre perda de empregos para automação e IA. O sindicato exige bônus maiores seguindo acordos históricos conquistados por trabalhadores do setor de semicondutores em negociações recentes. A Hyundai está acelerando adoção de robótica e IA nas linhas de produção, substituindo mão-de-obra manual tradicional. Funcionários temem que pressões de eficiência corporativa levem a demissões em massa. A greve ocorre em contexto de transformação mais ampla na indústria automotiva global, onde eletrificação, condução autônoma, e manufatura robótica convergem para reduzir emprego de linha de produção. Analistas veem essa disputa como primeira de muitas confrontações entre labor e capital sobre divisão de benefícios de ganhos produtivos derivados de IA. Resultado das negociações na Hyundai pode estabelecer precedentes regionais.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-13/hyundai-hymtf-workers-strike-over-bonuses-ai-robot-job-security" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Netflix enfrenta questões sobre desaceleração de crescimento Netflix está combatendo narrativa de crescimento em desaceleração enquanto a companhia monitora métricas de adição de assinantes, churn, e monetização. Analistas apontam que mercados de video streaming nos EUA e Europa atingiram maturidade, com pouco espaço para expansão de base de usuários. A companhia pivotou para estratégias de monetização: crackdown contra compartilhamento de senhas, introdução de tier com anúncios, e investimento em conteúdo original exclusivo com maior orçamento. Netflix também explora IA para recomendações aprimoradas, personalização de interface, e produção de conteúdo generativo assistida. O mercado reage com ceticismo à narrativa de recuperação da Netflix, vendo sinais de saturação no setor de streaming. Competidores Disney+, Max, e Apple TV+ também enfrentam pressões semelhantes. Analistas sugerem que consolidação do setor de streaming é iminente. Bloomberg Technology" data-title="Netflix enfrenta questões sobre desaceleração de crescimento" data-share-url="https://www.bloomberg.com/news/newsletters/2026-07-12/netflix-combats-questions-about-slowing-growth">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">19:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Netflix enfrenta questões sobre desaceleração de crescimento</div>
+        <div class="news-summary">Netflix está combatendo narrativa de crescimento em desaceleração enquanto a companhia monitora métricas de adição de assinantes, churn, e monetização. Analistas apontam que mercados de video streaming nos EUA e Europa atingiram maturidade, com pouco espaço para expansão de base de usuários. A companhia pivotou para estratégias de monetização: crackdown contra compartilhamento de senhas, introdução de tier com anúncios, e investimento em conteúdo original exclusivo com maior orçamento. Netflix também explora IA para recomendações aprimoradas, personalização de interface, e produção de conteúdo generativo assistida. O mercado reage com ceticismo à narrativa de recuperação da Netflix, vendo sinais de saturação no setor de streaming. Competidores Disney+, Max, e Apple TV+ também enfrentam pressões semelhantes. Analistas sugerem que consolidação do setor de streaming é iminente.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/newsletters/2026-07-12/netflix-combats-questions-about-slowing-growth" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Óculos Ray-Ban Meta com IA não são 'sexy', diz cantora Lorde Cantora Lorde comentou durante apresentação no festival Real Cool que óculos inteligentes Ray-Ban Meta—equipados com câmeras, microfones, e processamento de IA para captura e streaming de vídeo—não alcançam apelo estético que ela esperaria. Crítica de Lorde toca em questão mais ampla: adoção de wearables tecnológicos ainda enfrenta resistência cultural derivada de design pouco atraente. Ray-Ban Meta é funcional mas visualmente carrega aparência de tech gadget. Lorde sugeriu que para verdadeira adoção mainstream, óculos inteligentes precisam de refinamento estético que os torne indistinguíveis de óculos normais. Observação toca em tension fundamental em tech: capacidade técnica versus adoção social. Fabricantes estão explorando lentes holográficas, designs minimalistas, e materiais premium. Sucesso de Ray-Ban Meta demonstra que até sem apelo estético, demanda existe, mas mercado aguarda geração verdadeiramente elegante. The Verge" data-title="Óculos Ray-Ban Meta com IA não são 'sexy', diz cantora Lorde" data-share-url="https://www.theverge.com/ai-artificial-intelligence/964539/lorde-says-ray-ban-meta-ai-glasses-are-not-sexy">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">17:10</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Óculos Ray-Ban Meta com IA não são 'sexy', diz cantora Lorde</div>
+        <div class="news-summary">Cantora Lorde comentou durante apresentação no festival Real Cool que óculos inteligentes Ray-Ban Meta—equipados com câmeras, microfones, e processamento de IA para captura e streaming de vídeo—não alcançam apelo estético que ela esperaria. Crítica de Lorde toca em questão mais ampla: adoção de wearables tecnológicos ainda enfrenta resistência cultural derivada de design pouco atraente. Ray-Ban Meta é funcional mas visualmente carrega aparência de tech gadget. Lorde sugeriu que para verdadeira adoção mainstream, óculos inteligentes precisam de refinamento estético que os torne indistinguíveis de óculos normais. Observação toca em tension fundamental em tech: capacidade técnica versus adoção social. Fabricantes estão explorando lentes holográficas, designs minimalistas, e materiais premium. Sucesso de Ray-Ban Meta demonstra que até sem apelo estético, demanda existe, mas mercado aguarda geração verdadeiramente elegante.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/964539/lorde-says-ray-ban-meta-ai-glasses-are-not-sexy" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Programa fracassado de carro autônomo da Apple deixa legado de chips IA poderosos O programa de carro autônomo da Apple, abandonado após anos de investimento e pesquisa, não chegou ao mercado, mas deixou um legado tecnológico duradouro. Os chips desenvolvidos para processar dados de sensores, câmeras e sistemas de navegação autônoma evoluíram para os processadores M-series atuais da Apple—M6, M7 e M8—que agora dominam a indústria em desempenho de IA. Engenheiros que trabalharam no projeto automotivo aplicaram sua expertise em hardware paralelo e otimização de energia aos novos Macs, tornando-os líderes incontestes em computação de IA local. Esse desenvolvimento demonstra como investimentos tecnológicos aparentemente fracassados podem gerar insights valiosos e propriedade intelectual reutilizável. A competência em silício adquirida no projeto autônomo posicionou Apple como concorrente sério contra Nvidia e Intel no segmento de IA. Analistas veem o programa como exemplo de como falhas estratégicas podem catalisar inovações futuras. The Verge" data-title="Programa fracassado de carro autônomo da Apple deixa legado de chips IA poderosos" data-share-url="https://www.theverge.com/tech/964519/apple-silicon-self-driving-car-ai-m7-ultra">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">13:27</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Programa fracassado de carro autônomo da Apple deixa legado de chips IA poderosos</div>
+        <div class="news-summary">O programa de carro autônomo da Apple, abandonado após anos de investimento e pesquisa, não chegou ao mercado, mas deixou um legado tecnológico duradouro. Os chips desenvolvidos para processar dados de sensores, câmeras e sistemas de navegação autônoma evoluíram para os processadores M-series atuais da Apple—M6, M7 e M8—que agora dominam a indústria em desempenho de IA. Engenheiros que trabalharam no projeto automotivo aplicaram sua expertise em hardware paralelo e otimização de energia aos novos Macs, tornando-os líderes incontestes em computação de IA local. Esse desenvolvimento demonstra como investimentos tecnológicos aparentemente fracassados podem gerar insights valiosos e propriedade intelectual reutilizável. A competência em silício adquirida no projeto autônomo posicionou Apple como concorrente sério contra Nvidia e Intel no segmento de IA. Analistas veem o programa como exemplo de como falhas estratégicas podem catalisar inovações futuras.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/964519/apple-silicon-self-driving-car-ai-m7-ultra" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Como Philips Hue dominou o mercado de iluminação inteligente Philips Hue estabeleceu-se como padrão de facto do mercado de iluminação inteligente, construindo ecossistema onde história de produto e iterações constantes demonstram metodologia correta. Começando com conectividade simples, a linha Hue evoluiu para integração profunda com assistentes de voz (Alexa, Google), automação residencial, e agora IA para ambientação dinâmica. Podcast recente do The Verge explora como Philips Hue navegou competição, manteve qualidade, e antecipou demandas do mercado. Sucesso da Hue contrasta com outros ecossistemas de smart home que falharam ao tentar fazer muito ao mesmo tempo. Lição: focar em um produto, melhorá-lo continuamente, e integrar-se com plataformas abertas vence abordagens fechadas. Philips oferece modelo para como tech legacy pode permanecer relevante na era de IA. The Verge" data-title="Como Philips Hue dominou o mercado de iluminação inteligente" data-share-url="https://www.theverge.com/podcast/964515/philips-hue-smart-lights-version-history">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">11:38</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Como Philips Hue dominou o mercado de iluminação inteligente</div>
+        <div class="news-summary">Philips Hue estabeleceu-se como padrão de facto do mercado de iluminação inteligente, construindo ecossistema onde história de produto e iterações constantes demonstram metodologia correta. Começando com conectividade simples, a linha Hue evoluiu para integração profunda com assistentes de voz (Alexa, Google), automação residencial, e agora IA para ambientação dinâmica. Podcast recente do The Verge explora como Philips Hue navegou competição, manteve qualidade, e antecipou demandas do mercado. Sucesso da Hue contrasta com outros ecossistemas de smart home que falharam ao tentar fazer muito ao mesmo tempo. Lição: focar em um produto, melhorá-lo continuamente, e integrar-se com plataformas abertas vence abordagens fechadas. Philips oferece modelo para como tech legacy pode permanecer relevante na era de IA.</div>
+        <div class="news-link"><a href="https://www.theverge.com/podcast/964515/philips-hue-smart-lights-version-history" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI, Meta e SpaceXAI competem por modelos de IA mais eficientes em custo Três desenvolvedoras proeminentes de inteligência artificial—OpenAI, Meta e SpaceXAI—lançaram novos modelos na semana passada que prometem desempenho avançado com custos computacionais drasticamente reduzidos. A competição por eficiência reflete pressões econômicas crescentes no setor: treinar e operar modelos de IA consome bilhões em energia e infraestrutura. OpenAI apresentou versões otimizadas de seu GPT; Meta liberou melhorias ao Llama com menor footprint; e SpaceXAI divulgou arquitetura experimental de pruning neural. Esses avanços sugerem que a indústria está entrando em fase de consolidação onde eficiência, não apenas escala bruta, diferencia líderes de caudatários. Implicações incluem democratização de IA—modelos menores rodam em dispositivos edge, reduzindo dependência de data centers. Analistas veem essa mudança como crítica para adoção empresarial acelerada e for desenvolvimento de aplicações especializadas em setores como saúde e finança. Bloomberg Technology" data-title="OpenAI, Meta e SpaceXAI competem por modelos de IA mais eficientes em custo" data-share-url="https://www.bloomberg.com/news/articles/2026-07-12/openai-meta-spacexai-compete-for-more-cost-efficient-ai-models">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">OpenAI, Meta e SpaceXAI competem por modelos de IA mais eficientes em custo</div>
+        <div class="news-summary">Três desenvolvedoras proeminentes de inteligência artificial—OpenAI, Meta e SpaceXAI—lançaram novos modelos na semana passada que prometem desempenho avançado com custos computacionais drasticamente reduzidos. A competição por eficiência reflete pressões econômicas crescentes no setor: treinar e operar modelos de IA consome bilhões em energia e infraestrutura. OpenAI apresentou versões otimizadas de seu GPT; Meta liberou melhorias ao Llama com menor footprint; e SpaceXAI divulgou arquitetura experimental de pruning neural. Esses avanços sugerem que a indústria está entrando em fase de consolidação onde eficiência, não apenas escala bruta, diferencia líderes de caudatários. Implicações incluem democratização de IA—modelos menores rodam em dispositivos edge, reduzindo dependência de data centers. Analistas veem essa mudança como crítica para adoção empresarial acelerada e for desenvolvimento de aplicações especializadas em setores como saúde e finança.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-12/openai-meta-spacexai-compete-for-more-cost-efficient-ai-models" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Chips M6, M7 e M8 da Apple demonstram como IA está reformulando a companhia A evolução da linha de chips de silício da Apple—M6, M7 Pro, M7 Max, M7 Ultra e M8 em desenvolvimento—revela que IA tornou-se centro da estratégia de hardware da companhia. Cada geração incorpora núcleos de processamento de IA especializados, otimizações de machine learning, e aceleradores neurais integrados. Os Macs equipados com esses chips agora executam modelos de IA robusto localmente, sem necessidade de conexão com nuvem—oferecendo privacidade, latência reduzida e eficiência energética. A mudança afeta também processamento de imagem, síntese de voz, e recomendações. Apple também lança novos Apple Pencils com sensores de IA para detecção de pressão e inclinação mais precisos. Essa integração profunda de IA em hardware sinaliza que computação futura será fundamentalmente orientada a modelos de aprendizado. Competidores Intel e AMD estão sob pressão para acompanhar. Analistas veem os chips da Apple como modelo de como integrar IA no silício de forma elegante. Bloomberg Technology" data-title="Chips M6, M7 e M8 da Apple demonstram como IA está reformulando a companhia" data-share-url="https://www.bloomberg.com/news/newsletters/2026-07-12/apple-s-chip-plans-m6-m7-pro-m7-max-m7-ultra-m8-details-touch-macbook-pro">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Chips M6, M7 e M8 da Apple demonstram como IA está reformulando a companhia</div>
+        <div class="news-summary">A evolução da linha de chips de silício da Apple—M6, M7 Pro, M7 Max, M7 Ultra e M8 em desenvolvimento—revela que IA tornou-se centro da estratégia de hardware da companhia. Cada geração incorpora núcleos de processamento de IA especializados, otimizações de machine learning, e aceleradores neurais integrados. Os Macs equipados com esses chips agora executam modelos de IA robusto localmente, sem necessidade de conexão com nuvem—oferecendo privacidade, latência reduzida e eficiência energética. A mudança afeta também processamento de imagem, síntese de voz, e recomendações. Apple também lança novos Apple Pencils com sensores de IA para detecção de pressão e inclinação mais precisos. Essa integração profunda de IA em hardware sinaliza que computação futura será fundamentalmente orientada a modelos de aprendizado. Competidores Intel e AMD estão sob pressão para acompanhar. Analistas veem os chips da Apple como modelo de como integrar IA no silício de forma elegante.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/newsletters/2026-07-12/apple-s-chip-plans-m6-m7-pro-m7-max-m7-ultra-m8-details-touch-macbook-pro" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Oura Ring 5: menos é mais com o novo anel inteligente de saúde A Oura lançou sua quinta geração de anel inteligente, focando em simplificação e eficiência energética em vez de adição de novos sensores. O Oura Ring 5 reduz tamanho, peso, e consumo de bateria, enquanto melhora precisão de métricas de saúde—frequência cardíaca, variabilidade cardíaca, sono, temperatura da pele, e nível de atividade. O design minimalista reflete aprendizado de que wearables e IA funcionam melhor quando menos intrusivos. O anel se conecta a um aplicativo que usa machine learning para contextualizar dados biométricos e oferecer recomendações personalizadas de saúde. Público adota rapidamente o dispositivo, vendo-o como mais discreto que smartwatches. Analistas veem tendência crescente de integrar IA de forma tão discreta que é quase invisível. Oura Ring 5 compete com rivais como Apple Watch Ultra e Fitbit. The Verge" data-title="Oura Ring 5: menos é mais com o novo anel inteligente de saúde" data-share-url="https://www.theverge.com/tech/964386/oura-ring-5-review-smart-ring-wearables">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Oura Ring 5: menos é mais com o novo anel inteligente de saúde</div>
+        <div class="news-summary">A Oura lançou sua quinta geração de anel inteligente, focando em simplificação e eficiência energética em vez de adição de novos sensores. O Oura Ring 5 reduz tamanho, peso, e consumo de bateria, enquanto melhora precisão de métricas de saúde—frequência cardíaca, variabilidade cardíaca, sono, temperatura da pele, e nível de atividade. O design minimalista reflete aprendizado de que wearables e IA funcionam melhor quando menos intrusivos. O anel se conecta a um aplicativo que usa machine learning para contextualizar dados biométricos e oferecer recomendações personalizadas de saúde. Público adota rapidamente o dispositivo, vendo-o como mais discreto que smartwatches. Analistas veem tendência crescente de integrar IA de forma tão discreta que é quase invisível. Oura Ring 5 compete com rivais como Apple Watch Ultra e Fitbit.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/964386/oura-ring-5-review-smart-ring-wearables" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Luta contra data centers de IA está apenas começando Comunidades rurais e suburbanas dos EUA estão se mobilizando para bloquear construção de megacentros de dados dedicados a treinamento e operação de modelos de IA. Moradores levantam preocupações legítimas: consumo massivo de água, demanda energética insustentável (alguns data centers usam tanta eletricidade quanto cidades pequenas), aumento de ruído, e potencial para degradação ambiental. Em Mount Carmel Township, Pensilvânia, placas de protesto florescem em rodovias. Legisladores estaduais iniciam estudos de impacto ambiental. A indústria de tech argumenta que data centers são essenciais e que alternativas verdes existem—energia solar e eólica, resfriamento inovador. O conflito marca tensão fundamental: IA oferece benefícios transformadores, mas sua infraestrutura impõe custos locais concentrados. Precedentes regulatórios emergentes podem criar precedentes que ralentam ou redirecionam investimento de data centers para jurisdições com regulação mais flexível. The Verge" data-title="Luta contra data centers de IA está apenas começando" data-share-url="https://www.theverge.com/column/963346/ai-data-centers-fight">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Luta contra data centers de IA está apenas começando</div>
+        <div class="news-summary">Comunidades rurais e suburbanas dos EUA estão se mobilizando para bloquear construção de megacentros de dados dedicados a treinamento e operação de modelos de IA. Moradores levantam preocupações legítimas: consumo massivo de água, demanda energética insustentável (alguns data centers usam tanta eletricidade quanto cidades pequenas), aumento de ruído, e potencial para degradação ambiental. Em Mount Carmel Township, Pensilvânia, placas de protesto florescem em rodovias. Legisladores estaduais iniciam estudos de impacto ambiental. A indústria de tech argumenta que data centers são essenciais e que alternativas verdes existem—energia solar e eólica, resfriamento inovador. O conflito marca tensão fundamental: IA oferece benefícios transformadores, mas sua infraestrutura impõe custos locais concentrados. Precedentes regulatórios emergentes podem criar precedentes que ralentam ou redirecionam investimento de data centers para jurisdições com regulação mais flexível.</div>
+        <div class="news-link"><a href="https://www.theverge.com/column/963346/ai-data-centers-fight" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fundador da Zhipu argumenta que IA de fronteira deve permanecer acessível a todos O fundador do laboratório de IA chinês Zhipu defendeu publicamente que tecnologia de IA de fronteira—os modelos mais avançados e potentes—não deve ser monopolizada por poucos atores corporativos, mas sim mantida acessível de forma mais ampla. Essa posição contrasta com dinâmica atual onde OpenAI, Google, e Anthropic controlam acesso a modelos de ponta através de APIs pagas e restrições de uso. O argumento de Zhipu é que concentração extrema de capacidade de IA em mãos ocidentais cria riscos geopolíticos e desequilíbrios. Zhipu propõe modelo alternativo onde modelos de fronteira sejam disponibilizados como open-source ou sob licenças permissivas. Essa posição reflete crescente tensão geopolítica entre EUA e China por supremacia tecnológica em IA. Aliados de Zhipu na comunidade chinesa de pesquisa endossam a visão. Ocidente vê tal abertura como risco de segurança nacional. O debate marca inflexão importante em torno de gobernança de IA e direitos de acesso. Bloomberg Technology" data-title="Fundador da Zhipu argumenta que IA de fronteira deve permanecer acessível a todos" data-share-url="https://www.bloomberg.com/news/articles/2026-07-12/zhipu-s-chinese-founder-says-frontier-ai-should-stay-open-to-all">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">03:59</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Fundador da Zhipu argumenta que IA de fronteira deve permanecer acessível a todos</div>
+        <div class="news-summary">O fundador do laboratório de IA chinês Zhipu defendeu publicamente que tecnologia de IA de fronteira—os modelos mais avançados e potentes—não deve ser monopolizada por poucos atores corporativos, mas sim mantida acessível de forma mais ampla. Essa posição contrasta com dinâmica atual onde OpenAI, Google, e Anthropic controlam acesso a modelos de ponta através de APIs pagas e restrições de uso. O argumento de Zhipu é que concentração extrema de capacidade de IA em mãos ocidentais cria riscos geopolíticos e desequilíbrios. Zhipu propõe modelo alternativo onde modelos de fronteira sejam disponibilizados como open-source ou sob licenças permissivas. Essa posição reflete crescente tensão geopolítica entre EUA e China por supremacia tecnológica em IA. Aliados de Zhipu na comunidade chinesa de pesquisa endossam a visão. Ocidente vê tal abertura como risco de segurança nacional. O debate marca inflexão importante em torno de gobernança de IA e direitos de acesso.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-12/zhipu-s-chinese-founder-says-frontier-ai-should-stay-open-to-all" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Estratégia de chip Mac da Apple em transformação; falha no carro autônomo estabelece fundação de IA Newsletter Power On da Bloomberg examina como o programa cancelado de carro autônomo da Apple catalalisou desenvolvimento de chips M-series que agora dominam computação de IA. Decisão estratégica de Apple de canalizar aprendizados de engenharia automotiva para processadores Mac resultou em liderança indisputada em desempenho de IA por watt. O artigo em japonês explora nuances de como investimento aparentemente fracassado em veículos autônomos foi repurposado para criar vantagem competitiva sustetável. Engenheiros-chave migraram do projeto automotivo para divisão de silício. Arquitetura de neural engine desenvolvida para processar streams de sensores foi adaptada para machine learning generalizado. Isso exemplifica flexibilidade estratégica de Apple em realocação de capital e talento. Bloomberg Technology" data-title="Estratégia de chip Mac da Apple em transformação; falha no carro autônomo estabelece fundação de IA" data-share-url="https://www.bloomberg.com/jp/news/newsletters/2026-07-13/TI3F02VTTCZK00">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">00:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Estratégia de chip Mac da Apple em transformação; falha no carro autônomo estabelece fundação de IA</div>
+        <div class="news-summary">Newsletter Power On da Bloomberg examina como o programa cancelado de carro autônomo da Apple catalalisou desenvolvimento de chips M-series que agora dominam computação de IA. Decisão estratégica de Apple de canalizar aprendizados de engenharia automotiva para processadores Mac resultou em liderança indisputada em desempenho de IA por watt. O artigo em japonês explora nuances de como investimento aparentemente fracassado em veículos autônomos foi repurposado para criar vantagem competitiva sustetável. Engenheiros-chave migraram do projeto automotivo para divisão de silício. Arquitetura de neural engine desenvolvida para processar streams de sensores foi adaptada para machine learning generalizado. Isso exemplifica flexibilidade estratégica de Apple em realocação de capital e talento.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/jp/news/newsletters/2026-07-13/TI3F02VTTCZK00" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Baleias Bitcoin se movem após 7 anos de dormência, transferem USD 188 milhões Analista on-chain detectou transferência significativa de USD 188 milhões em Bitcoin de carteira whale que permaneceu inativa desde 2018. Whale originalmente adquiriu Bitcoin em 2018 quando criptomoeda era negociada em torno de USD 6.475, representando ganho aproximado de 10x desde então. Movimento de whale após anos de dormência frequentemente sinaliza para mercado oportunidade de revenda ou rebalanceamento de portfólio. Analistas especulam se whale está tomando lucros após rally recente ou reinvestindo em nível mais alto. Atividade de whale é monitorada como indicador de sinal bullish ou bearish, dependendo contexto. USD 188 milhões representam volume significativo que poderia impactar preço se vendido rapidamente em mercados líquidos limitados. The Block" data-title="Baleias Bitcoin se movem após 7 anos de dormência, transferem USD 188 milhões" data-share-url="https://www.theblock.co/post/407973/bitcoin-whale-moves-188-million-worth-btc?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">23:12</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Baleias Bitcoin se movem após 7 anos de dormência, transferem USD 188 milhões</div>
+        <div class="news-summary">Analista on-chain detectou transferência significativa de USD 188 milhões em Bitcoin de carteira whale que permaneceu inativa desde 2018. Whale originalmente adquiriu Bitcoin em 2018 quando criptomoeda era negociada em torno de USD 6.475, representando ganho aproximado de 10x desde então. Movimento de whale após anos de dormência frequentemente sinaliza para mercado oportunidade de revenda ou rebalanceamento de portfólio. Analistas especulam se whale está tomando lucros após rally recente ou reinvestindo em nível mais alto. Atividade de whale é monitorada como indicador de sinal bullish ou bearish, dependendo contexto. USD 188 milhões representam volume significativo que poderia impactar preço se vendido rapidamente em mercados líquidos limitados.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/407973/bitcoin-whale-moves-188-million-worth-btc?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="SBI Holdings do Japão investe pesadamente em cripto; insights sobre finança tradicional adotando ativos digitais SBI Holdings, gigante financeiro japonês, está realizando série de investimentos e parcerias estratégicas no setor cripto. Transações recentes indicam que instituição financeira tradicional de tier-1 vê cripto como classe de ativos legítima e oportunidade de crescimento de longo prazo. SBI está explorando infraestrutura blockchain, exchange de cripto, e possíveis produtos de stablecoin. Estratégia de SBI oferece insights sobre como finança tradicional está progressivamente abraçando ativos digitais—não por ideologia, mas por cálculo de retorno de investimento e demanda de consumidor. Movimentos de SBI sugerem que em Asia, particularmente Japão, aceitação de cripto por instituições mainstream está avançando mais rápido que em alguns mercados ocidentais. Analistas veem investimento de SBI como sinal bullish de que profissionalização do mercado cripto está ocorrendo. The Block" data-title="SBI Holdings do Japão investe pesadamente em cripto; insights sobre finança tradicional adotando ativos digitais" data-share-url="https://www.theblock.co/post/407977/the-funding-why-japan-sbi-holdings-is-investing-big-in-crypto?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">23:12</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">SBI Holdings do Japão investe pesadamente em cripto; insights sobre finança tradicional adotando ativos digitais</div>
+        <div class="news-summary">SBI Holdings, gigante financeiro japonês, está realizando série de investimentos e parcerias estratégicas no setor cripto. Transações recentes indicam que instituição financeira tradicional de tier-1 vê cripto como classe de ativos legítima e oportunidade de crescimento de longo prazo. SBI está explorando infraestrutura blockchain, exchange de cripto, e possíveis produtos de stablecoin. Estratégia de SBI oferece insights sobre como finança tradicional está progressivamente abraçando ativos digitais—não por ideologia, mas por cálculo de retorno de investimento e demanda de consumidor. Movimentos de SBI sugerem que em Asia, particularmente Japão, aceitação de cripto por instituições mainstream está avançando mais rápido que em alguns mercados ocidentais. Analistas veem investimento de SBI como sinal bullish de que profissionalização do mercado cripto está ocorrendo.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/407977/the-funding-why-japan-sbi-holdings-is-investing-big-in-crypto?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="ETFs de Bitcoin atraem USD 197 milhões, interrompendo sequência de 8 semanas de saídas ETFs de Bitcoin nos EUA atraíram USD 197 milhões em inflows durante semana, quebrando sequência de 8 semanas consecutivas de saídas que sinalizava ceticismo institucional. Entretanto, analistas alertam que reversão única não marca recuperação confirmada em demanda institucional por Bitcoin. Sequência anterior de outflows refletia preocupações sobre recessão, volatilidade geopolítica, e taxa de juros elevadas. Inflow desta semana pode ser rebound técnico ou genuíno sinal de retorno de apetite institucional. Para confirmar reversão de tendência, analistas buscam inflows consistentes ao longo de semanas vindouras e volume institucional renovado. Preço de Bitcoin permanece pressionado em torno de USD 64.000, abaixo do recente pico de USD 70.000. Sentimento institucional permanece misto. Cointelegraph" data-title="ETFs de Bitcoin atraem USD 197 milhões, interrompendo sequência de 8 semanas de saídas" data-share-url="https://cointelegraph.com/news/bitcoin-etfs-draw-197m-snap-8-week-outflow-streak?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">22:49</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">ETFs de Bitcoin atraem USD 197 milhões, interrompendo sequência de 8 semanas de saídas</div>
+        <div class="news-summary">ETFs de Bitcoin nos EUA atraíram USD 197 milhões em inflows durante semana, quebrando sequência de 8 semanas consecutivas de saídas que sinalizava ceticismo institucional. Entretanto, analistas alertam que reversão única não marca recuperação confirmada em demanda institucional por Bitcoin. Sequência anterior de outflows refletia preocupações sobre recessão, volatilidade geopolítica, e taxa de juros elevadas. Inflow desta semana pode ser rebound técnico ou genuíno sinal de retorno de apetite institucional. Para confirmar reversão de tendência, analistas buscam inflows consistentes ao longo de semanas vindouras e volume institucional renovado. Preço de Bitcoin permanece pressionado em torno de USD 64.000, abaixo do recente pico de USD 70.000. Sentimento institucional permanece misto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bitcoin-etfs-draw-197m-snap-8-week-outflow-streak?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Robinhood L2 disperta otimismo em Ethereum; Saylor turva as águas Anúncio da layer 2 de Ethereum construída pela Robinhood despertou entusiasmo na comunidade Ethereum, com analistas vendo integração de exchange mainstream em Ethereum Layer 2 como validação bullish para escalabilidade. Robinhood Chain oferece transações de baixa latência e custo reduzido para trading cripto, poupando usuários das taxas altas de mainnet Ethereum. Desenvolvimento representa marco em adoção institucional de Ethereum L2s. Entretanto, CEO Michael Saylor da MicroStrategy postou tweet enigmático sobre estratégia Bitcoin e venda recente de USD 216 milhões em BTC, causando confusão sobre sua posição atual. Mensagem ambígua de Saylor—aludindo que orange dots (referência a Bitcoin) contam apenas parte da história—levantou especulação de que companhia pode estar redirecionando foco ou testando mercado. Confusão de Saylor contrastou com entusiasmo claro ao redor de Robinhood Layer 2. Cointelegraph" data-title="Robinhood L2 disperta otimismo em Ethereum; Saylor turva as águas" data-share-url="https://cointelegraph.com/features/ethereum-climbs-as-robinhood-l2-takes-off?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">20:24</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Robinhood L2 disperta otimismo em Ethereum; Saylor turva as águas</div>
+        <div class="news-summary">Anúncio da layer 2 de Ethereum construída pela Robinhood despertou entusiasmo na comunidade Ethereum, com analistas vendo integração de exchange mainstream em Ethereum Layer 2 como validação bullish para escalabilidade. Robinhood Chain oferece transações de baixa latência e custo reduzido para trading cripto, poupando usuários das taxas altas de mainnet Ethereum. Desenvolvimento representa marco em adoção institucional de Ethereum L2s. Entretanto, CEO Michael Saylor da MicroStrategy postou tweet enigmático sobre estratégia Bitcoin e venda recente de USD 216 milhões em BTC, causando confusão sobre sua posição atual. Mensagem ambígua de Saylor—aludindo que orange dots (referência a Bitcoin) contam apenas parte da história—levantou especulação de que companhia pode estar redirecionando foco ou testando mercado. Confusão de Saylor contrastou com entusiasmo claro ao redor de Robinhood Layer 2.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/features/ethereum-climbs-as-robinhood-l2-takes-off?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Sinais de vida no mercado cripto? Estado da regulação com possível novo Clarity Act Fontes indicam que um novo rascunho da Clarity Act—legislação regulatória cripto americana que clarificar status legal de criptomoedas e stablecoins—pode ser divulgado esta semana. A Clarity Act é aguardada há meses como marco regulatório que poderia reduzir incerteza jurídica enfrentada por exchanges, protocolos, e investidores institucionais. Desafios permanecam em relação a questões de segurança nacional, compliance antilavagem de dinheiro, e proteção de consumidor. Comunidade cripto vê renovação da regulação como sinal positivo, potencialmente abrindo porta para adoção bancária mais ampla e ETFs de cripto. Entretanto, analistas alertam que formulação final pode incluir provisões que endureçam controles ou imponham compliance que favoreça players grandes. Possível aprovação do Clarity Act marcaria virada significativa em política cripto americana e influenciaria regulação em jurisdições aliadas. CoinDesk" data-title="Sinais de vida no mercado cripto? Estado da regulação com possível novo Clarity Act" data-share-url="https://www.coindesk.com/policy/2026/07/12/signs-of-life-state-of-crypto">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">15:30</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Sinais de vida no mercado cripto? Estado da regulação com possível novo Clarity Act</div>
+        <div class="news-summary">Fontes indicam que um novo rascunho da Clarity Act—legislação regulatória cripto americana que clarificar status legal de criptomoedas e stablecoins—pode ser divulgado esta semana. A Clarity Act é aguardada há meses como marco regulatório que poderia reduzir incerteza jurídica enfrentada por exchanges, protocolos, e investidores institucionais. Desafios permanecam em relação a questões de segurança nacional, compliance antilavagem de dinheiro, e proteção de consumidor. Comunidade cripto vê renovação da regulação como sinal positivo, potencialmente abrindo porta para adoção bancária mais ampla e ETFs de cripto. Entretanto, analistas alertam que formulação final pode incluir provisões que endureçam controles ou imponham compliance que favoreça players grandes. Possível aprovação do Clarity Act marcaria virada significativa em política cripto americana e influenciaria regulação em jurisdições aliadas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/12/signs-of-life-state-of-crypto" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="CEO Saylor da Strategy precisa de clareza em mensagem de pivot Bitcoin, diz StanChart Standard Chartered publicou análise apontando que Michael Saylor, CEO da MicroStrategy (maior tesouraria corporativa de Bitcoin), enfrenta desafios de comunicação que estão turvando narrativa de Bitcoin para investidores. Saylor tem historicamente sido evangelista bullish de Bitcoin, mas recentemente vendeu USD 216 milhões em BTC e postou mensagens crípticas sobre strategy. Standard Chartered sugere que falta de clareza sobre intenções de Saylor—se é venda tática ou pivot estratégico—está criando incerteza nos mercados. Investidores buscam sinais de alto nível sobre sentimento institucional, e inconsistência de Saylor está sendo interpretada como sinal negativo. Banco recomenda que Saylor e MicroStrategy comuniquem estratégia de Bitcoin com maior precisão e transparência para manter confiança institucional. Cointelegraph" data-title="CEO Saylor da Strategy precisa de clareza em mensagem de pivot Bitcoin, diz StanChart" data-share-url="https://cointelegraph.com/news/strategys-saylor-needs-clarity-in-btc-pivot-message-to-convince-investors-stanchart?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">15:16</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">CEO Saylor da Strategy precisa de clareza em mensagem de pivot Bitcoin, diz StanChart</div>
+        <div class="news-summary">Standard Chartered publicou análise apontando que Michael Saylor, CEO da MicroStrategy (maior tesouraria corporativa de Bitcoin), enfrenta desafios de comunicação que estão turvando narrativa de Bitcoin para investidores. Saylor tem historicamente sido evangelista bullish de Bitcoin, mas recentemente vendeu USD 216 milhões em BTC e postou mensagens crípticas sobre strategy. Standard Chartered sugere que falta de clareza sobre intenções de Saylor—se é venda tática ou pivot estratégico—está criando incerteza nos mercados. Investidores buscam sinais de alto nível sobre sentimento institucional, e inconsistência de Saylor está sendo interpretada como sinal negativo. Banco recomenda que Saylor e MicroStrategy comuniquem estratégia de Bitcoin com maior precisão e transparência para manter confiança institucional.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/strategys-saylor-needs-clarity-in-btc-pivot-message-to-convince-investors-stanchart?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercado de stablecoins encolheu USD 10 bilhões desde maio, mas analista não vê pânico Capitalização de mercado de stablecoins contraiu USD 10 bilhões desde maio, com queda de USD 7,7 bilhões ocorrida apenas em junho—a maior contração em dólar desde o colapso Terra-Luna em maio de 2022. Analistas investigam causa: possível migração de liquidez para ativos de risco em rally de ações, ou apreensão sobre regulação crescente de stablecoins. Entretanto, especialista consultado pela CoinDesk defende que contração não é sinal de falha sistêmica ou fuga em pânico. Stablecoins continuam críticas para liquidez em mercados cripto, e recentes aprovações regulatórias de E-Money Regulation na Europa sugerem trajetória normalizadora. Analista sugere que o mercado retomará crescimento quando incerteza regulatória se dissipar. Valor absoluto de stablecoins em circulação ainda supera USD 150 bilhões, mantendo impacto significativo em ecossistema cripto. CoinDesk" data-title="Mercado de stablecoins encolheu USD 10 bilhões desde maio, mas analista não vê pânico" data-share-url="https://www.coindesk.com/markets/2026/07/12/stablecoin-market-cap-has-shrunk-by-usd10-billion-since-may-but-analyst-sees-no-reason-to-panic">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mercado de stablecoins encolheu USD 10 bilhões desde maio, mas analista não vê pânico</div>
+        <div class="news-summary">Capitalização de mercado de stablecoins contraiu USD 10 bilhões desde maio, com queda de USD 7,7 bilhões ocorrida apenas em junho—a maior contração em dólar desde o colapso Terra-Luna em maio de 2022. Analistas investigam causa: possível migração de liquidez para ativos de risco em rally de ações, ou apreensão sobre regulação crescente de stablecoins. Entretanto, especialista consultado pela CoinDesk defende que contração não é sinal de falha sistêmica ou fuga em pânico. Stablecoins continuam críticas para liquidez em mercados cripto, e recentes aprovações regulatórias de E-Money Regulation na Europa sugerem trajetória normalizadora. Analista sugere que o mercado retomará crescimento quando incerteza regulatória se dissipar. Valor absoluto de stablecoins em circulação ainda supera USD 150 bilhões, mantendo impacto significativo em ecossistema cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/12/stablecoin-market-cap-has-shrunk-by-usd10-billion-since-may-but-analyst-sees-no-reason-to-panic" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Chefe cripto do Paquistão busca diálogo após parecer de estudioso islâmico contra pagamentos cripto Órgão regulador de ativos virtuais do Paquistão chamou para diálogo contínuo após encontro com Mufti Taqi Usmani, estudioso islâmico proeminente, que emitiu parecer (fatwa) declarando compras de criptomoedas impermissíveis sob lei islâmica. Decisão religiosa complica esforços de normalização regulatória de cripto no Paquistão, país majoritariamente muçulmano onde interpretações islâmicas influenciam legislação e conformidade. Mufti Usmani baseou parecer em argumentos de que criptomoedas carecem de valor intrínseco e violam princípios de riba (usura). Regulador busca continuação de engajamento com estudiosos islâmicos para construir framework que permita cripto sob orientação religiosa aceita. Resultado desta negociação estabelecerá precedente para como países islâmicos navegam adoção cripto enquanto respeitam ensinos religiosos. Cointelegraph" data-title="Chefe cripto do Paquistão busca diálogo após parecer de estudioso islâmico contra pagamentos cripto" data-share-url="https://cointelegraph.com/news/pakistan-crypto-chief-dialogue-islamic-ruling?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">09:26</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Chefe cripto do Paquistão busca diálogo após parecer de estudioso islâmico contra pagamentos cripto</div>
+        <div class="news-summary">Órgão regulador de ativos virtuais do Paquistão chamou para diálogo contínuo após encontro com Mufti Taqi Usmani, estudioso islâmico proeminente, que emitiu parecer (fatwa) declarando compras de criptomoedas impermissíveis sob lei islâmica. Decisão religiosa complica esforços de normalização regulatória de cripto no Paquistão, país majoritariamente muçulmano onde interpretações islâmicas influenciam legislação e conformidade. Mufti Usmani baseou parecer em argumentos de que criptomoedas carecem de valor intrínseco e violam princípios de riba (usura). Regulador busca continuação de engajamento com estudiosos islâmicos para construir framework que permita cripto sob orientação religiosa aceita. Resultado desta negociação estabelecerá precedente para como países islâmicos navegam adoção cripto enquanto respeitam ensinos religiosos.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/pakistan-crypto-chief-dialogue-islamic-ruling?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin se aproxima de linha de suporte power-law rastreada pela Fidelity desde 2015 Analista Jurien Timmer, diretor de macroeconomia global da Fidelity, observa que Bitcoin está se aproximando de linha de suporte de power-law que a empresa tem rastreado desde 2015. Essa zona de acumulação teórica representa nível onde historicamente Bitcoin atrai compradores institucionais e long-term holders. Timmer classifica a situação atual como zona de acumulação, mas nota falta de catalisador claro para bounce significativo. Preço de Bitcoin oscila em torno de USD 64.000, enquanto mercado digere volatilidade geopolítica e expectativas de política monetária. Analista sugere que breakout significativo requer cenário exógeno—decisão regulatória favorável, aprovação de ETF de spot Bitcoin adicional, ou enfraquecimento de dólar. Até lá, Bitcoin permanece em consolidação, ofertecendo oportunidade para accumuladores pacientes. CoinDesk" data-title="Bitcoin se aproxima de linha de suporte power-law rastreada pela Fidelity desde 2015" data-share-url="https://www.coindesk.com/markets/2026/07/12/bitcoin-is-nearing-a-power-law-support-line-fidelity-has-tracked-since-2015">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">08:30</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin se aproxima de linha de suporte power-law rastreada pela Fidelity desde 2015</div>
+        <div class="news-summary">Analista Jurien Timmer, diretor de macroeconomia global da Fidelity, observa que Bitcoin está se aproximando de linha de suporte de power-law que a empresa tem rastreado desde 2015. Essa zona de acumulação teórica representa nível onde historicamente Bitcoin atrai compradores institucionais e long-term holders. Timmer classifica a situação atual como zona de acumulação, mas nota falta de catalisador claro para bounce significativo. Preço de Bitcoin oscila em torno de USD 64.000, enquanto mercado digere volatilidade geopolítica e expectativas de política monetária. Analista sugere que breakout significativo requer cenário exógeno—decisão regulatória favorável, aprovação de ETF de spot Bitcoin adicional, ou enfraquecimento de dólar. Até lá, Bitcoin permanece em consolidação, ofertecendo oportunidade para accumuladores pacientes.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/12/bitcoin-is-nearing-a-power-law-support-line-fidelity-has-tracked-since-2015" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Estudo Cambridge posiciona Ethereum perto do fim inferior de intensidade energética Proof-of-Stake Pesquisadores da Universidade de Cambridge publicaram análise comparativa de consumo energético de redes blockchain de Proof-of-Stake, descobrindo que Ethereum, após migração para PoS em 2022, consome 7,87 GWh anuais e possui segunda-menor intensidade energética ajustada por valor de mercado entre blockchains PoS. Descoberta rebate narrativas anteriores de que Ethereum permanecia ineficiente energeticamente. Estudo utilizou metodologia rigorosa que normalizou consumo pela capitalização de mercado para permitir comparação justa. Cambridge credita eficiência de Ethereum a design sofisticado de consensus, otimizações de cliente, e escala econômica. Resultados oferecem munição para defensores de Ethereum em debates sobre sustentabilidade ambiental de cripto. Críticos argumentam que mesmo baixo consumo permanece injustificável para redes financeiras tradicionais. Cointelegraph" data-title="Estudo Cambridge posiciona Ethereum perto do fim inferior de intensidade energética Proof-of-Stake" data-share-url="https://cointelegraph.com/news/ethereum-pos-energy-intensity-cambridge-study?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">06:29</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Estudo Cambridge posiciona Ethereum perto do fim inferior de intensidade energética Proof-of-Stake</div>
+        <div class="news-summary">Pesquisadores da Universidade de Cambridge publicaram análise comparativa de consumo energético de redes blockchain de Proof-of-Stake, descobrindo que Ethereum, após migração para PoS em 2022, consome 7,87 GWh anuais e possui segunda-menor intensidade energética ajustada por valor de mercado entre blockchains PoS. Descoberta rebate narrativas anteriores de que Ethereum permanecia ineficiente energeticamente. Estudo utilizou metodologia rigorosa que normalizou consumo pela capitalização de mercado para permitir comparação justa. Cambridge credita eficiência de Ethereum a design sofisticado de consensus, otimizações de cliente, e escala econômica. Resultados oferecem munição para defensores de Ethereum em debates sobre sustentabilidade ambiental de cripto. Críticos argumentam que mesmo baixo consumo permanece injustificável para redes financeiras tradicionais.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/ethereum-pos-energy-intensity-cambridge-study?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin e ether pouco alterados enquanto EUA lança novos ataques ao Irã Criptomoedas mostraram resiliência relativa quando EUA lançou terceira rodada de ataques contra Irã esta semana e Teerã alegou fechamento do Estreito de Ormuz. Bitcoin e ether operavam próximos a níveis prévios, com volatilidade limitada a flutuações normais de trading. Alguns analistas especulam que mercado cripto pode estar precificando geopolitical risk de forma diferente que mercados tradicionais—possibilidade de que demanda por ativos alternativos em momentos de instabilidade geopolítica permanece hipotética. Ouro e dólar mostraram movimentos mais acentuados que Bitcoin, sugerindo que mercado não vê cripto como hedge de geopolitical instability como nos ciclos anteriores. Analista observa que adoção institucional maior pode estar criando comportamento de mercado menos volátil e mais racional. CoinDesk" data-title="Bitcoin e ether pouco alterados enquanto EUA lança novos ataques ao Irã" data-share-url="https://www.coindesk.com/markets/2026/07/12/bitcoin-ether-little-changed-as-u-s-launches-fresh-iran-strikes">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">03:18</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin e ether pouco alterados enquanto EUA lança novos ataques ao Irã</div>
+        <div class="news-summary">Criptomoedas mostraram resiliência relativa quando EUA lançou terceira rodada de ataques contra Irã esta semana e Teerã alegou fechamento do Estreito de Ormuz. Bitcoin e ether operavam próximos a níveis prévios, com volatilidade limitada a flutuações normais de trading. Alguns analistas especulam que mercado cripto pode estar precificando geopolitical risk de forma diferente que mercados tradicionais—possibilidade de que demanda por ativos alternativos em momentos de instabilidade geopolítica permanece hipotética. Ouro e dólar mostraram movimentos mais acentuados que Bitcoin, sugerindo que mercado não vê cripto como hedge de geopolitical instability como nos ciclos anteriores. Analista observa que adoção institucional maior pode estar criando comportamento de mercado menos volátil e mais racional.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/12/bitcoin-ether-little-changed-as-u-s-launches-fresh-iran-strikes" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ripple considerou encerrar e entregar XRP aos acionistas, diz CEO CEO da Ripple Brad Garlinghouse revelou em entrevista que ele e co-fundador Chris Larsen consideraram seriamente encerrar operações da empresa e distribuir XRP acumulado aos acionistas durante período de pressão regulatória e litígio com SEC. Essa consideração ocorreu durante fase mais aguda da disputa SEC-Ripple, quando futuro da companhia e seu token XRP pareciam ameaçados. Garlinghouse explicou que decisão de permanecer foi baseada em convicção de que caso regulatório seria eventualmente resolvido favoravelmente e que Ripple poderia continuar criando valor. Com recente movimento de regulação cripto mais favorável e resolução parcial de disputas, Ripple permaneceu na operação. Revelação oferece visão rara de ponto de breaking de executivo durante stress corporativo extremo e oferece insight sobre dinâmica de confiança e resiliência em empresas cripto. CoinDesk" data-title="Ripple considerou encerrar e entregar XRP aos acionistas, diz CEO" data-share-url="https://www.coindesk.com/markets/2026/07/12/ripple-once-weighed-shutting-down-and-handing-xrp-to-shareholders-ceo-says">
+        <div class="news-meta">
+          <span class="news-date">12 jul 2026</span>
+          <span class="news-time">03:09</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Ripple considerou encerrar e entregar XRP aos acionistas, diz CEO</div>
+        <div class="news-summary">CEO da Ripple Brad Garlinghouse revelou em entrevista que ele e co-fundador Chris Larsen consideraram seriamente encerrar operações da empresa e distribuir XRP acumulado aos acionistas durante período de pressão regulatória e litígio com SEC. Essa consideração ocorreu durante fase mais aguda da disputa SEC-Ripple, quando futuro da companhia e seu token XRP pareciam ameaçados. Garlinghouse explicou que decisão de permanecer foi baseada em convicção de que caso regulatório seria eventualmente resolvido favoravelmente e que Ripple poderia continuar criando valor. Com recente movimento de regulação cripto mais favorável e resolução parcial de disputas, Ripple permaneceu na operação. Revelação oferece visão rara de ponto de breaking de executivo durante stress corporativo extremo e oferece insight sobre dinâmica de confiança e resiliência em empresas cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/12/ripple-once-weighed-shutting-down-and-handing-xrp-to-shareholders-ceo-says" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
