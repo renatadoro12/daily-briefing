@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">14 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">A escalada militar entre EUA e Irã reacende tensões globais e pressiona os mercados energéticos, enquanto dados de inflação mais baixa oferecem alívio temporário. Europa demonstra força coletiva mas permanece à margem do conflito no Golfo, enquanto a tecnologia e criptomoedas avançam com novos lançamentos de hardware de IA e regulações mais claras para ativos tokenizados. O dia revela a fragilidade do equilíbrio entre ganhos econômicos recentes e riscos geopolíticos que podem reverter progresso inflacionário em semanas.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-07-13/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14" selected>2026-07-14</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Centros de dados adicionarão bilhões em custos de energia em 13 estados Um leilão de energia conduzido por um gigantesco operador de rede é esperado para adicionar USD 6,3 bilhões em cobranças adicionais a consumidores e empresas nos próximos anos. A explosão de demanda por energia causada por centros de dados de inteligência artificial está pressionando infraestrutura de eletricidade em 13 estados americanos, forçando aumentos de preços. Operadores de rede alertam que sem investimentos massivos em geração e transmissão de energia, o país enfrentará gargalos críticos que limitarão crescimento de tecnologia. Consumidores residenciais enfrentarão contas de eletricidade mais altas como resultado das pressões inflacionárias criadas pela indústria de IA. Grandes operadores de data center como Amazon, Google e Meta enfrentam custos operacionais elevados que podem desacelerar expansão de capacidade de IA. O dinamismo revela tensão fundamental entre imperativos de crescimento tecnológico e capacidade de infraestrutura existente, forçando debate sobre quem deve financiar modernização de redes elétricas americanas. NYT &gt; Business" data-title="Centros de dados adicionarão bilhões em custos de energia em 13 estados" data-share-url="https://www.nytimes.com/2026/07/14/business/energy-environment/pjm-electricity-prices-data-centers.html">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">21:39</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Centros de dados adicionarão bilhões em custos de energia em 13 estados</div>
+        <div class="news-summary">Um leilão de energia conduzido por um gigantesco operador de rede é esperado para adicionar USD 6,3 bilhões em cobranças adicionais a consumidores e empresas nos próximos anos. A explosão de demanda por energia causada por centros de dados de inteligência artificial está pressionando infraestrutura de eletricidade em 13 estados americanos, forçando aumentos de preços. Operadores de rede alertam que sem investimentos massivos em geração e transmissão de energia, o país enfrentará gargalos críticos que limitarão crescimento de tecnologia. Consumidores residenciais enfrentarão contas de eletricidade mais altas como resultado das pressões inflacionárias criadas pela indústria de IA. Grandes operadores de data center como Amazon, Google e Meta enfrentam custos operacionais elevados que podem desacelerar expansão de capacidade de IA. O dinamismo revela tensão fundamental entre imperativos de crescimento tecnológico e capacidade de infraestrutura existente, forçando debate sobre quem deve financiar modernização de redes elétricas americanas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/14/business/energy-environment/pjm-electricity-prices-data-centers.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Casa Branca comemora dados de inflação enquanto guerra do Irã aciona novo pico de preços A Casa Branca celebrou a notícia de melhoria nos preços ao consumidor em junho como validação de sua gestão econômica e políticas monetárias restritivas. Porta-vozes do governo ressaltaram que a desinflação estava em curso e que o Federal Reserve teria espaço para reduzir taxas de juros nos próximos meses. Contudo, a celebração foi ofuscada pela escalada militar imediata com Irã, que enviou preços de energia disparando novamente e ameaçando reverter ganhos inflacionários. Analistas observam que os ganhos de junho são frágeis e vulneráveis a choques de oferta, especialmente no mercado de petróleo onde qualquer interrupção pode reacender pressões de preços. O timing infortunado da escalada do Irã semanas após dados positivos de inflação cria dilema político para Trump, que celebra sucessos econômicos enquanto enfrenta responsabilidade pela nova crise de energia. Economistas alertam que se o conflito no Golfo persistir, expectativas inflacionárias podem se desancorar novamente, forçando o Fed a manter juros altos por mais tempo. A dinâmica ilustra fragilidade do progresso econômico recente e vulnerabilidade da economia a choques geopolíticos. NYT &gt; Business" data-title="Casa Branca comemora dados de inflação enquanto guerra do Irã aciona novo pico de preços" data-share-url="https://www.nytimes.com/2026/07/14/business/economy/inflation-data-iran-war-price-surge.html">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">19:43</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Casa Branca comemora dados de inflação enquanto guerra do Irã aciona novo pico de preços</div>
+        <div class="news-summary">A Casa Branca celebrou a notícia de melhoria nos preços ao consumidor em junho como validação de sua gestão econômica e políticas monetárias restritivas. Porta-vozes do governo ressaltaram que a desinflação estava em curso e que o Federal Reserve teria espaço para reduzir taxas de juros nos próximos meses. Contudo, a celebração foi ofuscada pela escalada militar imediata com Irã, que enviou preços de energia disparando novamente e ameaçando reverter ganhos inflacionários. Analistas observam que os ganhos de junho são frágeis e vulneráveis a choques de oferta, especialmente no mercado de petróleo onde qualquer interrupção pode reacender pressões de preços. O timing infortunado da escalada do Irã semanas após dados positivos de inflação cria dilema político para Trump, que celebra sucessos econômicos enquanto enfrenta responsabilidade pela nova crise de energia. Economistas alertam que se o conflito no Golfo persistir, expectativas inflacionárias podem se desancorar novamente, forçando o Fed a manter juros altos por mais tempo. A dinâmica ilustra fragilidade do progresso econômico recente e vulnerabilidade da economia a choques geopolíticos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/14/business/economy/inflation-data-iran-war-price-surge.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EUA e Irã reavivam guerra sobre o Estreito de Hormuz Os EUA e Irã retornaram a uma guerra aberta pelo controle do Estreito de Hormuz, uma das rotas comerciais mais críticas do mundo. O presidente Trump planejava reimpor um bloqueio aos portos iranianos nesta terça-feira, escalando significativamente as tensões no Golfo Pérsico. Irã respondeu com preparações militares próprias, criando um cenário de confronto direto que não era visto desde 2024. A escalada ameaça interromper o fluxo global de petróleo e coloca em risco a estabilidade econômica mundial. Analistas alertam que um bloqueio mantido poderia enviar preços de energia para níveis recordes, revertendo os ganhos recentes contra a inflação. O conflito também força aliados europeus a escolher entre apoiar Washington ou manter neutralidade, criando fissuras na coesão do Ocidente. Trump mencionou que quer que nações do Golfo invistam nos EUA em troca de passagem segura, criando um modelo sem precedentes de extorsão diplomática. NYT &gt; World News" data-title="EUA e Irã reavivam guerra sobre o Estreito de Hormuz" data-share-url="https://www.nytimes.com/live/2026/07/14/world/iran-war-trump-hormuz">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">17:36</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">EUA e Irã reavivam guerra sobre o Estreito de Hormuz</div>
+        <div class="news-summary">Os EUA e Irã retornaram a uma guerra aberta pelo controle do Estreito de Hormuz, uma das rotas comerciais mais críticas do mundo. O presidente Trump planejava reimpor um bloqueio aos portos iranianos nesta terça-feira, escalando significativamente as tensões no Golfo Pérsico. Irã respondeu com preparações militares próprias, criando um cenário de confronto direto que não era visto desde 2024. A escalada ameaça interromper o fluxo global de petróleo e coloca em risco a estabilidade econômica mundial. Analistas alertam que um bloqueio mantido poderia enviar preços de energia para níveis recordes, revertendo os ganhos recentes contra a inflação. O conflito também força aliados europeus a escolher entre apoiar Washington ou manter neutralidade, criando fissuras na coesão do Ocidente. Trump mencionou que quer que nações do Golfo invistam nos EUA em troca de passagem segura, criando um modelo sem precedentes de extorsão diplomática.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/07/14/world/iran-war-trump-hormuz" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Europa flexiona músculos na Ucrânia mas permanece à margem na crise do Irã O presidente Emmanuel Macron da França realizou o desfile do Dia da Bastilha em Paris, reunindo aliados europeus em demonstração de força coletiva e unidade geopolítica. O evento marcou um show de solidariedade entre as nações europeias, especialmente em relação ao apoio à Ucrânia contra a Rússia. Contudo, essa unidade não se estende ao conflito entre EUA e Irã no Golfo Pérsico, onde a Europa permanece significativamente ausente das decisões estratégicas. A desconexão entre o papel europeu na crise ucraniana e sua marginalização nas tensões do Oriente Médio destaca a fragmentação da estratégia ocidental global. Europa teme perder influência nas decisões críticas enquanto Trump consolida controle sobre política externa americana. Macron tem tentado impulsionar uma defesa europeia mais independente, mas a crise do Irã mostra limitações práticas dessa aspiração. O dilema europeu reflete a realidade de que o continente ainda depende fortemente da proteção militar americana, criando contradições em sua busca por autonomia geopolítica. NYT &gt; World News" data-title="Europa flexiona músculos na Ucrânia mas permanece à margem na crise do Irã" data-share-url="https://www.nytimes.com/2026/07/14/world/europe/macron-trump-bastille-day-military-parade.html">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">16:17</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Europa flexiona músculos na Ucrânia mas permanece à margem na crise do Irã</div>
+        <div class="news-summary">O presidente Emmanuel Macron da França realizou o desfile do Dia da Bastilha em Paris, reunindo aliados europeus em demonstração de força coletiva e unidade geopolítica. O evento marcou um show de solidariedade entre as nações europeias, especialmente em relação ao apoio à Ucrânia contra a Rússia. Contudo, essa unidade não se estende ao conflito entre EUA e Irã no Golfo Pérsico, onde a Europa permanece significativamente ausente das decisões estratégicas. A desconexão entre o papel europeu na crise ucraniana e sua marginalização nas tensões do Oriente Médio destaca a fragmentação da estratégia ocidental global. Europa teme perder influência nas decisões críticas enquanto Trump consolida controle sobre política externa americana. Macron tem tentado impulsionar uma defesa europeia mais independente, mas a crise do Irã mostra limitações práticas dessa aspiração. O dilema europeu reflete a realidade de que o continente ainda depende fortemente da proteção militar americana, criando contradições em sua busca por autonomia geopolítica.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/14/world/europe/macron-trump-bastille-day-military-parade.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Inflação desacelera para 3,5% em junho com alívio temporário de acordo breve entre EUA e Irã A inflação ao consumidor desacelerou para 3,5% ao ano em junho, o menor ritmo em seis anos e uma surpresa positiva para o Federal Reserve e o governo Trump. Os dados revelaram que os preços subiram menos do que esperado, oferecendo alívio sobre a pressão inflacionária que afligiu a economia americana. O anúncio foi bem recebido pelos mercados, com comentaristas celebrando progresso na volta à meta de inflação de 2% do Fed. Contudo, a celebração é temperada pela escalada imediata da crise do Irã, que já enviou preços de petróleo para cima novamente. O preço médio da gasolina subiu USD 0,70 por galão comparado a 2025, parcialmente revertendo ganhos recentes na redução de custos energéticos. Analistas alertam que se o conflito no Golfo persistir, os ganhos inflacionários de junho podem se dissolver rapidamente em julho e agosto. A dinâmica ilustra como a economia global permanece vulnerável a choques geopolíticos que podem derrotar políticas monetárias restritivas do Fed. The Guardian | Business" data-title="Inflação desacelera para 3,5% em junho com alívio temporário de acordo breve entre EUA e Irã" data-share-url="https://www.theguardian.com/business/2026/jul/14/june-cpi-report-inflation-cools-iran-deal">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">13:56</span>
+          <span class="news-source">The Guardian | Business</span>
+        </div>
+        <div class="news-title">Inflação desacelera para 3,5% em junho com alívio temporário de acordo breve entre EUA e Irã</div>
+        <div class="news-summary">A inflação ao consumidor desacelerou para 3,5% ao ano em junho, o menor ritmo em seis anos e uma surpresa positiva para o Federal Reserve e o governo Trump. Os dados revelaram que os preços subiram menos do que esperado, oferecendo alívio sobre a pressão inflacionária que afligiu a economia americana. O anúncio foi bem recebido pelos mercados, com comentaristas celebrando progresso na volta à meta de inflação de 2% do Fed. Contudo, a celebração é temperada pela escalada imediata da crise do Irã, que já enviou preços de petróleo para cima novamente. O preço médio da gasolina subiu USD 0,70 por galão comparado a 2025, parcialmente revertendo ganhos recentes na redução de custos energéticos. Analistas alertam que se o conflito no Golfo persistir, os ganhos inflacionários de junho podem se dissolver rapidamente em julho e agosto. A dinâmica ilustra como a economia global permanece vulnerável a choques geopolíticos que podem derrotar políticas monetárias restritivas do Fed.</div>
+        <div class="news-link"><a href="https://www.theguardian.com/business/2026/jul/14/june-cpi-report-inflation-cools-iran-deal" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="IBM perde um quarto de seu valor com queda acentuada de ações e lucros oscilantes As ações da IBM despencaram mais de 25% após a empresa emitir um aviso de lucros fraco referente ao segundo trimestre. O gigante de tecnologia relatou resultados decepcionantes que enviaram ondas de choque através do setor de software, afetando também empresas como Microsoft que seguem IBM de perto. A queda massiva de valor aponta para desafios estruturais enfrentados pela IBM na adaptação à economia de inteligência artificial e computação em nuvem. Investidores perderam bilhões em capitalização de mercado em questão de horas, refletindo perda de confiança na trajetória da empresa. A fraqueza operacional da IBM contrasta com o desempenho de concorrentes como Google e Amazon que crescem em serviços de nuvem alimentados por IA. Analistas agora questionam se a IBM conseguirá recuperar relevância em um mercado dominado por gigantes de tecnologia que pivotaram com sucesso para IA. O evento amplia preocupações sobre consolidação tecnológica e redução de competição real no setor de computação empresarial. The Guardian | Business" data-title="IBM perde um quarto de seu valor com queda acentuada de ações e lucros oscilantes" data-share-url="https://www.theguardian.com/technology/2026/jul/14/ibm-shares-profit-drop-value">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">13:38</span>
+          <span class="news-source">The Guardian | Business</span>
+        </div>
+        <div class="news-title">IBM perde um quarto de seu valor com queda acentuada de ações e lucros oscilantes</div>
+        <div class="news-summary">As ações da IBM despencaram mais de 25% após a empresa emitir um aviso de lucros fraco referente ao segundo trimestre. O gigante de tecnologia relatou resultados decepcionantes que enviaram ondas de choque através do setor de software, afetando também empresas como Microsoft que seguem IBM de perto. A queda massiva de valor aponta para desafios estruturais enfrentados pela IBM na adaptação à economia de inteligência artificial e computação em nuvem. Investidores perderam bilhões em capitalização de mercado em questão de horas, refletindo perda de confiança na trajetória da empresa. A fraqueza operacional da IBM contrasta com o desempenho de concorrentes como Google e Amazon que crescem em serviços de nuvem alimentados por IA. Analistas agora questionam se a IBM conseguirá recuperar relevância em um mercado dominado por gigantes de tecnologia que pivotaram com sucesso para IA. O evento amplia preocupações sobre consolidação tecnológica e redução de competição real no setor de computação empresarial.</div>
+        <div class="news-link"><a href="https://www.theguardian.com/technology/2026/jul/14/ibm-shares-profit-drop-value" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Trump pagou USD 2 milhões por empresa sul-coreana enfrentando investigação comercial O presidente Trump recebeu um pagamento de USD 2 milhões de uma empresa sul-coreana que está simultaneamente sujeita a investigações comerciais federais sobre tarifas de alumínio. A transação ilustra conflitos de interesse perigosos criados pela manutenção de laços financeiros pessoais de Trump com negócios estrangeiros enquanto exerce poder presidencial. Autoridades federais abriram investigações sobre importações de alumínio da Coreia do Sul, levantando questões sobre se Trump pode favorecer ou desfavorecer a empresa baseado em seus interesses financeiros pessoais. O escândalo ressuscita debates sobre divórcio entre riqueza pessoal e responsabilidades presidenciais que marcaram a primeira gestão Trump. Críticos argumentam que Trump deveria ter colocado seus ativos em fideicomisso cego para evitar aparência de corrupção ou favorecimento. O episódio enfraquece a posição de Trump em reivindicações sobre transparência governamental e luta contra corrupção, criando munição para oponentes políticos. A dinâmica ilustra desafios estruturais de ter um presidente extremamente rico com negócios globais contínuos. NYT &gt; Business" data-title="Trump pagou USD 2 milhões por empresa sul-coreana enfrentando investigação comercial" data-share-url="https://www.nytimes.com/2026/07/14/us/politics/trump-south-korea-aluminum.html">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">13:35</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Trump pagou USD 2 milhões por empresa sul-coreana enfrentando investigação comercial</div>
+        <div class="news-summary">O presidente Trump recebeu um pagamento de USD 2 milhões de uma empresa sul-coreana que está simultaneamente sujeita a investigações comerciais federais sobre tarifas de alumínio. A transação ilustra conflitos de interesse perigosos criados pela manutenção de laços financeiros pessoais de Trump com negócios estrangeiros enquanto exerce poder presidencial. Autoridades federais abriram investigações sobre importações de alumínio da Coreia do Sul, levantando questões sobre se Trump pode favorecer ou desfavorecer a empresa baseado em seus interesses financeiros pessoais. O escândalo ressuscita debates sobre divórcio entre riqueza pessoal e responsabilidades presidenciais que marcaram a primeira gestão Trump. Críticos argumentam que Trump deveria ter colocado seus ativos em fideicomisso cego para evitar aparência de corrupção ou favorecimento. O episódio enfraquece a posição de Trump em reivindicações sobre transparência governamental e luta contra corrupção, criando munição para oponentes políticos. A dinâmica ilustra desafios estruturais de ter um presidente extremamente rico com negócios globais contínuos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/14/us/politics/trump-south-korea-aluminum.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Trump reembolsa USD 81 bilhões em tarifas após suprema corte declará-las ilegais O governo americano foi forçado a reembolsar bilhões em tarifas que havia cobrado de empresas importadoras após a Suprema Corte federal declarar as medidas ilegais sob as regras comerciais existentes. Trump havia imposto tarifas agressivas em produtos importados da China e de outros países, visando renegociar acordos comerciais e fortalecer manufatura americana. Contudo, os tribunais determinaram que o presidente excedeu sua autoridade constitucional ao implementar tarifas tão abrangentes sem aprovação congressional explícita. O reembolso de USD 81 bilhões cria um precedente importante sobre os limites do poder executivo em política comercial e afeta significativamente o orçamento federal. Empresas que pagaram as tarifas agora recuperam fundos, melhorando suas margens operacionais e fluxos de caixa. O resultado enfraquece politicamente Trump em relação à sua agenda comercialista, embora ele continue buscando formas alternativas de implementar políticas protecionistas. A decisão judicial afirma que mesmo um presidente em sua segunda gestão não pode contornar o Congresso em matérias comerciais fundamentais, reforçando equilíbrios constitucionais. The Guardian | Business" data-title="Trump reembolsa USD 81 bilhões em tarifas após suprema corte declará-las ilegais" data-share-url="https://www.theguardian.com/us-news/2026/jul/14/trump-tariffs-us-refunds">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">04:03</span>
+          <span class="news-source">The Guardian | Business</span>
+        </div>
+        <div class="news-title">Trump reembolsa USD 81 bilhões em tarifas após suprema corte declará-las ilegais</div>
+        <div class="news-summary">O governo americano foi forçado a reembolsar bilhões em tarifas que havia cobrado de empresas importadoras após a Suprema Corte federal declarar as medidas ilegais sob as regras comerciais existentes. Trump havia imposto tarifas agressivas em produtos importados da China e de outros países, visando renegociar acordos comerciais e fortalecer manufatura americana. Contudo, os tribunais determinaram que o presidente excedeu sua autoridade constitucional ao implementar tarifas tão abrangentes sem aprovação congressional explícita. O reembolso de USD 81 bilhões cria um precedente importante sobre os limites do poder executivo em política comercial e afeta significativamente o orçamento federal. Empresas que pagaram as tarifas agora recuperam fundos, melhorando suas margens operacionais e fluxos de caixa. O resultado enfraquece politicamente Trump em relação à sua agenda comercialista, embora ele continue buscando formas alternativas de implementar políticas protecionistas. A decisão judicial afirma que mesmo um presidente em sua segunda gestão não pode contornar o Congresso em matérias comerciais fundamentais, reforçando equilíbrios constitucionais.</div>
+        <div class="news-link"><a href="https://www.theguardian.com/us-news/2026/jul/14/trump-tariffs-us-refunds" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Pesquisador OpenAI Miles Wang em discussões para lançar startup de descoberta de drogas com IA valorizada em USD 2B Miles Wang, pesquisador sênior da OpenAI, está em negociações para lançar startup focada em usar inteligência artificial para descoberta e desenvolvimento de drogas farmacêuticas, com avaliação inicial de USD 2 bilhões. O financiamento proposto indica confiança de investidores em aplicação de IA a ciências da vida, um dos mercados mais lucrativos e impactosos globalmente. A startup buscaria usar modelos de linguagem grande e aprendizado de máquina para acelerar identificação de candidatos de drogas e previsão de eficácia clínica. O setor farmacêutico tem sido lento em adoção de IA em comparação com outros setores tecnológicos, criando oportunidade para startups inovadoras. Descoberta de drogas tradicional leva 10-15 anos e bilhões em gastos, criando enorme potencial para IA reduzir tempo e custo. Múltiplas startups estão buscando conquistar esse espaço, incluindo Exscientia, Recursion e outras plataformas de IA em vida. O sucesso de Wang sinalizaria que talentos de IA de primeira classe estão migrando de empresas de tecnologia para aplicações em ciências da vida. TechCrunch" data-title="Pesquisador OpenAI Miles Wang em discussões para lançar startup de descoberta de drogas com IA valorizada em USD 2B" data-share-url="https://techcrunch.com/2026/07/14/openai-researcher-miles-wang-in-talks-to-launch-ai-drug-discovery-startup-valued-at-2b/">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">21:27</span>
+          <span class="news-source">TechCrunch</span>
+        </div>
+        <div class="news-title">Pesquisador OpenAI Miles Wang em discussões para lançar startup de descoberta de drogas com IA valorizada em USD 2B</div>
+        <div class="news-summary">Miles Wang, pesquisador sênior da OpenAI, está em negociações para lançar startup focada em usar inteligência artificial para descoberta e desenvolvimento de drogas farmacêuticas, com avaliação inicial de USD 2 bilhões. O financiamento proposto indica confiança de investidores em aplicação de IA a ciências da vida, um dos mercados mais lucrativos e impactosos globalmente. A startup buscaria usar modelos de linguagem grande e aprendizado de máquina para acelerar identificação de candidatos de drogas e previsão de eficácia clínica. O setor farmacêutico tem sido lento em adoção de IA em comparação com outros setores tecnológicos, criando oportunidade para startups inovadoras. Descoberta de drogas tradicional leva 10-15 anos e bilhões em gastos, criando enorme potencial para IA reduzir tempo e custo. Múltiplas startups estão buscando conquistar esse espaço, incluindo Exscientia, Recursion e outras plataformas de IA em vida. O sucesso de Wang sinalizaria que talentos de IA de primeira classe estão migrando de empresas de tecnologia para aplicações em ciências da vida.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/07/14/openai-researcher-miles-wang-in-talks-to-launch-ai-drug-discovery-startup-valued-at-2b/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="95% do código da Coinbase agora é escrito com ajuda de IA Rob Witoff, chefe de trading spot e derivativos da Coinbase, revelou que mais de 95% do código escrito na empresa agora recebe assistência de ferramentas de IA, marcando transformação radical na forma como a plataforma de criptomoedas desenvolve software. A empresa vem usando modelos de IA generativa para aumentar velocidade de desenvolvimento e permitir que engenheiros se concentrem em problemas de arquitetura e estratégia de maior nível. Witoff enfatizou que a Coinbase ainda valoriza humanos de alta capacidade de agência para julgamento estratégico e supervisão, mas a codificação rotineira é agora predominantemente automatizada. A adoção massiva de IA em Coinbase reflete trend mais amplo da indústria de tecnologia em utilizar ferramentas como GitHub Copilot e Claude para aumentar produtividade. A dinâmica cria dilema paradoxal: ferramentas de IA aumentam velocidade de desenvolvimento, mas podem reduzir oportunidades para engenheiros juniores aprender através da experiência de codificação. Coinbase acredita que IA permitirá executar com equipes menores sem sacrificar qualidade de produto. Cointelegraph" data-title="95% do código da Coinbase agora é escrito com ajuda de IA" data-share-url="https://cointelegraph.com/news/over-95-of-coinbases-code-is-now-written-with-ai?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">19:30</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">95% do código da Coinbase agora é escrito com ajuda de IA</div>
+        <div class="news-summary">Rob Witoff, chefe de trading spot e derivativos da Coinbase, revelou que mais de 95% do código escrito na empresa agora recebe assistência de ferramentas de IA, marcando transformação radical na forma como a plataforma de criptomoedas desenvolve software. A empresa vem usando modelos de IA generativa para aumentar velocidade de desenvolvimento e permitir que engenheiros se concentrem em problemas de arquitetura e estratégia de maior nível. Witoff enfatizou que a Coinbase ainda valoriza humanos de alta capacidade de agência para julgamento estratégico e supervisão, mas a codificação rotineira é agora predominantemente automatizada. A adoção massiva de IA em Coinbase reflete trend mais amplo da indústria de tecnologia em utilizar ferramentas como GitHub Copilot e Claude para aumentar produtividade. A dinâmica cria dilema paradoxal: ferramentas de IA aumentam velocidade de desenvolvimento, mas podem reduzir oportunidades para engenheiros juniores aprender através da experiência de codificação. Coinbase acredita que IA permitirá executar com equipes menores sem sacrificar qualidade de produto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/over-95-of-coinbases-code-is-now-written-with-ai?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI pode anunciar alto-falante inteligente ChatGPT este ano Segundo relatório da Bloomberg, a OpenAI está em estágios avançados de desenvolvimento de seu primeiro hardware: um alto-falante inteligente que permite conversa natural com ChatGPT. O dispositivo seria screenless e teria elementos mecânicos que podem se mover independentemente, criando forma fator inovadora para interação com IA. O lançamento marcaria entrada significativa da OpenAI no mercado de hardware, historicamente dominado por Amazon, Google e Apple. A empresa tem buscado expandir além de software de chat para criar ecossistemas mais integrados ao redor de seus modelos de linguagem. O alto-falante inteligente permitiria OpenAI competir diretamente com assistentes como Alexa e Google Assistant, oferecendo experiência de IA conversacional superior. A decisão reflete estratégia mais ampla de OpenAI em criar pontos de contato direto com consumidores finais, reduzindo dependência de parcerias e integrações. Espera-se que o lançamento ocorra ainda em 2026, potencialmente antes do final do ano, criando novo mercado competitivo de hardware de IA. TechCrunch" data-title="OpenAI pode anunciar alto-falante inteligente ChatGPT este ano" data-share-url="https://techcrunch.com/2026/07/14/openais-first-hardware-device-is-reportedly-a-screenless-speaker-that-can-move/">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">19:22</span>
+          <span class="news-source">TechCrunch</span>
+        </div>
+        <div class="news-title">OpenAI pode anunciar alto-falante inteligente ChatGPT este ano</div>
+        <div class="news-summary">Segundo relatório da Bloomberg, a OpenAI está em estágios avançados de desenvolvimento de seu primeiro hardware: um alto-falante inteligente que permite conversa natural com ChatGPT. O dispositivo seria screenless e teria elementos mecânicos que podem se mover independentemente, criando forma fator inovadora para interação com IA. O lançamento marcaria entrada significativa da OpenAI no mercado de hardware, historicamente dominado por Amazon, Google e Apple. A empresa tem buscado expandir além de software de chat para criar ecossistemas mais integrados ao redor de seus modelos de linguagem. O alto-falante inteligente permitiria OpenAI competir diretamente com assistentes como Alexa e Google Assistant, oferecendo experiência de IA conversacional superior. A decisão reflete estratégia mais ampla de OpenAI em criar pontos de contato direto com consumidores finais, reduzindo dependência de parcerias e integrações. Espera-se que o lançamento ocorra ainda em 2026, potencialmente antes do final do ano, criando novo mercado competitivo de hardware de IA.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/07/14/openais-first-hardware-device-is-reportedly-a-screenless-speaker-that-can-move/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="CEO DeepMind diz AGI será maior que eletricidade ou fogo Demis Hassabis, CEO da DeepMind (subsidiária de IA do Google), afirmou publicamente que inteligência geral artificial (AGI) chegará em apenas alguns poucos anos e será a invenção mais transformadora na história humana, comparável apenas a descoberta do fogo ou eletricidade. Hassabis propôs criação de novo órgão de padrões federal nos EUA para testar modelos de IA de fronteira antes de seu lançamento público. A declaração representa escalada de retórica sobre imminência de AGI e necessidade de governança de segurança. Críticos argumentam que Hassabis está sobre-vendendo timeline de AGI por razões de marketing e obtenção de capital. Defensores apontam que sinais de capacidades emergentes em modelos modernos justificam preocupação sobre potencial transformativo. A proposta de Hassabis para órgão de padrões governamental levanta questões sobre quem controlaria tal instituição e se teria poder real para regular empresas de IA. O comentário alimenta debate acelerado em Washington sobre regulação e segurança de IA. Decrypt" data-title="CEO DeepMind diz AGI será maior que eletricidade ou fogo" data-share-url="https://decrypt.co/373511/deepmind-ceo-agi-bigger-than-electricity-fire">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">16:57</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">CEO DeepMind diz AGI será maior que eletricidade ou fogo</div>
+        <div class="news-summary">Demis Hassabis, CEO da DeepMind (subsidiária de IA do Google), afirmou publicamente que inteligência geral artificial (AGI) chegará em apenas alguns poucos anos e será a invenção mais transformadora na história humana, comparável apenas a descoberta do fogo ou eletricidade. Hassabis propôs criação de novo órgão de padrões federal nos EUA para testar modelos de IA de fronteira antes de seu lançamento público. A declaração representa escalada de retórica sobre imminência de AGI e necessidade de governança de segurança. Críticos argumentam que Hassabis está sobre-vendendo timeline de AGI por razões de marketing e obtenção de capital. Defensores apontam que sinais de capacidades emergentes em modelos modernos justificam preocupação sobre potencial transformativo. A proposta de Hassabis para órgão de padrões governamental levanta questões sobre quem controlaria tal instituição e se teria poder real para regular empresas de IA. O comentário alimenta debate acelerado em Washington sobre regulação e segurança de IA.</div>
+        <div class="news-link"><a href="https://decrypt.co/373511/deepmind-ceo-agi-bigger-than-electricity-fire" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="SpaceXAI ferramenta de programação Grok carregava codebase inteiro dos usuários para nuvem A ferramenta de programação Grok Build da SpaceXAI foi descoberta carregando automaticamente os codebases completos dos usuários para servidores de armazenamento em nuvem do Google Cloud sem consentimento explícito. A descoberta revelou falha grave de segurança e privacidade no produto de IA para desenvolvimento que estava sendo promovido como alternativa a ferramentas como GitHub Copilot. Após o relato público, SpaceXAI desativou a funcionalidade de upload automático, reconhecendo o problema e comprometendo-se a implementar melhorias. O incidente levanta questões sobre práticas de privacidade e transparência em ferramentas de IA que acessam código-fonte sensível de desenvolvedores e empresas. Muitos desenvolvedores usam ferramentas de IA para escrever código proprietário e confidencial, tornando o carregamento não autorizado para nuvem pública uma violação grave de confiança. O evento alimenta preocupações emergentes sobre como empresas de IA coletam e utilizam dados de usuários para treinamento de modelos. SpaceXAI enfrenta risco reputacional significativo e possível ação legal de usuários afetados. The Verge" data-title="SpaceXAI ferramenta de programação Grok carregava codebase inteiro dos usuários para nuvem" data-share-url="https://www.theverge.com/ai-artificial-intelligence/965600/spacexai-grok-build-repository-upload">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">16:25</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">SpaceXAI ferramenta de programação Grok carregava codebase inteiro dos usuários para nuvem</div>
+        <div class="news-summary">A ferramenta de programação Grok Build da SpaceXAI foi descoberta carregando automaticamente os codebases completos dos usuários para servidores de armazenamento em nuvem do Google Cloud sem consentimento explícito. A descoberta revelou falha grave de segurança e privacidade no produto de IA para desenvolvimento que estava sendo promovido como alternativa a ferramentas como GitHub Copilot. Após o relato público, SpaceXAI desativou a funcionalidade de upload automático, reconhecendo o problema e comprometendo-se a implementar melhorias. O incidente levanta questões sobre práticas de privacidade e transparência em ferramentas de IA que acessam código-fonte sensível de desenvolvedores e empresas. Muitos desenvolvedores usam ferramentas de IA para escrever código proprietário e confidencial, tornando o carregamento não autorizado para nuvem pública uma violação grave de confiança. O evento alimenta preocupações emergentes sobre como empresas de IA coletam e utilizam dados de usuários para treinamento de modelos. SpaceXAI enfrenta risco reputacional significativo e possível ação legal de usuários afetados.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/965600/spacexai-grok-build-repository-upload" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta acusada de usar IA tendenciosa para demissões em massa Um grupo de 26 ex-funcionários da Meta está processando a empresa alegando que ela utilizou ferramentas de IA tendenciosas para selecionar trabalhadores em licença médica ou parental para demissão durante suas reduções de pessoal de 2024 e 2025. Os demandantes argumentam que a Meta usou algoritmos de IA para automatizar decisões de despedir funcionários vulneráveis, violando leis trabalhistas federais e estaduais. Meta nega que a IA foi usada de forma discriminatória, argumentando que demissões foram baseadas em desempenho e necessidades comerciais. O caso representa um dos primeiros grandes litígios sobre uso de IA em decisões de recursos humanos que impactam proteções trabalhistas fundamentais. Se os autores ganharem, o caso poderia estabelecer precedente importante sobre responsabilidade corporativa no uso de IA para decisões adversas que afetam empregados. Especialistas em ética de IA alertam que sistemas automatizados frequentemente perpetuam vieses existentes quando treinados em dados históricos, tornando seu uso em RH particularmente perigoso. O julgamento será acompanhado de perto por defensores de direitos trabalhistas e empresas de tecnologia preocupadas com implicações regulatórias. The Verge" data-title="Meta acusada de usar IA tendenciosa para demissões em massa" data-share-url="https://www.theverge.com/tech/965486/meta-lawsuit-former-employees-ai-layoffs">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">14:18</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Meta acusada de usar IA tendenciosa para demissões em massa</div>
+        <div class="news-summary">Um grupo de 26 ex-funcionários da Meta está processando a empresa alegando que ela utilizou ferramentas de IA tendenciosas para selecionar trabalhadores em licença médica ou parental para demissão durante suas reduções de pessoal de 2024 e 2025. Os demandantes argumentam que a Meta usou algoritmos de IA para automatizar decisões de despedir funcionários vulneráveis, violando leis trabalhistas federais e estaduais. Meta nega que a IA foi usada de forma discriminatória, argumentando que demissões foram baseadas em desempenho e necessidades comerciais. O caso representa um dos primeiros grandes litígios sobre uso de IA em decisões de recursos humanos que impactam proteções trabalhistas fundamentais. Se os autores ganharem, o caso poderia estabelecer precedente importante sobre responsabilidade corporativa no uso de IA para decisões adversas que afetam empregados. Especialistas em ética de IA alertam que sistemas automatizados frequentemente perpetuam vieses existentes quando treinados em dados históricos, tornando seu uso em RH particularmente perigoso. O julgamento será acompanhado de perto por defensores de direitos trabalhistas e empresas de tecnologia preocupadas com implicações regulatórias.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/965486/meta-lawsuit-former-employees-ai-layoffs" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Boston Dynamics testa robôs quadrúpedes Spot para entregas Boston Dynamics está expandindo aplicações práticas para seu robô quadrúpede Spot, testando a plataforma para realizar tarefas de entrega e logística. O Spot já vinha sendo usado para inspeções rotineiras em fábricas e patrulhas de segurança, mas o novo foco em entregas marca expansão significativa de casos de uso comercial. A empresa acredita que a mobilidade e destreza do Spot o tornam ideal para navegar ambientes complexos onde robôs com rodas enfrentam dificuldades. Testes iniciais mostram promessa, com Spot sendo capaz de transportar pequenos pacotes e navegar obstáculos variados. O mercado de robôs de entrega está crescendo rapidamente, com competidores como Amazon e outras startups também desenvolvendo plataformas. Boston Dynamics enfrenta desafio de demonstrar que seu robô pode operar a custos competitivos em comparação com métodos tradicionais de entrega. O sucesso do Spot em entregas poderia abrir mercado bilionário para a empresa e validar modelo de negócio baseado em robótica avançada. The Verge" data-title="Boston Dynamics testa robôs quadrúpedes Spot para entregas" data-share-url="https://www.theverge.com/tech/965378/boston-dynamics-spot-robot-dog-delivery-assistant">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">13:52</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Boston Dynamics testa robôs quadrúpedes Spot para entregas</div>
+        <div class="news-summary">Boston Dynamics está expandindo aplicações práticas para seu robô quadrúpede Spot, testando a plataforma para realizar tarefas de entrega e logística. O Spot já vinha sendo usado para inspeções rotineiras em fábricas e patrulhas de segurança, mas o novo foco em entregas marca expansão significativa de casos de uso comercial. A empresa acredita que a mobilidade e destreza do Spot o tornam ideal para navegar ambientes complexos onde robôs com rodas enfrentam dificuldades. Testes iniciais mostram promessa, com Spot sendo capaz de transportar pequenos pacotes e navegar obstáculos variados. O mercado de robôs de entrega está crescendo rapidamente, com competidores como Amazon e outras startups também desenvolvendo plataformas. Boston Dynamics enfrenta desafio de demonstrar que seu robô pode operar a custos competitivos em comparação com métodos tradicionais de entrega. O sucesso do Spot em entregas poderia abrir mercado bilionário para a empresa e validar modelo de negócio baseado em robótica avançada.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/965378/boston-dynamics-spot-robot-dog-delivery-assistant" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI exibindo probabilidades da Copa do Mundo de Kalshi em ChatGPT OpenAI anunciou parceria com Kalshi, plataforma de mercado de previsão, para exibir dados de probabilidades da Copa do Mundo diretamente em ChatGPT. A parceria marca primeiro integração do tipo para a empresa de IA, permitindo que usuários vejam dados de mercado de previsão em seus resultados de busca de IA. Kalshi oferece mercados de previsão para eventos esportivos, políticos e econômicos, criando incentivos para participantes fornecerem informações precisas sobre probabilidades de resultados. A integração permite que OpenAI aproveite dados de Kalshi para fornecer análise mais nuançada sobre eventos futuros. O movimento sugere que OpenAI está explorando parcerias estratégicas para enriquecer capacidades de seus modelos com dados de terceiros. A dinâmica também levanta questões sobre como dados de mercado de previsão serão utilizados e se haverá conflitos de interesse quando OpenAI promove certos mercados. Kalshi, que enfrentou dificuldades regulatórias, agora recebe visibilidade massiva através de integração com ChatGPT, potencialmente atraindo mais usuários e volume de trading. NYT &gt; Technology" data-title="OpenAI exibindo probabilidades da Copa do Mundo de Kalshi em ChatGPT" data-share-url="https://www.nytimes.com/2026/07/13/technology/kalshi-openai-chatgpt-world-cup-odds.html">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">11:17</span>
+          <span class="news-source">NYT &gt; Technology</span>
+        </div>
+        <div class="news-title">OpenAI exibindo probabilidades da Copa do Mundo de Kalshi em ChatGPT</div>
+        <div class="news-summary">OpenAI anunciou parceria com Kalshi, plataforma de mercado de previsão, para exibir dados de probabilidades da Copa do Mundo diretamente em ChatGPT. A parceria marca primeiro integração do tipo para a empresa de IA, permitindo que usuários vejam dados de mercado de previsão em seus resultados de busca de IA. Kalshi oferece mercados de previsão para eventos esportivos, políticos e econômicos, criando incentivos para participantes fornecerem informações precisas sobre probabilidades de resultados. A integração permite que OpenAI aproveite dados de Kalshi para fornecer análise mais nuançada sobre eventos futuros. O movimento sugere que OpenAI está explorando parcerias estratégicas para enriquecer capacidades de seus modelos com dados de terceiros. A dinâmica também levanta questões sobre como dados de mercado de previsão serão utilizados e se haverá conflitos de interesse quando OpenAI promove certos mercados. Kalshi, que enfrentou dificuldades regulatórias, agora recebe visibilidade massiva através de integração com ChatGPT, potencialmente atraindo mais usuários e volume de trading.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/13/technology/kalshi-openai-chatgpt-world-cup-odds.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Vendas de veículos elétricos EUA caem mas carregadores disparam em crescimento Enquanto vendas de veículos elétricos desaceleraram nos EUA em 2026, infraestrutura de carregamento está explodindo em crescimento, especialmente em estados do Sul que historicamente tinham pouca adoção de EV. Restaurantes de fast food, lojas de varejo e outras empresas estão instalando estações de carregamento rapidamente para atrair clientes de EV. A dinâmica cria cenário paradoxal onde frota de EV cresce lentamente enquanto infraestrutura para suportá-los se expande rapidamente. Especialistas veem instalação de carregadores como pré-positioning para crescimento futuro quando adoção de EV acelerar com melhor tecnologia de bateria e redução de preços. O investimento em infraestrutura de carregamento também reflete confiança de empresas em que EV eventualmente dominarão mercado automotivo. Alguns analisam que queda recente em vendas de EV é temporária, atribuída a avaliações altas de modelos existentes e espera por próxima geração de veículos com range melhorado. A corrida para instalar carregadores pode direcionar adoção futura à medida que desconfiança sobre disponibilidade de carregamento é reduzida. NYT &gt; Technology" data-title="Vendas de veículos elétricos EUA caem mas carregadores disparam em crescimento" data-share-url="https://www.nytimes.com/2026/07/13/business/electric-vehicles-charging-stations.html">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">10:19</span>
+          <span class="news-source">NYT &gt; Technology</span>
+        </div>
+        <div class="news-title">Vendas de veículos elétricos EUA caem mas carregadores disparam em crescimento</div>
+        <div class="news-summary">Enquanto vendas de veículos elétricos desaceleraram nos EUA em 2026, infraestrutura de carregamento está explodindo em crescimento, especialmente em estados do Sul que historicamente tinham pouca adoção de EV. Restaurantes de fast food, lojas de varejo e outras empresas estão instalando estações de carregamento rapidamente para atrair clientes de EV. A dinâmica cria cenário paradoxal onde frota de EV cresce lentamente enquanto infraestrutura para suportá-los se expande rapidamente. Especialistas veem instalação de carregadores como pré-positioning para crescimento futuro quando adoção de EV acelerar com melhor tecnologia de bateria e redução de preços. O investimento em infraestrutura de carregamento também reflete confiança de empresas em que EV eventualmente dominarão mercado automotivo. Alguns analisam que queda recente em vendas de EV é temporária, atribuída a avaliações altas de modelos existentes e espera por próxima geração de veículos com range melhorado. A corrida para instalar carregadores pode direcionar adoção futura à medida que desconfiança sobre disponibilidade de carregamento é reduzida.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/13/business/electric-vehicles-charging-stations.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Pesquisador interno Anthropic Claude revela funcionamento interno e futuro de modelos mundiais Pesquisadores da Anthropic publicaram análise detalhada sobre funcionamento interno do modelo Claude, oferecendo insights raros sobre como redes neurais de linguagem grande processam informação e geram respostas. O trabalho se concentra em mecanismos de interpretabilidade que permitem cientistas entender quais neurônios ativam em resposta a estímulos específicos. A pesquisa também explora conceito de modelos mundiais: representações internas que Claude mantém sobre como o mundo funciona. Esses insights têm implicações profundas para segurança de IA, permitindo melhor identificação de quando modelos podem estar tendo comportamentos indesejados ou delusões. A publicação posiciona Anthropic como líder em interpretabilidade de IA, distinguindo-a de concorrentes focados puramente em escalabilidade. O trabalho contribui para campo emergente de análise de caixa preta de modelos de IA, respondendo pressões por maior transparência e compreensão. Pesquisadores em todo mundo agora terão acesso a técnicas de Anthropic para investigar seus próprios modelos. MIT Technology Review" data-title="Pesquisador interno Anthropic Claude revela funcionamento interno e futuro de modelos mundiais" data-share-url="https://www.technologyreview.com/2026/07/14/1140391/the-download-anthropic-claude-internal-thoughts-world-models/">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">09:10</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Pesquisador interno Anthropic Claude revela funcionamento interno e futuro de modelos mundiais</div>
+        <div class="news-summary">Pesquisadores da Anthropic publicaram análise detalhada sobre funcionamento interno do modelo Claude, oferecendo insights raros sobre como redes neurais de linguagem grande processam informação e geram respostas. O trabalho se concentra em mecanismos de interpretabilidade que permitem cientistas entender quais neurônios ativam em resposta a estímulos específicos. A pesquisa também explora conceito de modelos mundiais: representações internas que Claude mantém sobre como o mundo funciona. Esses insights têm implicações profundas para segurança de IA, permitindo melhor identificação de quando modelos podem estar tendo comportamentos indesejados ou delusões. A publicação posiciona Anthropic como líder em interpretabilidade de IA, distinguindo-a de concorrentes focados puramente em escalabilidade. O trabalho contribui para campo emergente de análise de caixa preta de modelos de IA, respondendo pressões por maior transparência e compreensão. Pesquisadores em todo mundo agora terão acesso a técnicas de Anthropic para investigar seus próprios modelos.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/07/14/1140391/the-download-anthropic-claude-internal-thoughts-world-models/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="PsiQuantum plano para construir computador quântico massivo feito de luz PsiQuantum revelou plano ambicioso para construir um computador quântico funcional de escala industrial usando tecnologia de fótons ópticos em vez de qubits convencionais de supercondutores. A máquina será alojada em uma estrutura que aparenta ser um híbrido entre data center e fábrica de sorvete, contendo milhões de componentes fotônicos precisos. A abordagem fotônica de PsiQuantum oferece potencial vantagem de operabilidade em temperatura ambiente, reduzindo custos operacionais massivos de sistemas de refrigeração criogênica. Se bem-sucedida, a plataforma teria potencial para revolucionar computação quântica ao torná-la mais prática e acessível que tecnologias concorrentes. Competidores como IBM, Google e IonQ estão perseguindo abordagens alternativas usando supercondutores e íons aprisionados. A competição pela supremacia quântica está intensificando-se, com múltiplas tecnologias sendo desenvolvidas em paralelo. PsiQuantum está em busca de financiamento para construir seu primeiro protótipo de larga escala nos próximos anos. MIT Technology Review" data-title="PsiQuantum plano para construir computador quântico massivo feito de luz" data-share-url="https://www.technologyreview.com/2026/07/14/1140356/psiquantum-plan-massive-quantum-computer-out-of-light/">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">05:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">PsiQuantum plano para construir computador quântico massivo feito de luz</div>
+        <div class="news-summary">PsiQuantum revelou plano ambicioso para construir um computador quântico funcional de escala industrial usando tecnologia de fótons ópticos em vez de qubits convencionais de supercondutores. A máquina será alojada em uma estrutura que aparenta ser um híbrido entre data center e fábrica de sorvete, contendo milhões de componentes fotônicos precisos. A abordagem fotônica de PsiQuantum oferece potencial vantagem de operabilidade em temperatura ambiente, reduzindo custos operacionais massivos de sistemas de refrigeração criogênica. Se bem-sucedida, a plataforma teria potencial para revolucionar computação quântica ao torná-la mais prática e acessível que tecnologias concorrentes. Competidores como IBM, Google e IonQ estão perseguindo abordagens alternativas usando supercondutores e íons aprisionados. A competição pela supremacia quântica está intensificando-se, com múltiplas tecnologias sendo desenvolvidas em paralelo. PsiQuantum está em busca de financiamento para construir seu primeiro protótipo de larga escala nos próximos anos.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/07/14/1140356/psiquantum-plan-massive-quantum-computer-out-of-light/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitmine gerou USD 46 milhões de staking Ethereum no último trimestre Bitmine, mineradora de criptomoedas pivot para staking, relatou que gerou USD 46 milhões de receita de staking Ethereum no segundo trimestre, representando 98% de suas receitas totais. A dinâmica mostra sucesso da estratégia da empresa em transição de mineração de Bitcoin para operação de validadores Ethereum pós-merge. O crescimento significativo de staking Ethereum para Bitmine reflete maior oportunidade econômica em validar a rede Ethereum comparado a competitive mining landscape de Bitcoin. Bitmine agora opera como major staking provider, competindo com empresas como Lido e outras plataformas de staking. O sucesso posiciona mineradores de Bitcoin para pivotarem para oportunidades alternativas conforme mineração de Bitcoin torna-se menos rentável. Cointelegraph" data-title="Bitmine gerou USD 46 milhões de staking Ethereum no último trimestre" data-share-url="https://cointelegraph.com/news/bitmine-generated-46m-from-ethereum-staking-last-quarter?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">22:28</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitmine gerou USD 46 milhões de staking Ethereum no último trimestre</div>
+        <div class="news-summary">Bitmine, mineradora de criptomoedas pivot para staking, relatou que gerou USD 46 milhões de receita de staking Ethereum no segundo trimestre, representando 98% de suas receitas totais. A dinâmica mostra sucesso da estratégia da empresa em transição de mineração de Bitcoin para operação de validadores Ethereum pós-merge. O crescimento significativo de staking Ethereum para Bitmine reflete maior oportunidade econômica em validar a rede Ethereum comparado a competitive mining landscape de Bitcoin. Bitmine agora opera como major staking provider, competindo com empresas como Lido e outras plataformas de staking. O sucesso posiciona mineradores de Bitcoin para pivotarem para oportunidades alternativas conforme mineração de Bitcoin torna-se menos rentável.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bitmine-generated-46m-from-ethereum-staking-last-quarter?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Três senadores americanos opõem-se CLARITY Act em bases éticas com votação esperada em breve Três senadores americanos declararam oposição à CLARITY Act citando preocupações éticas, complicando trajetória do projeto de lei para aprovação no Senado. O Líder Majoritário John Thune sinalizou que votação pode ocorrer antes de 10 de agosto, mas falta de consenso democrata torna resultado incerto. Os senadores que se opõem argumentam que a legislação não adequadamente protege consumidores e favorece grandes players. A emergência de oposição democrata revela que o bill não é tão consensual quanto esperado por proponentes cripto. Outcome de votação pode determinar paisagem regulatória cripto por próximos anos. Cointelegraph" data-title="Três senadores americanos opõem-se CLARITY Act em bases éticas com votação esperada em breve" data-share-url="https://cointelegraph.com/news/us-senators-oppose-clarity-act-vote-senate?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">18:30</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Três senadores americanos opõem-se CLARITY Act em bases éticas com votação esperada em breve</div>
+        <div class="news-summary">Três senadores americanos declararam oposição à CLARITY Act citando preocupações éticas, complicando trajetória do projeto de lei para aprovação no Senado. O Líder Majoritário John Thune sinalizou que votação pode ocorrer antes de 10 de agosto, mas falta de consenso democrata torna resultado incerto. Os senadores que se opõem argumentam que a legislação não adequadamente protege consumidores e favorece grandes players. A emergência de oposição democrata revela que o bill não é tão consensual quanto esperado por proponentes cripto. Outcome de votação pode determinar paisagem regulatória cripto por próximos anos.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/us-senators-oppose-clarity-act-vote-senate?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="CFTC dos EUA movimenta-se para impedir Kalshi de cancelar trades conforme ordenado por tribunal de Michigan O regulador federal de derivativos CFTC entrou com ação para impedir que a plataforma de mercado de previsão Kalshi cumprisse ordem de tribunal de Michigan para cancelar trades específicas. O tribunal de Michigan havia ordenado que Kalshi cancelasse certas previsões de aposta que violariam leis estaduais de jogo de azar. A CFTC argumentou que Michigan não tem autoridade para bullying de Kalshi e que apenas a reguladora federal tem poder para supervisionar plataformas de trading de derivativos. O caso ilustra conflito de jurisdição entre autoridades estaduais e federais sobre regulação de mercados de previsão e ativos criptográficos. Kalshi expandiu ofertas para incluir mais eventos políticos e econômicos, atraindo atenção de reguladores preocupados com potencial para má conduta e manipulação. A disputa pode estabelecer precedente importante sobre até que ponto estados podem regular derivativos comparados a autoridade federal. Resultado também terá implicações para outras plataformas criptográficas operando em jurisdições múltiplas. CoinDesk" data-title="CFTC dos EUA movimenta-se para impedir Kalshi de cancelar trades conforme ordenado por tribunal de Michigan" data-share-url="https://www.coindesk.com/policy/2026/07/14/u-s-cftc-moves-to-stop-kalshi-from-canceling-trades-as-ordered-by-michigan-court">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">17:51</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">CFTC dos EUA movimenta-se para impedir Kalshi de cancelar trades conforme ordenado por tribunal de Michigan</div>
+        <div class="news-summary">O regulador federal de derivativos CFTC entrou com ação para impedir que a plataforma de mercado de previsão Kalshi cumprisse ordem de tribunal de Michigan para cancelar trades específicas. O tribunal de Michigan havia ordenado que Kalshi cancelasse certas previsões de aposta que violariam leis estaduais de jogo de azar. A CFTC argumentou que Michigan não tem autoridade para bullying de Kalshi e que apenas a reguladora federal tem poder para supervisionar plataformas de trading de derivativos. O caso ilustra conflito de jurisdição entre autoridades estaduais e federais sobre regulação de mercados de previsão e ativos criptográficos. Kalshi expandiu ofertas para incluir mais eventos políticos e econômicos, atraindo atenção de reguladores preocupados com potencial para má conduta e manipulação. A disputa pode estabelecer precedente importante sobre até que ponto estados podem regular derivativos comparados a autoridade federal. Resultado também terá implicações para outras plataformas criptográficas operando em jurisdições múltiplas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/14/u-s-cftc-moves-to-stop-kalshi-from-canceling-trades-as-ordered-by-michigan-court" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Velocity levanta USD 38 milhões para construir infraestrutura de tesouro stablecoin para empresas Velocity, startup que oferece software para empresas integrar stablecoins em operações de tesouro e cash management, levantou USD 38 milhões em financiamento liderado por Dragonfly, FirstMark e Coinbase Ventures. O capital será utilizado para expandir plataforma e adquirir mais clientes corporativos que buscam otimizar treasury usando ativos criptográficos. O investimento reflete confiança de VCs em que stablecoins tornarão-se infraestrutura fundamental para treasury corporativo. Velocity compete com outras startups e soluções tradicionais de treasury, mas sua especialização em cripto oferece diferenciação. A rodada de financiamento posiciona Velocity como player-chave em emergente mercado de cripto corporate treasury. Cointelegraph" data-title="Velocity levanta USD 38 milhões para construir infraestrutura de tesouro stablecoin para empresas" data-share-url="https://cointelegraph.com/news/velocity-raises-38m-to-build-stablecoin-treasury-infrastructure-for-enterprises?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">17:04</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Velocity levanta USD 38 milhões para construir infraestrutura de tesouro stablecoin para empresas</div>
+        <div class="news-summary">Velocity, startup que oferece software para empresas integrar stablecoins em operações de tesouro e cash management, levantou USD 38 milhões em financiamento liderado por Dragonfly, FirstMark e Coinbase Ventures. O capital será utilizado para expandir plataforma e adquirir mais clientes corporativos que buscam otimizar treasury usando ativos criptográficos. O investimento reflete confiança de VCs em que stablecoins tornarão-se infraestrutura fundamental para treasury corporativo. Velocity compete com outras startups e soluções tradicionais de treasury, mas sua especialização em cripto oferece diferenciação. A rodada de financiamento posiciona Velocity como player-chave em emergente mercado de cripto corporate treasury.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/velocity-raises-38m-to-build-stablecoin-treasury-infrastructure-for-enterprises?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Alguns senadores democratas dos EUA se opõem Clarity Act em bases éticas, chamam-no de corrupto Um grupo de senadores democratas dos EUA saiu publicamente contra a Clarity Act, projeto de lei de estrutura de mercado criptográfico amplamente apoiado por líderes republicanos, alegando que a legislação é corrupta e beneficia apenas grandes players da indústria de cripto. Os democratas argumentam que o bill privilegia exchanges centralizadas sobre plataformas de finanças descentralizadas e retira proteções de consumidor. O Clarity Act foi promovido como oportunidade para criar clareza regulatória sobre criptomoedas nos EUA, mas críticos argumentam que na verdade beneficia empresas que lobbyam fortemente. A oposição democrata complica trajetória do bill para aprovação no Senado, onde aprova-se precisa de apoio bipartidário. O Líder Majoritário do Senado John Thune sinalizou que votação pode ocorrer antes de 10 de agosto, mas timing incerto dada resistência emergente. O conflito revela divisão ideológica sobre regulação cripto, com democratas preocupados com consolidação de poder entre grandes exchanges. O debate será importante para determinar paisagem regulatória cripto nos próximos anos. CoinDesk" data-title="Alguns senadores democratas dos EUA se opõem Clarity Act em bases éticas, chamam-no de corrupto" data-share-url="https://www.coindesk.com/policy/2026/07/14/some-u-s-senate-democrats-come-out-against-clarity-act-calling-it-a-corrupt-bill">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">15:57</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Alguns senadores democratas dos EUA se opõem Clarity Act em bases éticas, chamam-no de corrupto</div>
+        <div class="news-summary">Um grupo de senadores democratas dos EUA saiu publicamente contra a Clarity Act, projeto de lei de estrutura de mercado criptográfico amplamente apoiado por líderes republicanos, alegando que a legislação é corrupta e beneficia apenas grandes players da indústria de cripto. Os democratas argumentam que o bill privilegia exchanges centralizadas sobre plataformas de finanças descentralizadas e retira proteções de consumidor. O Clarity Act foi promovido como oportunidade para criar clareza regulatória sobre criptomoedas nos EUA, mas críticos argumentam que na verdade beneficia empresas que lobbyam fortemente. A oposição democrata complica trajetória do bill para aprovação no Senado, onde aprova-se precisa de apoio bipartidário. O Líder Majoritário do Senado John Thune sinalizou que votação pode ocorrer antes de 10 de agosto, mas timing incerto dada resistência emergente. O conflito revela divisão ideológica sobre regulação cripto, com democratas preocupados com consolidação de poder entre grandes exchanges. O debate será importante para determinar paisagem regulatória cripto nos próximos anos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/14/some-u-s-senate-democrats-come-out-against-clarity-act-calling-it-a-corrupt-bill" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Binance aposta em tornar-se super app cripto conforme stablecoins reformulam crescimento Shunyet Jan, chefe de trading spot e derivativos da Binance, afirmou que a exchange está pivotando estratégia para se focar em ser super app cripto oferecendo pagamentos, serviços financeiros e outras funcionalidades além de trading. A estratégia reflete reconhecimento de que mercado de trading puro já está maduro e altamente competitivo, enquanto oportunidades em pagamentos cripto e finanças estão crescendo. Binance está aproveitando seu domínio de users para oferecer produtos complementares, similar ao modelo de super apps na Ásia como WeChat e Alipay. O foco em stablecoins como infraestrutura de pagamento é central para estratégia de Binance, visto que moedas estáveis são mais adequadas para transações do que volatilidade de Bitcoin. A dinâmica posiciona Binance para competir não apenas com outras exchanges de cripto mas também com fintechs tradicionais e bancos. Competidores como FTX falharam em executar visão ambiciosa similar de super app, deixando espaço para Binance.&lt;/p&gt; CoinDesk" data-title="Binance aposta em tornar-se super app cripto conforme stablecoins reformulam crescimento" data-share-url="https://www.coindesk.com/business/2026/07/14/binance-bets-on-becoming-a-crypto-super-app-as-stablecoins-reshape-growth">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">14:33</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Binance aposta em tornar-se super app cripto conforme stablecoins reformulam crescimento</div>
+        <div class="news-summary">Shunyet Jan, chefe de trading spot e derivativos da Binance, afirmou que a exchange está pivotando estratégia para se focar em ser super app cripto oferecendo pagamentos, serviços financeiros e outras funcionalidades além de trading. A estratégia reflete reconhecimento de que mercado de trading puro já está maduro e altamente competitivo, enquanto oportunidades em pagamentos cripto e finanças estão crescendo. Binance está aproveitando seu domínio de users para oferecer produtos complementares, similar ao modelo de super apps na Ásia como WeChat e Alipay. O foco em stablecoins como infraestrutura de pagamento é central para estratégia de Binance, visto que moedas estáveis são mais adequadas para transações do que volatilidade de Bitcoin. A dinâmica posiciona Binance para competir não apenas com outras exchanges de cripto mas também com fintechs tradicionais e bancos. Competidores como FTX falharam em executar visão ambiciosa similar de super app, deixando espaço para Binance.&lt;/p&gt;</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/14/binance-bets-on-becoming-a-crypto-super-app-as-stablecoins-reshape-growth" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Governo UK adia ganhos de capital em cripto com abordagem sem ganho sem perda Governo britânico implementou nova política tributária que adia requisitos de reporte de ganhos de capital para cripto enviado para pools de lending e liquidez, desde que o cripto seja mantido sem ganho ou perda realizado. A mudança de política, esperada afetar cerca de 700.000 pessoas no Reino Unido, reduz fricção tributária para pessoas usando cripto em finanças descentralizadas. A dinâmica posiciona Reino Unido como mais receptivo a cripto comparado à maioria de jurisdições, potencialmente atraindo mais activity de trading e defi para o país. A abordagem sem ganho sem perda significa que imposto só é debido quando posição é fechada com ganho realizado. Cointelegraph" data-title="Governo UK adia ganhos de capital em cripto com abordagem sem ganho sem perda" data-share-url="https://cointelegraph.com/news/uk-government-capital-gains-lending-liquidity-no-gain-no-loss?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">14:24</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Governo UK adia ganhos de capital em cripto com abordagem sem ganho sem perda</div>
+        <div class="news-summary">Governo britânico implementou nova política tributária que adia requisitos de reporte de ganhos de capital para cripto enviado para pools de lending e liquidez, desde que o cripto seja mantido sem ganho ou perda realizado. A mudança de política, esperada afetar cerca de 700.000 pessoas no Reino Unido, reduz fricção tributária para pessoas usando cripto em finanças descentralizadas. A dinâmica posiciona Reino Unido como mais receptivo a cripto comparado à maioria de jurisdições, potencialmente atraindo mais activity de trading e defi para o país. A abordagem sem ganho sem perda significa que imposto só é debido quando posição é fechada com ganho realizado.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/uk-government-capital-gains-lending-liquidity-no-gain-no-loss?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="JCB assina MOU com Circle para testar pagamentos stablecoin no Japão JCB, maior operador de cartão de pagamento do Japão, assinou memorando de entendimento com Circle para explorar uso de USDC stablecoin para pagamentos cross-border de comerciantes e operações de tesouro no Japão. O MOU marca passo importante em adoção institucional de stablecoins reguladas no mercado asiático. JCB operacionaliza visão de um futuro onde stablecoins facilitam liquidação rápida e barata de pagamentos internacionais. A parceria também posiciona Circle para expandir footprint no Ásia, mercado crítico para crescimento de cripto. O acordo ilustra como instituições financeiras tradicionais estão começando a abraçar stablecoins como infraestrutura complementar a seus negócios. Cointelegraph" data-title="JCB assina MOU com Circle para testar pagamentos stablecoin no Japão" data-share-url="https://cointelegraph.com/news/japans-jcb-signs-mou-with-circle-to-explore-usdc-payments-and-cross-border-settlements?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">14:05</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">JCB assina MOU com Circle para testar pagamentos stablecoin no Japão</div>
+        <div class="news-summary">JCB, maior operador de cartão de pagamento do Japão, assinou memorando de entendimento com Circle para explorar uso de USDC stablecoin para pagamentos cross-border de comerciantes e operações de tesouro no Japão. O MOU marca passo importante em adoção institucional de stablecoins reguladas no mercado asiático. JCB operacionaliza visão de um futuro onde stablecoins facilitam liquidação rápida e barata de pagamentos internacionais. A parceria também posiciona Circle para expandir footprint no Ásia, mercado crítico para crescimento de cripto. O acordo ilustra como instituições financeiras tradicionais estão começando a abraçar stablecoins como infraestrutura complementar a seus negócios.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/japans-jcb-signs-mou-with-circle-to-explore-usdc-payments-and-cross-border-settlements?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mizuho rebaixa Circle, reduz preço-alvo para USD 50 em ameaça de OpenUSD O banco de investimentos japonês Mizuho rebaixou avaliação de ações de Circle para underperform (reduz para vender) e cortou seu preço-alvo de USD 70 para USD 50, citando ameaça competitiva de novo stablecoin OpenUSD no mercado. O OpenUSD oferece modelo de yield pass-through mais atrativo que transfere mais receitas de juros de reservas diretamente para detentores de tokens. Mizuho argumenta que modelo de OpenUSD pode pressionar margens de Circle ao forçar a empresa a oferecer yields competitivos para reter usuários. A nota de pesquisa coloca pressão adicional no preço de ações de Circle, que já enfrentou volatilidade em 2026. Circle, que possui USDC como stablecoin de segunda maior capitalização de mercado depois de USDT de Tether, agora enfrenta competição significativa de múltiplas frentes. A dinâmica illustrates como stablecoins já não gozam de duopólio garantido de Tether e USDC, e novas inovações estão desafiando modelos de negócio estabelecidos. CoinDesk" data-title="Mizuho rebaixa Circle, reduz preço-alvo para USD 50 em ameaça de OpenUSD" data-share-url="https://www.coindesk.com/business/2026/07/14/mizuho-downgrades-circle-to-underperform-cuts-price-target-to-usd50-on-open-usd-threat">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">13:59</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mizuho rebaixa Circle, reduz preço-alvo para USD 50 em ameaça de OpenUSD</div>
+        <div class="news-summary">O banco de investimentos japonês Mizuho rebaixou avaliação de ações de Circle para underperform (reduz para vender) e cortou seu preço-alvo de USD 70 para USD 50, citando ameaça competitiva de novo stablecoin OpenUSD no mercado. O OpenUSD oferece modelo de yield pass-through mais atrativo que transfere mais receitas de juros de reservas diretamente para detentores de tokens. Mizuho argumenta que modelo de OpenUSD pode pressionar margens de Circle ao forçar a empresa a oferecer yields competitivos para reter usuários. A nota de pesquisa coloca pressão adicional no preço de ações de Circle, que já enfrentou volatilidade em 2026. Circle, que possui USDC como stablecoin de segunda maior capitalização de mercado depois de USDT de Tether, agora enfrenta competição significativa de múltiplas frentes. A dinâmica illustrates como stablecoins já não gozam de duopólio garantido de Tether e USDC, e novas inovações estão desafiando modelos de negócio estabelecidos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/14/mizuho-downgrades-circle-to-underperform-cuts-price-target-to-usd50-on-open-usd-threat" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="EUA e Reino Unido movem-se alinhar regras sobre finanças tokenizadas através mercados financeiros maiores Autoridades americanas e britânicas lançaram roadmap conjunto para alinhar regulações de ativos tokenizados e finanças digitais, visando reduzir fricção regulatória para empresas operando nos dois maiores mercados financeiros do mundo. O roadmap estabelece padrões comuns para como tokens representando títulos, commodities e outros ativos devem ser regulados. A iniciativa visa fortalecer laços entre reguladores EUA e Reino Unido enquanto cria oportunidades para companies operarem com mais facilidade transfronteiriça. A colaboração também sinaliza que tokenização de ativos é vista como infraestrutura de longo prazo por ambos governos, não uma moda passageira. Alinhamento regulatório britânico e americano pode criar efeito dominó encorajando outras jurisdições europias a harmonizar suas próprias regras. Objetivo final é criar ambiente regulatório para que a tokenização de ativos financeiros se expanda globalmente. CoinDesk" data-title="EUA e Reino Unido movem-se alinhar regras sobre finanças tokenizadas através mercados financeiros maiores" data-share-url="https://www.coindesk.com/policy/2026/07/14/u-s-uk-move-to-align-rules-for-tokenized-finance-across-world-s-largest-financial-markets">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">13:29</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">EUA e Reino Unido movem-se alinhar regras sobre finanças tokenizadas através mercados financeiros maiores</div>
+        <div class="news-summary">Autoridades americanas e britânicas lançaram roadmap conjunto para alinhar regulações de ativos tokenizados e finanças digitais, visando reduzir fricção regulatória para empresas operando nos dois maiores mercados financeiros do mundo. O roadmap estabelece padrões comuns para como tokens representando títulos, commodities e outros ativos devem ser regulados. A iniciativa visa fortalecer laços entre reguladores EUA e Reino Unido enquanto cria oportunidades para companies operarem com mais facilidade transfronteiriça. A colaboração também sinaliza que tokenização de ativos é vista como infraestrutura de longo prazo por ambos governos, não uma moda passageira. Alinhamento regulatório britânico e americano pode criar efeito dominó encorajando outras jurisdições europias a harmonizar suas próprias regras. Objetivo final é criar ambiente regulatório para que a tokenização de ativos financeiros se expanda globalmente.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/14/u-s-uk-move-to-align-rules-for-tokenized-finance-across-world-s-largest-financial-markets" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin sobe para USD 64K após maior desaceleração inflacionária em seis anos Bitcoin registrou ganho para aproximadamente USD 64.000 após dados de inflação ao consumidor de junho mostrarem a maior desaceleração de preços em seis anos. A queda de pressão inflacionária tipicamente beneficia Bitcoin, visto que o ativo é frequentemente visto como proteção contra erosão de poder aquisitivo, e uma inflação moderada reduz urgência de estocar ouro digital. O mercado de cripto respondeu positivamente aos dados deflacionários, sugerindo que traders acreditam que Federal Reserve em breve começará a cortar taxas de juros. Contudo, analistas alertam que a escalada do conflito EUA-Irã pode rapidamente reverter ganho de preços refletidos nos dados de junho. Volatilidade de preço de energia pode rapidamente reacender pressões inflacionárias, forçando Fed a manter juros altos e prejudicando sentimento cripto. Bitcoin próximo de USD 64.000 permanece significativamente abaixo do pico de USD 100.000 que o ativo alcançou em 2025. Decrypt" data-title="Bitcoin sobe para USD 64K após maior desaceleração inflacionária em seis anos" data-share-url="https://decrypt.co/373488/bitcoin-ticks-up-to-64k-following-largest-inflation-slowdown-in-six-years">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">12:24</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Bitcoin sobe para USD 64K após maior desaceleração inflacionária em seis anos</div>
+        <div class="news-summary">Bitcoin registrou ganho para aproximadamente USD 64.000 após dados de inflação ao consumidor de junho mostrarem a maior desaceleração de preços em seis anos. A queda de pressão inflacionária tipicamente beneficia Bitcoin, visto que o ativo é frequentemente visto como proteção contra erosão de poder aquisitivo, e uma inflação moderada reduz urgência de estocar ouro digital. O mercado de cripto respondeu positivamente aos dados deflacionários, sugerindo que traders acreditam que Federal Reserve em breve começará a cortar taxas de juros. Contudo, analistas alertam que a escalada do conflito EUA-Irã pode rapidamente reverter ganho de preços refletidos nos dados de junho. Volatilidade de preço de energia pode rapidamente reacender pressões inflacionárias, forçando Fed a manter juros altos e prejudicando sentimento cripto. Bitcoin próximo de USD 64.000 permanece significativamente abaixo do pico de USD 100.000 que o ativo alcançou em 2025.</div>
+        <div class="news-link"><a href="https://decrypt.co/373488/bitcoin-ticks-up-to-64k-following-largest-inflation-slowdown-in-six-years" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="JPMorgan diz que ascensão Hyperliquid ameaça economia USDC de Circle Analistas JPMorgan alertam que crescimento explosivo da plataforma Hyperliquid está criando dinâmica de dilema do prisioneiro que ameaça modelo de negócio e receitas de stablecoin USDC operado por Circle. Hyperliquid conseguiu acordo com Circle e Coinbase para usar USDC como stablecoin nativa, criando situação onde Circle oferece oportunidades de yield através de Hyperliquid que reduzem receitas próprias de Circle. A análise sugere que conforme Hyperliquid cresce, pressão em USDC aumenta, potencialmente ameaçando leadership de posição de Circle em stablecoins. Hyperliquid floresceu como plataforma descentralizada de derivativos com experiência de usuário superior, atraindo volume rapidamente. A crescente relevância de Hyperliquid também levanta questões sobre viabilidade de outras stablecoins concorrentes, particularmente OpenUSD recém-lançada. JPMorgan recomenda que investidores monitorem dinâmica de stablecoin de perto, visto que guerra de stablecoins está apenas começando. CoinDesk" data-title="JPMorgan diz que ascensão Hyperliquid ameaça economia USDC de Circle" data-share-url="https://www.coindesk.com/business/2026/07/14/jpmorgan-says-hyperliquid-s-rise-threatens-circle-s-usdc-economics">
+        <div class="news-meta">
+          <span class="news-date">14 jul 2026</span>
+          <span class="news-time">11:57</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">JPMorgan diz que ascensão Hyperliquid ameaça economia USDC de Circle</div>
+        <div class="news-summary">Analistas JPMorgan alertam que crescimento explosivo da plataforma Hyperliquid está criando dinâmica de dilema do prisioneiro que ameaça modelo de negócio e receitas de stablecoin USDC operado por Circle. Hyperliquid conseguiu acordo com Circle e Coinbase para usar USDC como stablecoin nativa, criando situação onde Circle oferece oportunidades de yield através de Hyperliquid que reduzem receitas próprias de Circle. A análise sugere que conforme Hyperliquid cresce, pressão em USDC aumenta, potencialmente ameaçando leadership de posição de Circle em stablecoins. Hyperliquid floresceu como plataforma descentralizada de derivativos com experiência de usuário superior, atraindo volume rapidamente. A crescente relevância de Hyperliquid também levanta questões sobre viabilidade de outras stablecoins concorrentes, particularmente OpenUSD recém-lançada. JPMorgan recomenda que investidores monitorem dinâmica de stablecoin de perto, visto que guerra de stablecoins está apenas começando.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/14/jpmorgan-says-hyperliquid-s-rise-threatens-circle-s-usdc-economics" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
