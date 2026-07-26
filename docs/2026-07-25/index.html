@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">25 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 25 de julho de 2026 marca um ponto de inflexão global onde três forças convergem: a escalada geopolítica no Oriente Médio e a crise climática na Europa desencadeiam pressões inflacionárias que obrigam bancos centrais a recalibrar suas estratégias monetárias, enquanto a tecnologia – especialmente IA e criptomoedas – emerge como tanto solução quanto risco sistêmico na nova economia. A tensão entre abertura tecnológica e segurança nacional ganho protagonismo, refletindo-se em regulações mais rigorosas e uma bifurcação entre modelos abertos chineses e sistemas controlados do Ocidente.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-07-24/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25" selected>2026-07-25</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica_economia" onclick="filterTopic('geopolitica_economia')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica & Economia</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica_economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica & Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Centenas de milhares fogem enquanto incêndios devastam Espanha e França Uma onda massiva de incêndios florestais varrida pelo calor extremo força evacuações em massa na Península Ibérica e no sudoeste europeu, com dezenas de milhares de residentes e turistas fugindo de suas casas. Os focos principais estão se aproximando de cidades importantes: a região de Madri na Espanha e Bordeaux na França são pontos críticos. Bombeiros trabalham contra o relógio para conter chamas que se movem rapidamente, alimentadas por ventos fortes e temperaturas recordes. A crise é considerada um reflexo direto das mudanças climáticas, com especialistas alertando que 2026 pode ser um dos anos mais quentes já registrados. O impacto econômico é significativo, afetando turismo, agricultura e infraestrutura. A situação também testa a capacidade de resposta dos governos europeus e coloca pressão adicional sobre recursos de defesa civil. NYT &gt; World News" data-title="Centenas de milhares fogem enquanto incêndios devastam Espanha e França" data-share-url="https://www.nytimes.com/live/2026/07/25/world/france-spain-wildfires-evacuations">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">22:19</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Centenas de milhares fogem enquanto incêndios devastam Espanha e França</div>
+        <div class="news-summary">Uma onda massiva de incêndios florestais varrida pelo calor extremo força evacuações em massa na Península Ibérica e no sudoeste europeu, com dezenas de milhares de residentes e turistas fugindo de suas casas. Os focos principais estão se aproximando de cidades importantes: a região de Madri na Espanha e Bordeaux na França são pontos críticos. Bombeiros trabalham contra o relógio para conter chamas que se movem rapidamente, alimentadas por ventos fortes e temperaturas recordes. A crise é considerada um reflexo direto das mudanças climáticas, com especialistas alertando que 2026 pode ser um dos anos mais quentes já registrados. O impacto econômico é significativo, afetando turismo, agricultura e infraestrutura. A situação também testa a capacidade de resposta dos governos europeus e coloca pressão adicional sobre recursos de defesa civil.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/07/25/world/france-spain-wildfires-evacuations" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Fed, BCE e Banco do Japão enfrentam teste de inflação com petróleo a USD 100 Bancos centrais do mundo desenvolvido agora confrontam um dilema clássico: a volta do petróleo a USD 100 por barril traz pressões inflacionárias renovadas, justamente quando alguns indicadores econômicos sugerem estabilidade no emprego e crescimento moderado. O Federal Reserve, o Banco Central Europeu e o Banco do Japão devem revelar em breve suas avaliações sobre os riscos reais dessa alta de energia. A situação é complicada pelo fato de que a inflação relacionada a commodities é difícil de controlar via política monetária tradicional, especialmente se estiver ligada a tensões geopolíticas não resolvidas. A contribuição do petróleo para a inflação agregada pode comprometer as metas de inflação próximas a 2% que os bancos centrais perseguem. Mercados já precificam possíveis atrasos em ciclos de cortes de taxa, impactando dólar, euro e iene. Bloomberg Economics" data-title="Fed, BCE e Banco do Japão enfrentam teste de inflação com petróleo a USD 100" data-share-url="https://www.bloomberg.com/news/articles/2026-07-25/fed-bank-of-england-bank-of-japan-face-100-oil-inflation-test">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">17:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Fed, BCE e Banco do Japão enfrentam teste de inflação com petróleo a USD 100</div>
+        <div class="news-summary">Bancos centrais do mundo desenvolvido agora confrontam um dilema clássico: a volta do petróleo a USD 100 por barril traz pressões inflacionárias renovadas, justamente quando alguns indicadores econômicos sugerem estabilidade no emprego e crescimento moderado. O Federal Reserve, o Banco Central Europeu e o Banco do Japão devem revelar em breve suas avaliações sobre os riscos reais dessa alta de energia. A situação é complicada pelo fato de que a inflação relacionada a commodities é difícil de controlar via política monetária tradicional, especialmente se estiver ligada a tensões geopolíticas não resolvidas. A contribuição do petróleo para a inflação agregada pode comprometer as metas de inflação próximas a 2% que os bancos centrais perseguem. Mercados já precificam possíveis atrasos em ciclos de cortes de taxa, impactando dólar, euro e iene.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-25/fed-bank-of-england-bank-of-japan-face-100-oil-inflation-test" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Cessar-fogo EUA-Irã em colapso: quase todos os 14 pontos do acordo foram violados Um acordo de cessar-fogo que prometia estabilizar a região do Oriente Médio praticamente desabou, com reportagens confirmando que praticamente todos os 14 pontos do tratado entre EUA e Irã foram violados. O acordo, que deveria ser a base para reduzir tensões após meses de escalada militar, nunca chegou a funcionar adequadamente. Fontes diplomáticas indicam que ambos os lados acusam um ao outro de desrespeito às cláusulas, especialmente aquelas ligadas a restrições de armas, transparência em atividades militares e cessação de ataques a aliados. A situação é agravada pelo fato de que a Arábia Saudita continua envolvida em confrontos com Houthis, enquanto os EUA pausaram temporariamente seus ataques aéreos noturnos contra o Irã. O cenário representa um retorno ao status quo pré-acordo, com potencial de nova escalada maior nos próximos meses. NYT &gt; World News" data-title="Cessar-fogo EUA-Irã em colapso: quase todos os 14 pontos do acordo foram violados" data-share-url="https://www.nytimes.com/2026/07/25/world/middleeast/us-iran-cease-fire-deal-violations.html">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">11:46</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Cessar-fogo EUA-Irã em colapso: quase todos os 14 pontos do acordo foram violados</div>
+        <div class="news-summary">Um acordo de cessar-fogo que prometia estabilizar a região do Oriente Médio praticamente desabou, com reportagens confirmando que praticamente todos os 14 pontos do tratado entre EUA e Irã foram violados. O acordo, que deveria ser a base para reduzir tensões após meses de escalada militar, nunca chegou a funcionar adequadamente. Fontes diplomáticas indicam que ambos os lados acusam um ao outro de desrespeito às cláusulas, especialmente aquelas ligadas a restrições de armas, transparência em atividades militares e cessação de ataques a aliados. A situação é agravada pelo fato de que a Arábia Saudita continua envolvida em confrontos com Houthis, enquanto os EUA pausaram temporariamente seus ataques aéreos noturnos contra o Irã. O cenário representa um retorno ao status quo pré-acordo, com potencial de nova escalada maior nos próximos meses.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/25/world/middleeast/us-iran-cease-fire-deal-violations.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Startups em IPO criam milionários que filantropia quer alcançar Conforme gigantes de tecnologia como Anthropic e OpenAI se preparam para abrir capital, fundações filantrópicas estão em alerta para conseguir uma fatia da riqueza que será criada. O padrão é claro: IPOs de sucesso geram uma explosão de milionários novos que, diferentemente de gerações anteriores de tech billionaires, frequentemente consideram doações beneficentes logo após o sucesso. Organizações sem fins lucrativos estão adotando estratégias agressivas para se aproximar de executivos e investidores iniciais antes que os papéis abram ao público. O fenômeno foi catalisado pelo sucesso de Patagonia, que passou o controle para um trust filantrópico, inspirando uma nova geração de fundadores a pensar em legado. Essa onda de IPOs pode deslocar bilhões para causas sociais nos próximos 2-3 anos. NYT &gt; Business" data-title="Startups em IPO criam milionários que filantropia quer alcançar" data-share-url="https://www.nytimes.com/2026/07/25/business/dealbook/spacex-anthropic-philanthropy.html">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Startups em IPO criam milionários que filantropia quer alcançar</div>
+        <div class="news-summary">Conforme gigantes de tecnologia como Anthropic e OpenAI se preparam para abrir capital, fundações filantrópicas estão em alerta para conseguir uma fatia da riqueza que será criada. O padrão é claro: IPOs de sucesso geram uma explosão de milionários novos que, diferentemente de gerações anteriores de tech billionaires, frequentemente consideram doações beneficentes logo após o sucesso. Organizações sem fins lucrativos estão adotando estratégias agressivas para se aproximar de executivos e investidores iniciais antes que os papéis abram ao público. O fenômeno foi catalisado pelo sucesso de Patagonia, que passou o controle para um trust filantrópico, inspirando uma nova geração de fundadores a pensar em legado. Essa onda de IPOs pode deslocar bilhões para causas sociais nos próximos 2-3 anos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/25/business/dealbook/spacex-anthropic-philanthropy.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Tankers continuam navegando no Mar Vermelho apesar do bloqueio Houthi, mas com incerteza crescente Dezenas de navios continuam a atravessar o estratégico Mar Vermelho apesar dos ataques e bloqueios impostos pelos Houthis, mas com interrupções esporádicas e incerteza crescente sobre a segurança das rotas. A região é um dos principais corredores para comércio global, conectando Europa ao Ásia através do Canal de Suez. Os Houthis, apoiados pelo Irã, mantêm uma campanha de ataques contra navios ocidentais como protesto à guerra em Gaza e apoio a Israel. Transportadoras estão reavaliando rotas e seguros, aumentando custos de frete. A situação compõe um quadro de pressão nos custos de energia e commodities, afetando a inflação global. Enquanto alguns navios conseguem passar, a volatilidade nas operações comerciais e o risco geopolítico iminente mantêm mercados em alerta. NYT &gt; Business" data-title="Tankers continuam navegando no Mar Vermelho apesar do bloqueio Houthi, mas com incerteza crescente" data-share-url="https://www.nytimes.com/2026/07/25/business/energy-environment/houthi-blockade-red-sea-maps.html">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Tankers continuam navegando no Mar Vermelho apesar do bloqueio Houthi, mas com incerteza crescente</div>
+        <div class="news-summary">Dezenas de navios continuam a atravessar o estratégico Mar Vermelho apesar dos ataques e bloqueios impostos pelos Houthis, mas com interrupções esporádicas e incerteza crescente sobre a segurança das rotas. A região é um dos principais corredores para comércio global, conectando Europa ao Ásia através do Canal de Suez. Os Houthis, apoiados pelo Irã, mantêm uma campanha de ataques contra navios ocidentais como protesto à guerra em Gaza e apoio a Israel. Transportadoras estão reavaliando rotas e seguros, aumentando custos de frete. A situação compõe um quadro de pressão nos custos de energia e commodities, afetando a inflação global. Enquanto alguns navios conseguem passar, a volatilidade nas operações comerciais e o risco geopolítico iminente mantêm mercados em alerta.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/25/business/energy-environment/houthi-blockade-red-sea-maps.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Desemprego nos EUA cai para mínimos de 60 anos; crescimento global acelera Os Estados Unidos registraram uma queda dramática nas solicitações de seguro-desemprego, atingindo níveis não vistos em quase 60 anos. O dado surpreendeu mercados e reforça a narrativa de que o mercado de trabalho americano permanece resiliente, apesar dos temores sobre recessão e inflação. Economistas apontam que esse dado indica que empresas continuam contratando ou pelo menos evitando demissões em massa. No contexto global, indicadores de crescimento também melhoraram, sugerindo que a economia mundial pode estar acelerando após meses de preocupações. No entanto, especialistas alertam que esses dados positivos podem resultar em pressão política para o Federal Reserve manter taxas de juros altas por mais tempo, desafiando expectativas de cortes agressivos. O quadro torna-se ainda mais complexo quando combinado com riscos inflacionários do lado da energia. Bloomberg Economics" data-title="Desemprego nos EUA cai para mínimos de 60 anos; crescimento global acelera" data-share-url="https://www.bloomberg.com/news/articles/2026-07-25/charting-the-global-economy-growth-picks-up-ai-boom-continues">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Desemprego nos EUA cai para mínimos de 60 anos; crescimento global acelera</div>
+        <div class="news-summary">Os Estados Unidos registraram uma queda dramática nas solicitações de seguro-desemprego, atingindo níveis não vistos em quase 60 anos. O dado surpreendeu mercados e reforça a narrativa de que o mercado de trabalho americano permanece resiliente, apesar dos temores sobre recessão e inflação. Economistas apontam que esse dado indica que empresas continuam contratando ou pelo menos evitando demissões em massa. No contexto global, indicadores de crescimento também melhoraram, sugerindo que a economia mundial pode estar acelerando após meses de preocupações. No entanto, especialistas alertam que esses dados positivos podem resultar em pressão política para o Federal Reserve manter taxas de juros altas por mais tempo, desafiando expectativas de cortes agressivos. O quadro torna-se ainda mais complexo quando combinado com riscos inflacionários do lado da energia.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-25/charting-the-global-economy-growth-picks-up-ai-boom-continues" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Bélgica recebe aviso de risco de desvio após agência revisar perspectiva para negativa A agência de classificação de crédito Morningstar DBRS emitiu um aviso para a Bélgica, revisando para negativa sua perspectiva sobre a saúde fiscal do país. A decisão reflete preocupações crescentes sobre o déficit orçamentário belga, que não converge para as metas europeias de sustentabilidade fiscal. A Bélgica já tem uma das maiores dívidas públicas da Europa, e o alerta pode pressionar o custo de financiamento do governo no mercado de títulos. A situação é complicada pelo fato de que a economia belga é pequena comparada a seus compromissos de déficit, tornando a consolidação fiscal politicamente difícil. O aviso também sinaliza aos investidores e mercados que a confiança nas finanças belgas está sob escrutínio renovado. Bloomberg Economics" data-title="Bélgica recebe aviso de risco de desvio após agência revisar perspectiva para negativa" data-share-url="https://www.bloomberg.com/news/articles/2026-07-25/belgium-gets-debt-warning-as-dbrs-outlook-turns-negative">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">01:49</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">Bélgica recebe aviso de risco de desvio após agência revisar perspectiva para negativa</div>
+        <div class="news-summary">A agência de classificação de crédito Morningstar DBRS emitiu um aviso para a Bélgica, revisando para negativa sua perspectiva sobre a saúde fiscal do país. A decisão reflete preocupações crescentes sobre o déficit orçamentário belga, que não converge para as metas europeias de sustentabilidade fiscal. A Bélgica já tem uma das maiores dívidas públicas da Europa, e o alerta pode pressionar o custo de financiamento do governo no mercado de títulos. A situação é complicada pelo fato de que a economia belga é pequena comparada a seus compromissos de déficit, tornando a consolidação fiscal politicamente difícil. O aviso também sinaliza aos investidores e mercados que a confiança nas finanças belgas está sob escrutínio renovado.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-25/belgium-gets-debt-warning-as-dbrs-outlook-turns-negative" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Economia global acelerada por choque de petróleo agora enfrenta aviso de tarifas A convergência de dois fatores de risco – petróleo acima de USD 100 e uma nova rodada de tarifas dos EUA sob a administração Trump – ameaça minar a recuperação econômica global que começava a ganhar tração. O cenário é especialmente perigoso porque tarifas tendem a aumentar custos para importadores, amplificando pressões inflacionárias que já vêm do lado da energia. Brasil, China, Europa e outros grandes economias estão preparando contramedidas, mas o efeito líquido tende a ser negativo para comércio e crescimento. Mercados de commodities já mostram volatilidade antecipada a sanções e retaliações comerciais. A administração Trump justifica as tarifas como proteção à indústria doméstica, mas economistas advertem que o efeito cascata pode desacelerar a economia global significativamente. NYT &gt; Business" data-title="Economia global acelerada por choque de petróleo agora enfrenta aviso de tarifas" data-share-url="https://www.nytimes.com/2026/07/25/business/economy/trump-tariffs-iran-war-inflation.html">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">01:00</span>
+          <span class="news-source">NYT &gt; Business</span>
+        </div>
+        <div class="news-title">Economia global acelerada por choque de petróleo agora enfrenta aviso de tarifas</div>
+        <div class="news-summary">A convergência de dois fatores de risco – petróleo acima de USD 100 e uma nova rodada de tarifas dos EUA sob a administração Trump – ameaça minar a recuperação econômica global que começava a ganhar tração. O cenário é especialmente perigoso porque tarifas tendem a aumentar custos para importadores, amplificando pressões inflacionárias que já vêm do lado da energia. Brasil, China, Europa e outros grandes economias estão preparando contramedidas, mas o efeito líquido tende a ser negativo para comércio e crescimento. Mercados de commodities já mostram volatilidade antecipada a sanções e retaliações comerciais. A administração Trump justifica as tarifas como proteção à indústria doméstica, mas economistas advertem que o efeito cascata pode desacelerar a economia global significativamente.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/25/business/economy/trump-tariffs-iran-war-inflation.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Monday.com culpa IA por rodada de demissões; lista de 20+ empresas tech agora inclui a plataforma Monday.com uniu-se a uma crescente lista de empresas de tecnologia que anunciam demissões significativas atribuindo a IA como fator causal. A empresa de software de trabalho colaborativo cortou pessoal após identificar oportunidades de automação via IA generativa. A prática de atribuir demissões a IA tornou-se um padrão em 2026, com pelo menos 20 grandes empresas tech justificando cortes via otimização de processos impulsionada por modelos de IA. O fenômeno levanta questões sobre accountability corporativa e se IA é uma causa real ou um escudo para decisões de redução de custos já planejadas. Sindicatos e grupos de defesa de trabalhadores começam a mobilizar campanha contra o que chamam de evasão de responsabilidade. O impacto acumulado dessas demissões está pressionando o mercado de trabalho em setores de tecnologia. AI News &amp; Artificial Intelligence | TechCrunch" data-title="Monday.com culpa IA por rodada de demissões; lista de 20+ empresas tech agora inclui a plataforma" data-share-url="https://techcrunch.com/2026/07/25/the-running-list-major-tech-layoffs-in-2026-where-employers-cited-ai/">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">22:30</span>
+          <span class="news-source">AI News &amp; Artificial Intelligence | TechCrunch</span>
+        </div>
+        <div class="news-title">Monday.com culpa IA por rodada de demissões; lista de 20+ empresas tech agora inclui a plataforma</div>
+        <div class="news-summary">Monday.com uniu-se a uma crescente lista de empresas de tecnologia que anunciam demissões significativas atribuindo a IA como fator causal. A empresa de software de trabalho colaborativo cortou pessoal após identificar oportunidades de automação via IA generativa. A prática de atribuir demissões a IA tornou-se um padrão em 2026, com pelo menos 20 grandes empresas tech justificando cortes via otimização de processos impulsionada por modelos de IA. O fenômeno levanta questões sobre accountability corporativa e se IA é uma causa real ou um escudo para decisões de redução de custos já planejadas. Sindicatos e grupos de defesa de trabalhadores começam a mobilizar campanha contra o que chamam de evasão de responsabilidade. O impacto acumulado dessas demissões está pressionando o mercado de trabalho em setores de tecnologia.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/07/25/the-running-list-major-tech-layoffs-in-2026-where-employers-cited-ai/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Frenesi por memória premia campeão chinês CXMT antes de debut histórico em Xangai A empresa chinesa de chips de memória CXMT está prestes a fazer seu debut histórico na bolsa de valores de Xangai em um momento em que a demanda global por semicondutores de memória está em pico. Investidores estão precificando expectativas extraordinariamente altas para a empresa, refletindo a escassez de capacidade de produção de memória e o boom de investimentos em data centers de IA. A CXMT, apoiada pelo governo chinês, é vista como campeã estratégica na competição sino-americana por domínio em semicondutores. O timing do IPO é crítico, vindo quando margens em DRAM e NAND estão elevadas. Analistas esperam que a abertura de capital levante bilhões e valide a estratégia chinesa de criação de capacidade doméstica independente. Bloomberg Technology" data-title="Frenesi por memória premia campeão chinês CXMT antes de debut histórico em Xangai" data-share-url="https://www.bloomberg.com/news/articles/2026-07-26/memory-frenzy-primes-china-champion-cxmt-for-historic-debut">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">21:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Frenesi por memória premia campeão chinês CXMT antes de debut histórico em Xangai</div>
+        <div class="news-summary">A empresa chinesa de chips de memória CXMT está prestes a fazer seu debut histórico na bolsa de valores de Xangai em um momento em que a demanda global por semicondutores de memória está em pico. Investidores estão precificando expectativas extraordinariamente altas para a empresa, refletindo a escassez de capacidade de produção de memória e o boom de investimentos em data centers de IA. A CXMT, apoiada pelo governo chinês, é vista como campeã estratégica na competição sino-americana por domínio em semicondutores. O timing do IPO é crítico, vindo quando margens em DRAM e NAND estão elevadas. Analistas esperam que a abertura de capital levante bilhões e valide a estratégia chinesa de criação de capacidade doméstica independente.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-26/memory-frenzy-primes-china-champion-cxmt-for-historic-debut" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Silício dividido: Vale da Silício se divide sobre fechamento de fronteiras para IA chinesa Uma batalha interna está se desenrolando entre gigantes de tecnologia como Anthropic e OpenAI, que defendem modelos de IA abertos e acessíveis mesmo quando originários da China, versus o resto da indústria que quer restrições. A questão central é se a IA de código aberto chinesa deve ser livremente disponível ou se os EUA deveriam bloquear ou restringir sua distribuição por motivos de segurança nacional. Anthropic argumenta que a IA aberta democratiza a tecnologia e reduz dependência de players corporativos centralizados. OpenAI tem posição similar, embora nuançada. Mas a maioria dos outros players – incluindo startups e consultoria – teme que modelos abertos chineses possam ser usados para fins militares, vigilância em massa ou desinformação em escala global. A disputa reflete uma tensão filosófica profunda sobre o papel da transparência versus segurança nacional na IA de fronteira. NYT &gt; Technology" data-title="Silício dividido: Vale da Silício se divide sobre fechamento de fronteiras para IA chinesa" data-share-url="https://www.nytimes.com/2026/07/25/technology/open-source-silicon-valley-china.html">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">17:07</span>
+          <span class="news-source">NYT &gt; Technology</span>
+        </div>
+        <div class="news-title">Silício dividido: Vale da Silício se divide sobre fechamento de fronteiras para IA chinesa</div>
+        <div class="news-summary">Uma batalha interna está se desenrolando entre gigantes de tecnologia como Anthropic e OpenAI, que defendem modelos de IA abertos e acessíveis mesmo quando originários da China, versus o resto da indústria que quer restrições. A questão central é se a IA de código aberto chinesa deve ser livremente disponível ou se os EUA deveriam bloquear ou restringir sua distribuição por motivos de segurança nacional. Anthropic argumenta que a IA aberta democratiza a tecnologia e reduz dependência de players corporativos centralizados. OpenAI tem posição similar, embora nuançada. Mas a maioria dos outros players – incluindo startups e consultoria – teme que modelos abertos chineses possam ser usados para fins militares, vigilância em massa ou desinformação em escala global. A disputa reflete uma tensão filosófica profunda sobre o papel da transparência versus segurança nacional na IA de fronteira.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/25/technology/open-source-silicon-valley-china.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Google confirma discretamente aumento de preço para Pixel 11 O Vice-Presidente de Dispositivos e Serviços do Google, Shakil Barkat, praticamente confirmou em entrevista que o próximo smartphone Pixel 11 terá aumento de preço em relação à geração anterior. Embora não tenha desvelado números específicos, a confirmação é importante porque sinaliza a estratégia de margens do Google no segmento móvel. O aumento é atribuído a melhorias de hardware, especialmente em capacidades de IA no dispositivo, incluindo processamento local de modelos generativos. A notícia chega em contexto de preocupação sobre affordability de smartphones flagship, especialmente à luz de recessão econômica em alguns mercados. O Pixel 11 é esperado para final de 2026 ou início de 2027, e será o primeiro flagship da série com preço acima de certos patamares históricos. The Verge" data-title="Google confirma discretamente aumento de preço para Pixel 11" data-share-url="https://www.theverge.com/tech/971041/google-confirms-pixel-11-price-hike">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">15:13</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Google confirma discretamente aumento de preço para Pixel 11</div>
+        <div class="news-summary">O Vice-Presidente de Dispositivos e Serviços do Google, Shakil Barkat, praticamente confirmou em entrevista que o próximo smartphone Pixel 11 terá aumento de preço em relação à geração anterior. Embora não tenha desvelado números específicos, a confirmação é importante porque sinaliza a estratégia de margens do Google no segmento móvel. O aumento é atribuído a melhorias de hardware, especialmente em capacidades de IA no dispositivo, incluindo processamento local de modelos generativos. A notícia chega em contexto de preocupação sobre affordability de smartphones flagship, especialmente à luz de recessão econômica em alguns mercados. O Pixel 11 é esperado para final de 2026 ou início de 2027, e será o primeiro flagship da série com preço acima de certos patamares históricos.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/971041/google-confirms-pixel-11-price-hike" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Bibliotecários hospedam workshops 'Evitando IA' virais para pessoas fartas da Big Tech Um fenômeno viral emergiu em bibliotecas públicas em todo os EUA: workshops intitulados 'Evitando IA' que atraem volumes sem precedentes de participantes. As sessões ensinam técnicas práticas para minimizar exposição a sistemas de IA em vida cotidiana – desde recusas de termos de serviço até uso de ferramentas offline. Bibliotecários relatam demanda extraordinária, com filas formando-se antes das sessões começarem. O movimento reflete backlash crescente contra o que é percebido como intrusão de IA em privacidade, emprego e vida social. Grupos de advocacy ambiental também participam, alertando sobre o custo energético de data centers de IA. O fenômeno é visto por algumas organizações como índice de descontentamento público com trajetória da IA, enquanto tech companies veem como rejeição injustificada aos benefícios tecnológicos. AI News &amp; Artificial Intelligence | TechCrunch" data-title="Bibliotecários hospedam workshops 'Evitando IA' virais para pessoas fartas da Big Tech" data-share-url="https://techcrunch.com/2026/07/25/librarians-are-hosting-viral-avoiding-ai-workshops-for-people-who-are-fed-up-with-big-tech/">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">13:00</span>
+          <span class="news-source">AI News &amp; Artificial Intelligence | TechCrunch</span>
+        </div>
+        <div class="news-title">Bibliotecários hospedam workshops 'Evitando IA' virais para pessoas fartas da Big Tech</div>
+        <div class="news-summary">Um fenômeno viral emergiu em bibliotecas públicas em todo os EUA: workshops intitulados 'Evitando IA' que atraem volumes sem precedentes de participantes. As sessões ensinam técnicas práticas para minimizar exposição a sistemas de IA em vida cotidiana – desde recusas de termos de serviço até uso de ferramentas offline. Bibliotecários relatam demanda extraordinária, com filas formando-se antes das sessões começarem. O movimento reflete backlash crescente contra o que é percebido como intrusão de IA em privacidade, emprego e vida social. Grupos de advocacy ambiental também participam, alertando sobre o custo energético de data centers de IA. O fenômeno é visto por algumas organizações como índice de descontentamento público com trajetória da IA, enquanto tech companies veem como rejeição injustificada aos benefícios tecnológicos.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/07/25/librarians-are-hosting-viral-avoiding-ai-workshops-for-people-who-are-fed-up-with-big-tech/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="DeepSeek pausa nova rodada de financiamento após posts virais causarem controvérsia A startup chinesa de IA DeepSeek comunicou aos potenciais investidores de sua segunda rodada de financiamento que está suspendendo a negociação por enquanto. A decisão vem após uma série de posts virais que geraram debate público sobre a trajetória, financiamento e ambições da empresa. DeepSeek havia levantado capital significativo em 2025 e estava buscando outra rodada para financiar pesquisa de modelos de IA. A pausa reflete sensibilidades políticas em torno de startups de IA chinesas e possível preocupação com quanto financiamento estrangeiro a empresa poderia aceitar sem atrair escrutínio regulatório. A decisão também pode indicar que os investidores ficaram menos confortáveis com o timing do investimento em meio à competição EUA-China sobre supremacia em IA. Bloomberg Technology" data-title="DeepSeek pausa nova rodada de financiamento após posts virais causarem controvérsia" data-share-url="https://www.bloomberg.com/news/articles/2026-07-25/deepseek-said-to-tell-backers-of-funding-pause-after-viral-posts">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">11:49</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">DeepSeek pausa nova rodada de financiamento após posts virais causarem controvérsia</div>
+        <div class="news-summary">A startup chinesa de IA DeepSeek comunicou aos potenciais investidores de sua segunda rodada de financiamento que está suspendendo a negociação por enquanto. A decisão vem após uma série de posts virais que geraram debate público sobre a trajetória, financiamento e ambições da empresa. DeepSeek havia levantado capital significativo em 2025 e estava buscando outra rodada para financiar pesquisa de modelos de IA. A pausa reflete sensibilidades políticas em torno de startups de IA chinesas e possível preocupação com quanto financiamento estrangeiro a empresa poderia aceitar sem atrair escrutínio regulatório. A decisão também pode indicar que os investidores ficaram menos confortáveis com o timing do investimento em meio à competição EUA-China sobre supremacia em IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-25/deepseek-said-to-tell-backers-of-funding-pause-after-viral-posts" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Warner Bros. processa Amazon por roubo de funcionários, incluindo ex-VP de conteúdo original Warner Bros. Discovery iniciou ação judicial contra Amazon, acusando a gigante do comércio eletrônico de ilegalmente poaching funcionários, incluindo Pia Barlow, ex-Vice-Presidente Sênior de Conteúdo Original da empresa. A ação reflete uma disputa crescente por talento entre grandes estúdios tradicionais e plataformas de streaming respaldadas por Amazon. Barlow era responsável por decisões estratégicas sobre conteúdo original na Warner Bros. e teria levado conhecimento propriedário e relacionamentos para Amazon. A ação é agressiva e marca uma escalada na &quot;guerra por talento&quot; que define a indústria de mídia nos últimos anos. Amazon, com seus bolsos profundos, sistemicamente atrai executivos de estúdios tradicionais com pacotes de compensação maiores. O caso pode estabelecer precedente sobre proteção de conhecimento propriedário em transições de funcionários. The Verge" data-title="Warner Bros. processa Amazon por roubo de funcionários, incluindo ex-VP de conteúdo original" data-share-url="https://www.theverge.com/business/971011/warner-bros-suing-amazon-poaching-employees">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">11:05</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Warner Bros. processa Amazon por roubo de funcionários, incluindo ex-VP de conteúdo original</div>
+        <div class="news-summary">Warner Bros. Discovery iniciou ação judicial contra Amazon, acusando a gigante do comércio eletrônico de ilegalmente poaching funcionários, incluindo Pia Barlow, ex-Vice-Presidente Sênior de Conteúdo Original da empresa. A ação reflete uma disputa crescente por talento entre grandes estúdios tradicionais e plataformas de streaming respaldadas por Amazon. Barlow era responsável por decisões estratégicas sobre conteúdo original na Warner Bros. e teria levado conhecimento propriedário e relacionamentos para Amazon. A ação é agressiva e marca uma escalada na &quot;guerra por talento&quot; que define a indústria de mídia nos últimos anos. Amazon, com seus bolsos profundos, sistemicamente atrai executivos de estúdios tradicionais com pacotes de compensação maiores. O caso pode estabelecer precedente sobre proteção de conhecimento propriedário em transições de funcionários.</div>
+        <div class="news-link"><a href="https://www.theverge.com/business/971011/warner-bros-suing-amazon-poaching-employees" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Códigos QR chegam aos corredores de casamento; tecnologia muda celebrações Casais estão cada vez mais adotando códigos QR em cerimônias nupciais, usando a tecnologia para facilitar registros de presentes, compartilhamento de fotos, cardápios digitais e informações sobre o evento. O que era associado a menus de restaurante pós-pandemia agora é visto como ferramenta de sustentabilidade e conveniência. Casamentos que usam QR codes reduzem papel desperdiçado, diminuem custos de impressão e oferecem flexibilidade dinâmica – mudanças de agenda podem ser comunicadas instantaneamente. O fenômeno reflete adoção maior de tecnologia em rituais sociais tradicionais, especialmente entre gerações millennial e Gen Z. Fornecedores de serviços para casamentos relatam crescimento em demanda por integrações QR. A tendência também democratiza acesso a informações, permitindo convidados atualizarem-se em tempo real. NYT &gt; Technology" data-title="Códigos QR chegam aos corredores de casamento; tecnologia muda celebrações" data-share-url="https://www.nytimes.com/2026/07/25/style/wedding-qr-codes.html">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">10:10</span>
+          <span class="news-source">NYT &gt; Technology</span>
+        </div>
+        <div class="news-title">Códigos QR chegam aos corredores de casamento; tecnologia muda celebrações</div>
+        <div class="news-summary">Casais estão cada vez mais adotando códigos QR em cerimônias nupciais, usando a tecnologia para facilitar registros de presentes, compartilhamento de fotos, cardápios digitais e informações sobre o evento. O que era associado a menus de restaurante pós-pandemia agora é visto como ferramenta de sustentabilidade e conveniência. Casamentos que usam QR codes reduzem papel desperdiçado, diminuem custos de impressão e oferecem flexibilidade dinâmica – mudanças de agenda podem ser comunicadas instantaneamente. O fenômeno reflete adoção maior de tecnologia em rituais sociais tradicionais, especialmente entre gerações millennial e Gen Z. Fornecedores de serviços para casamentos relatam crescimento em demanda por integrações QR. A tendência também democratiza acesso a informações, permitindo convidados atualizarem-se em tempo real.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/25/style/wedding-qr-codes.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Uma linha de energia caída expõe problema crescente em data centers de IA; como resolver Um incidente em Northern Virginia revelou vulnerabilidades críticas em como data centers de IA respondem a interrupções de energia da rede elétrica. Quando uma linha de energia caiu, vários data centers que hospedam infraestrutura de IA sofreram falhas em cascata não mitigadas adequadamente por sistemas de backup. O evento expôs a fragilidade da infraestrutura crítica que suporta o boom de IA, já que muitos data centers foram construídos apressadamente para atender demanda explosiva. Especialistas em resiliência de rede apontam que o padrão ouro de redundância e failover ainda não foi universalmente implementado em todas as instalações. A situação levanta preocupações sobre continuidade de negócios para serviços dependentes de IA, bem como risco sistêmico se data centers críticos falham. Propostas para regulação obrigatória de resiliência estão ganhando tração no Congresso. AI News &amp; Artificial Intelligence | TechCrunch" data-title="Uma linha de energia caída expõe problema crescente em data centers de IA; como resolver" data-share-url="https://techcrunch.com/2026/07/25/one-fallen-power-line-exposed-a-growing-ai-data-center-problem-heres-how-to-fix-it/">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">10:05</span>
+          <span class="news-source">AI News &amp; Artificial Intelligence | TechCrunch</span>
+        </div>
+        <div class="news-title">Uma linha de energia caída expõe problema crescente em data centers de IA; como resolver</div>
+        <div class="news-summary">Um incidente em Northern Virginia revelou vulnerabilidades críticas em como data centers de IA respondem a interrupções de energia da rede elétrica. Quando uma linha de energia caiu, vários data centers que hospedam infraestrutura de IA sofreram falhas em cascata não mitigadas adequadamente por sistemas de backup. O evento expôs a fragilidade da infraestrutura crítica que suporta o boom de IA, já que muitos data centers foram construídos apressadamente para atender demanda explosiva. Especialistas em resiliência de rede apontam que o padrão ouro de redundância e failover ainda não foi universalmente implementado em todas as instalações. A situação levanta preocupações sobre continuidade de negócios para serviços dependentes de IA, bem como risco sistêmico se data centers críticos falham. Propostas para regulação obrigatória de resiliência estão ganhando tração no Congresso.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/07/25/one-fallen-power-line-exposed-a-growing-ai-data-center-problem-heres-how-to-fix-it/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Modi adota Instagram Reels em meio ao alvoroço de estudantes alimentado por social media O Primeiro-Ministro indiano Narendra Modi fez uma mudança estratégica em sua comunicação política, adotando Instagram Reels como formato preferido em vez de seus tradicionais vídeos cinemáticos. A mudança ocorre em contexto de protestos estudantis massivos espalhados por toda Índia, muitos coordenados via plataformas Meta como Instagram e WhatsApp. Os protestos, liderados pelo jovem movimento 'Cockroach Janta Party', já conquistaram a renúncia do Ministro da Educação. Modi está buscando reconectar com eleitores mais jovens através de um formato que eles consomem nativamente. A tática é vista tanto como resposta aos protestos quanto como reconhecimento de que a comunicação política está migrando para short-form video. Analistas apontam que a mudança reflete o poder crescente das redes sociais em moldar movimentos políticos na Ásia do Sul. Bloomberg Technology" data-title="Modi adota Instagram Reels em meio ao alvoroço de estudantes alimentado por social media" data-share-url="https://www.bloomberg.com/news/articles/2026-07-25/india-s-modi-adopts-reels-amid-instagram-fueled-student-unrest">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">04:16</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Modi adota Instagram Reels em meio ao alvoroço de estudantes alimentado por social media</div>
+        <div class="news-summary">O Primeiro-Ministro indiano Narendra Modi fez uma mudança estratégica em sua comunicação política, adotando Instagram Reels como formato preferido em vez de seus tradicionais vídeos cinemáticos. A mudança ocorre em contexto de protestos estudantis massivos espalhados por toda Índia, muitos coordenados via plataformas Meta como Instagram e WhatsApp. Os protestos, liderados pelo jovem movimento 'Cockroach Janta Party', já conquistaram a renúncia do Ministro da Educação. Modi está buscando reconectar com eleitores mais jovens através de um formato que eles consomem nativamente. A tática é vista tanto como resposta aos protestos quanto como reconhecimento de que a comunicação política está migrando para short-form video. Analistas apontam que a mudança reflete o poder crescente das redes sociais em moldar movimentos políticos na Ásia do Sul.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-25/india-s-modi-adopts-reels-amid-instagram-fueled-student-unrest" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Samsung assina contrato de USD 200 bilhões com Broadcom para fornecimento de chips Samsung Electronics conquistou um contrato histórico avaliado em mais de USD 200 bilhões com a fabricante de semicondutores Broadcom para produzir chips especializados. O acordo representa um voto de confiança na capacidade de manufacturing de Samsung e reflete a corrida global para acumular capacidade de produção de chips capazes de suportar inferência e treinamento de IA. Broadcom, fornecedora-chave de chips para data centers de IA, está buscando diversificar suas fontes de fornecimento enquanto demanda por silício avança. O contrato é de longo prazo e reflete a magnitude do investimento que grandes empresas de tecnologia estão fazendo em infraestrutura de IA. Para Samsung, representa validação de sua estratégia de diversificação e posicionamento na cadeia de valor de IA. Bloomberg Technology" data-title="Samsung assina contrato de USD 200 bilhões com Broadcom para fornecimento de chips" data-share-url="https://www.bloomberg.com/news/articles/2026-07-25/samsung-inks-200-billion-chip-supply-with-broadcom">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">03:30</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Samsung assina contrato de USD 200 bilhões com Broadcom para fornecimento de chips</div>
+        <div class="news-summary">Samsung Electronics conquistou um contrato histórico avaliado em mais de USD 200 bilhões com a fabricante de semicondutores Broadcom para produzir chips especializados. O acordo representa um voto de confiança na capacidade de manufacturing de Samsung e reflete a corrida global para acumular capacidade de produção de chips capazes de suportar inferência e treinamento de IA. Broadcom, fornecedora-chave de chips para data centers de IA, está buscando diversificar suas fontes de fornecimento enquanto demanda por silício avança. O contrato é de longo prazo e reflete a magnitude do investimento que grandes empresas de tecnologia estão fazendo em infraestrutura de IA. Para Samsung, representa validação de sua estratégia de diversificação e posicionamento na cadeia de valor de IA.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-07-25/samsung-inks-200-billion-chip-supply-with-broadcom" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="BitMEX encerra operações após 11 anos revolucionando trading de derivativos de cripto BitMEX, a plataforma de derivativos de criptomoedas que por uma década foi sinônimo de trading de perpetuais e alavancado, anunciou seu encerramento. Operações cessarão em 23 de setembro de 2026, encerrando uma era de quase 11 anos. BitMEX foi pioneira em contratos perpetuais, tornando possível o trading alavancado de cripto sem expiração. A plataforma também foi alvo de investigação regulatória nos EUA por operar sem licenças apropriadas. A saída de BitMEX é simbolicamente significativa porque marca transição de uma era de plataformas cripto libertárias, pouco reguladas, para era de conformidade com reguladores. Usuários devem retirar ativos antes da data de encerramento. Crypto Briefing" data-title="BitMEX encerra operações após 11 anos revolucionando trading de derivativos de cripto" data-share-url="https://cryptobriefing.com/bitmex-shutdown-operations-cease/">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">23:21</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">BitMEX encerra operações após 11 anos revolucionando trading de derivativos de cripto</div>
+        <div class="news-summary">BitMEX, a plataforma de derivativos de criptomoedas que por uma década foi sinônimo de trading de perpetuais e alavancado, anunciou seu encerramento. Operações cessarão em 23 de setembro de 2026, encerrando uma era de quase 11 anos. BitMEX foi pioneira em contratos perpetuais, tornando possível o trading alavancado de cripto sem expiração. A plataforma também foi alvo de investigação regulatória nos EUA por operar sem licenças apropriadas. A saída de BitMEX é simbolicamente significativa porque marca transição de uma era de plataformas cripto libertárias, pouco reguladas, para era de conformidade com reguladores. Usuários devem retirar ativos antes da data de encerramento.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/bitmex-shutdown-operations-cease/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Binance 'red teams' sua própria equipe mensalmente para manter hackers afastados Binance, a maior exchange de criptomoedas do mundo, revelou que conduz testes de segurança mensal de suas próprias equipes, simulando ataques de hackers e testando higiene de segurança. A prática, conhecida como 'red teaming', é modelo de defesa agressiva e reconhecimento de que social engineering e comprometimento interno são entre as maiores ameaças. A indústria cripto viu inúmeros hacks onde funcionários foram alvo via phishing, malware ou chantagem. A transparência de Binance sobre suas práticas de red team é rara e sinaliza que a exchange está levando segurança seriamente em escala corporativa. Para o setor, indica que exchanges maiores estão adotando práticas de segurança ao nível de grandes bancos e agências governamentais. Cointelegraph.com News" data-title="Binance 'red teams' sua própria equipe mensalmente para manter hackers afastados" data-share-url="https://cointelegraph.com/news/binance-red-teams-own-staff-every-month-to-keep-hackers-out?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">23:00</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Binance 'red teams' sua própria equipe mensalmente para manter hackers afastados</div>
+        <div class="news-summary">Binance, a maior exchange de criptomoedas do mundo, revelou que conduz testes de segurança mensal de suas próprias equipes, simulando ataques de hackers e testando higiene de segurança. A prática, conhecida como 'red teaming', é modelo de defesa agressiva e reconhecimento de que social engineering e comprometimento interno são entre as maiores ameaças. A indústria cripto viu inúmeros hacks onde funcionários foram alvo via phishing, malware ou chantagem. A transparência de Binance sobre suas práticas de red team é rara e sinaliza que a exchange está levando segurança seriamente em escala corporativa. Para o setor, indica que exchanges maiores estão adotando práticas de segurança ao nível de grandes bancos e agências governamentais.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/binance-red-teams-own-staff-every-month-to-keep-hackers-out?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="UE adiciona HTX à lista de sanções contra Rússia; transações bloqueadas a partir de 23 de agosto A União Europeia adicionou a exchange de criptomoedas HTX (successor da Huobi) à sua lista de sanções contra a Rússia, efetivo a partir de 23 de agosto de 2026. A medida proíbe transações envolvendo a plataforma dentro da jurisdição da UE. Outras exchanges cripto também foram listadas, incluindo EXMO, Rapira, BitPapa e outras. A ação reflete esforço contínuo da UE de desmantelar infraestrutura financeira que permite que a Rússia contorne sanções ocidentais. Exchanges cripto têm sido apontadas como veículos para lavagem de dinheiro relacionado a sanções e evasão de capital. Para o setor cripto, destaca que exchanges podem enfrentar restrições regulatórias severas se forem vistas como facilitadores de violações de sanções. The Block" data-title="UE adiciona HTX à lista de sanções contra Rússia; transações bloqueadas a partir de 23 de agosto" data-share-url="https://www.theblock.co/post/409668/eu-adds-htx-to-russia-sanctions-list-barring-transactions-starting-aug-23?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">18:23</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">UE adiciona HTX à lista de sanções contra Rússia; transações bloqueadas a partir de 23 de agosto</div>
+        <div class="news-summary">A União Europeia adicionou a exchange de criptomoedas HTX (successor da Huobi) à sua lista de sanções contra a Rússia, efetivo a partir de 23 de agosto de 2026. A medida proíbe transações envolvendo a plataforma dentro da jurisdição da UE. Outras exchanges cripto também foram listadas, incluindo EXMO, Rapira, BitPapa e outras. A ação reflete esforço contínuo da UE de desmantelar infraestrutura financeira que permite que a Rússia contorne sanções ocidentais. Exchanges cripto têm sido apontadas como veículos para lavagem de dinheiro relacionado a sanções e evasão de capital. Para o setor cripto, destaca que exchanges podem enfrentar restrições regulatórias severas se forem vistas como facilitadores de violações de sanções.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/409668/eu-adds-htx-to-russia-sanctions-list-barring-transactions-starting-aug-23?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Robinhood em negociações com Crypto.com sobre mercados de previsão; rivalidade com Kalshi Robinhood, a plataforma de investimento varejista que expandiu para criptomoedas, está em conversas com Crypto.com para potencialmente integrar mercados de previsão. Um acordo permitiria clientes de Robinhood negociar contratos 'sim ou não' oferecidos pela divisão de derivativos da Crypto.com. A negociação ocorre em contexto de competição acirrada com Kalshi, outro startup de mercados de previsão que levantou capital significativo. Mercados de previsão é segmento crescente na cripto, oferecendo forma descentralizada de fazer apostas sobre eventos futuros. A batalha por dominância nesse espaço reflete apetite investidor por novos casos de uso de cripto além de trading puro. Cointelegraph.com News" data-title="Robinhood em negociações com Crypto.com sobre mercados de previsão; rivalidade com Kalshi" data-share-url="https://cointelegraph.com/news/robinhood-cryptocom-prediction-markets?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">18:01</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Robinhood em negociações com Crypto.com sobre mercados de previsão; rivalidade com Kalshi</div>
+        <div class="news-summary">Robinhood, a plataforma de investimento varejista que expandiu para criptomoedas, está em conversas com Crypto.com para potencialmente integrar mercados de previsão. Um acordo permitiria clientes de Robinhood negociar contratos 'sim ou não' oferecidos pela divisão de derivativos da Crypto.com. A negociação ocorre em contexto de competição acirrada com Kalshi, outro startup de mercados de previsão que levantou capital significativo. Mercados de previsão é segmento crescente na cripto, oferecendo forma descentralizada de fazer apostas sobre eventos futuros. A batalha por dominância nesse espaço reflete apetite investidor por novos casos de uso de cripto além de trading puro.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/robinhood-cryptocom-prediction-markets?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Grupo de advocacy Bitcoin se junta ao programa 'liberdade digital' do Departamento de Estado dos EUA Bitcoin Policy Institute e três organizações parceiras foram selecionadas para participar do programa de 'liberdade digital' do Departamento de Estado dos EUA. O programa permite que funcionários dessas organizações trabalhem ao lado de oficiais do Departamento de Estado para abordar questões de liberdade digital, privacidade e segurança da informação. A inclusão de um grupo de advocacy Bitcoin é significativa porque valida criptomoedas como ferramenta legítima para liberdade financeira e resistência a censura – narrativas centrais do movimento crypto. Para a indústria, representa reconhecimento do governo dos EUA de que criptomoedas e blockchain podem ter papel positivo em promover direitos humanos globalmente. Cointelegraph.com News" data-title="Grupo de advocacy Bitcoin se junta ao programa 'liberdade digital' do Departamento de Estado dos EUA" data-share-url="https://cointelegraph.com/news/bitcoin-policy-institute-state-department-program?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">15:15</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Grupo de advocacy Bitcoin se junta ao programa 'liberdade digital' do Departamento de Estado dos EUA</div>
+        <div class="news-summary">Bitcoin Policy Institute e três organizações parceiras foram selecionadas para participar do programa de 'liberdade digital' do Departamento de Estado dos EUA. O programa permite que funcionários dessas organizações trabalhem ao lado de oficiais do Departamento de Estado para abordar questões de liberdade digital, privacidade e segurança da informação. A inclusão de um grupo de advocacy Bitcoin é significativa porque valida criptomoedas como ferramenta legítima para liberdade financeira e resistência a censura – narrativas centrais do movimento crypto. Para a indústria, representa reconhecimento do governo dos EUA de que criptomoedas e blockchain podem ter papel positivo em promover direitos humanos globalmente.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bitcoin-policy-institute-state-department-program?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Sberbank, maior banco da Rússia, planeja infraestrutura de negociação cripto até dezembro Sberbank, a maior instituição financeira da Rússia, anunciou planos para estabelecer infraestrutura de negociação de criptomoedas até dezembro de 2026. A decisão vem após novas regulações russas para trading de cripto, custódia e liquidação que entram em vigor em 1º de setembro. As novas regras exigem que intermediários licenciados operem a plataforma. Essa é uma virada significativa para a Rússia, que havia sido hostil a criptomoedas em passado recente. A mudança reflete pragmatismo regulatório e reconhecimento do potencial de criptomoedas na economia russa, especialmente em contexto de sanções internacionais que restringem acesso ao sistema financeiro tradicional. Sberbank investir em infraestrutura cripto sinaliza que grandes instituições estatais estão aceitando criptomoedas como parte legítima do ecossistema financeiro. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="Sberbank, maior banco da Rússia, planeja infraestrutura de negociação cripto até dezembro" data-share-url="https://www.coindesk.com/business/2026/07/25/russia-s-largest-bank-sberbank-plans-crypto-trading-infrastructure-by-december">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">13:59</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">Sberbank, maior banco da Rússia, planeja infraestrutura de negociação cripto até dezembro</div>
+        <div class="news-summary">Sberbank, a maior instituição financeira da Rússia, anunciou planos para estabelecer infraestrutura de negociação de criptomoedas até dezembro de 2026. A decisão vem após novas regulações russas para trading de cripto, custódia e liquidação que entram em vigor em 1º de setembro. As novas regras exigem que intermediários licenciados operem a plataforma. Essa é uma virada significativa para a Rússia, que havia sido hostil a criptomoedas em passado recente. A mudança reflete pragmatismo regulatório e reconhecimento do potencial de criptomoedas na economia russa, especialmente em contexto de sanções internacionais que restringem acesso ao sistema financeiro tradicional. Sberbank investir em infraestrutura cripto sinaliza que grandes instituições estatais estão aceitando criptomoedas como parte legítima do ecossistema financeiro.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/25/russia-s-largest-bank-sberbank-plans-crypto-trading-infrastructure-by-december" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Wise resubmete aplicação para charter OCC sob GENIUS Act após rejeição anterior Wise, a fintech britânica especializada em remessas internacionais, está reenviando sua aplicação para charter nacional do OCC (Office of Comptroller of the Currency) sob a nova GENIUS Act (Governance and Accountability of Digital Asset Transactions Act). A OCC havia rejeitado a aplicação anterior citando preocupações com AML/CFT (anti-money laundering e combate ao financiamento do terrorismo). A rejeição era surpreendente dado que a OCC havia aprovado charters similares para outras empresas de ativos digitais nos últimos anos. A reaplicação de Wise sob a GENIUS Act sugere que a legislação oferece critérios mais claros e previsíveis. Para o setor crypto e fintech, indica movimento rumo a regulação de ativos digitais mais estruturada nos EUA. Cointelegraph.com News" data-title="Wise resubmete aplicação para charter OCC sob GENIUS Act após rejeição anterior" data-share-url="https://cointelegraph.com/news/wise-resubmit-occ-charter-application-genius-stablecoins?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">13:05</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Wise resubmete aplicação para charter OCC sob GENIUS Act após rejeição anterior</div>
+        <div class="news-summary">Wise, a fintech britânica especializada em remessas internacionais, está reenviando sua aplicação para charter nacional do OCC (Office of Comptroller of the Currency) sob a nova GENIUS Act (Governance and Accountability of Digital Asset Transactions Act). A OCC havia rejeitado a aplicação anterior citando preocupações com AML/CFT (anti-money laundering e combate ao financiamento do terrorismo). A rejeição era surpreendente dado que a OCC havia aprovado charters similares para outras empresas de ativos digitais nos últimos anos. A reaplicação de Wise sob a GENIUS Act sugere que a legislação oferece critérios mais claros e previsíveis. Para o setor crypto e fintech, indica movimento rumo a regulação de ativos digitais mais estruturada nos EUA.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/wise-resubmit-occ-charter-application-genius-stablecoins?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Coreia do Norte prende hackers acusados de lavar fundos roubados de banco via cripto Autoridades norte-coreanas prenderam um grupo de hackers acusados de invadir sistemas do Banco Central, roubar fundos e lavá-los através de exchanges de criptomoedas via intermediários chineses. O grupo supostamente usava pequenas transferências para evadir detecção. O incidente revela que mesmo estados isolados como Coreia do Norte estão usando criptomoedas para movimentar fundos ilícitos. O fato de Pyongyang prender seu próprio grupo de hackers sugere tensão interna sobre controle de cibercriminosos e divisas. O caso também ilustra como exchanges chinesas continuam sendo pontos fracos na compliance cripto global, servindo como gateway para lavagem de dinheiro de estados sancionados. Para a indústria cripto, destaca necessidade de melhor KYC e AML em exchanges asiáticas. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="Coreia do Norte prende hackers acusados de lavar fundos roubados de banco via cripto" data-share-url="https://www.coindesk.com/business/2026/07/25/north-korea-arrests-hackers-accused-of-laundering-stolen-funds-from-country-s-bank-via-crypto">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">12:46</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">Coreia do Norte prende hackers acusados de lavar fundos roubados de banco via cripto</div>
+        <div class="news-summary">Autoridades norte-coreanas prenderam um grupo de hackers acusados de invadir sistemas do Banco Central, roubar fundos e lavá-los através de exchanges de criptomoedas via intermediários chineses. O grupo supostamente usava pequenas transferências para evadir detecção. O incidente revela que mesmo estados isolados como Coreia do Norte estão usando criptomoedas para movimentar fundos ilícitos. O fato de Pyongyang prender seu próprio grupo de hackers sugere tensão interna sobre controle de cibercriminosos e divisas. O caso também ilustra como exchanges chinesas continuam sendo pontos fracos na compliance cripto global, servindo como gateway para lavagem de dinheiro de estados sancionados. Para a indústria cripto, destaca necessidade de melhor KYC e AML em exchanges asiáticas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/25/north-korea-arrests-hackers-accused-of-laundering-stolen-funds-from-country-s-bank-via-crypto" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Volume semanal de ETF de Bitcoin cai para mínimo desde outubro de 2024 enquanto fundos de Ether lideram entradas Volume de negociação semanal de ETFs de Bitcoin caiu para níveis mais baixos desde outubro de 2024, sugerindo menor engajamento de investidores varejistas e institucionais. Entretanto, ETFs de Ethereum tiveram performance superior, liderando entradas de capital nas últimas três semanas apesar de manterem apenas um oitavo dos ativos sob administração de fundos de Bitcoin. O padrão sugere rotação entre ativos cripto, com investidores buscando exposição a Ethereum. O volume reduzido em Bitcoin pode refletir espera por maiores movimentos de preço ou uncertainty macroeconômica. Para o setor de cripto, indica que mercado mantém interesse mesmo em períodos de consolidação. The Block" data-title="Volume semanal de ETF de Bitcoin cai para mínimo desde outubro de 2024 enquanto fundos de Ether lideram entradas" data-share-url="https://www.theblock.co/post/409660/bitcoin-etf-weekly-trading-volume-falls-to-lowest-since-october-2024-as-ether-funds-lead-inflows-again?utm_source=rss&amp;utm_medium=rss">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">10:59</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Volume semanal de ETF de Bitcoin cai para mínimo desde outubro de 2024 enquanto fundos de Ether lideram entradas</div>
+        <div class="news-summary">Volume de negociação semanal de ETFs de Bitcoin caiu para níveis mais baixos desde outubro de 2024, sugerindo menor engajamento de investidores varejistas e institucionais. Entretanto, ETFs de Ethereum tiveram performance superior, liderando entradas de capital nas últimas três semanas apesar de manterem apenas um oitavo dos ativos sob administração de fundos de Bitcoin. O padrão sugere rotação entre ativos cripto, com investidores buscando exposição a Ethereum. O volume reduzido em Bitcoin pode refletir espera por maiores movimentos de preço ou uncertainty macroeconômica. Para o setor de cripto, indica que mercado mantém interesse mesmo em períodos de consolidação.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/409660/bitcoin-etf-weekly-trading-volume-falls-to-lowest-since-october-2024-as-ether-funds-lead-inflows-again?utm_source=rss&amp;utm_medium=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fidelity se junta a esforço para passagem da CLARITY Act no Senado americano Fidelity Investments, uma das maiores gestoras de ativos do mundo e crescentemente ativa em cripto, chamou o Senado americano a aprovar a CLARITY Act (Lei de Clareza sobre Ativos Digitais Regulados). A empresa se uniu a grupos da indústria e firmas cripto pressionando por legislação que traga estrutura de mercado clara. CLARITY Act busca definir papéis regulatórios entre SEC, CFTC e bancos, reduzindo ambiguidade legal que atrasou adoção institucional de cripto. O apoio de Fidelity é significativo porque a empresa tem influência junto ao Congresso e representa instituições tradicionais de finanças que agora querem entrar em cripto com segurança regulatória. Cointelegraph.com News" data-title="Fidelity se junta a esforço para passagem da CLARITY Act no Senado americano" data-share-url="https://cointelegraph.com/news/fidelity-push-senate-passage-of-clarity-act?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">08:30</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Fidelity se junta a esforço para passagem da CLARITY Act no Senado americano</div>
+        <div class="news-summary">Fidelity Investments, uma das maiores gestoras de ativos do mundo e crescentemente ativa em cripto, chamou o Senado americano a aprovar a CLARITY Act (Lei de Clareza sobre Ativos Digitais Regulados). A empresa se uniu a grupos da indústria e firmas cripto pressionando por legislação que traga estrutura de mercado clara. CLARITY Act busca definir papéis regulatórios entre SEC, CFTC e bancos, reduzindo ambiguidade legal que atrasou adoção institucional de cripto. O apoio de Fidelity é significativo porque a empresa tem influência junto ao Congresso e representa instituições tradicionais de finanças que agora querem entrar em cripto com segurança regulatória.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/fidelity-push-senate-passage-of-clarity-act?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Dango DEX de perpetuais encerra após quase 4 meses de operação Dango, uma plataforma descentralizada de derivativos focada em contratos perpetuais, anunciou que encerrará operações em 13 de agosto de 2026, menos de 4 meses após o launch. A plataforma se junta a uma onda de shutdowns recentes incluindo BitMEX, Odos e Satori Finance. A razão para encerramento não foi explicitamente divulgada, mas especula-se sobre pressão regulatória, falta de adoção de usuários ou desafios técnicos. O fenômeno de DEXs perpetuais falhando sugere que o modelo ainda não encontrou product-market fit ou que reguladores estão exercendo pressão para fechar o que veem como não-conformidade. Cointelegraph.com News" data-title="Dango DEX de perpetuais encerra após quase 4 meses de operação" data-share-url="https://cointelegraph.com/news/dangos-perp-dex-taps-nearly-months-launch?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">07:01</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Dango DEX de perpetuais encerra após quase 4 meses de operação</div>
+        <div class="news-summary">Dango, uma plataforma descentralizada de derivativos focada em contratos perpetuais, anunciou que encerrará operações em 13 de agosto de 2026, menos de 4 meses após o launch. A plataforma se junta a uma onda de shutdowns recentes incluindo BitMEX, Odos e Satori Finance. A razão para encerramento não foi explicitamente divulgada, mas especula-se sobre pressão regulatória, falta de adoção de usuários ou desafios técnicos. O fenômeno de DEXs perpetuais falhando sugere que o modelo ainda não encontrou product-market fit ou que reguladores estão exercendo pressão para fechar o que veem como não-conformidade.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/dangos-perp-dex-taps-nearly-months-launch?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Robinhood Chain vê ativos do mundo real quintuplicarem enquanto ações tokenizadas ganham volume Robinhood Chain, uma blockchain construída especificamente para colocar ações no on-chain, viu o total de ativos do mundo real saltar cinco vezes em poucas semanas. Uma dúzia de ações tokenizadas agora cada uma gerando USD 500 mil em volume diário de negociação. O crescimento reflete demanda crescente por acesso tokenizado a títulos tradicionais, combinando benefícios de criptomoedas (liquidação 24/7, sem intermediários) com exposição a ações reais. Robinhood posicionou-se como pioneiro nesse segmento, e o sucesso da chain valida o caso de uso de tokenização de ativos reais. Para criptomoedas mais amplamente, isso representa um dos primeiros sucessos replicáveis em trazer finanças tradicionais on-chain de forma significativa. CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data" data-title="Robinhood Chain vê ativos do mundo real quintuplicarem enquanto ações tokenizadas ganham volume" data-share-url="https://www.coindesk.com/business/2026/07/25/robinhood-chain-s-real-world-assets-jump-fivefold-as-tokenized-stocks-start-trading-in-bigger-size">
+        <div class="news-meta">
+          <span class="news-date">25 jul 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">CoinDesk: Bitcoin, Ethereum, Crypto News and Price Data</span>
+        </div>
+        <div class="news-title">Robinhood Chain vê ativos do mundo real quintuplicarem enquanto ações tokenizadas ganham volume</div>
+        <div class="news-summary">Robinhood Chain, uma blockchain construída especificamente para colocar ações no on-chain, viu o total de ativos do mundo real saltar cinco vezes em poucas semanas. Uma dúzia de ações tokenizadas agora cada uma gerando USD 500 mil em volume diário de negociação. O crescimento reflete demanda crescente por acesso tokenizado a títulos tradicionais, combinando benefícios de criptomoedas (liquidação 24/7, sem intermediários) com exposição a ações reais. Robinhood posicionou-se como pioneiro nesse segmento, e o sucesso da chain valida o caso de uso de tokenização de ativos reais. Para criptomoedas mais amplamente, isso representa um dos primeiros sucessos replicáveis em trazer finanças tradicionais on-chain de forma significativa.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/25/robinhood-chain-s-real-world-assets-jump-fivefold-as-tokenized-stocks-start-trading-in-bigger-size" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
