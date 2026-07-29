@@ -11,17 +11,6 @@ const FEEDS = {
     'http://feeds.bbci.co.uk/news/world/rss.xml',
     'https://www.gzeromedia.com/feeds/feed.rss',
   ],
-  economia: [
-    'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
-    'https://www.theguardian.com/business/rss',
-    'http://feeds.bbci.co.uk/news/business/rss.xml',
-    'https://feeds.a.dj.com/rss/RSSWorldNews.xml',
-    'https://feeds.bloomberg.com/economics/news.rss',
-    'https://www.infomoney.com.br/feed/',
-    'https://www.project-syndicate.org/rss',
-    'https://www.forbes.com/business/feed/',
-    'https://api.axios.com/feed/',
-  ],
   ia: [
     'https://www.technologyreview.com/feed/',
     'https://www.theverge.com/rss/index.xml',
@@ -50,24 +39,24 @@ const FEEDS = {
 };
 
 const ACCENT_COLORS = {
-  geopolitica_economia: '#7C3AED',
+  geopolitica: '#7C3AED',
   ia: '#00C4B4',
   crypto: '#F59E0B',
 };
 
 const TOPIC_NAMES = {
-  geopolitica_economia: 'Geopolítica & Economia',
+  geopolitica: 'Geopolítica',
   ia: 'Inteligência Artificial',
   crypto: 'Criptomoedas',
 };
 
 const TOPIC_ICONS = {
-  geopolitica_economia: '🌍',
+  geopolitica: '🌍',
   ia: '🤖',
   crypto: '₿',
 };
 
-const TOPIC_ORDER = ['geopolitica_economia', 'ia', 'crypto'];
+const TOPIC_ORDER = ['geopolitica', 'ia', 'crypto'];
 
 const MONTHS_PT = [
   'janeiro','fevereiro','março','abril','maio','junho',
@@ -132,8 +121,6 @@ function escapeHTML(s) {
 const TOPIC_ALIASES = {
   geopolitica: 'geopolitica',
   'geopolítica': 'geopolitica',
-  economia: 'economia',
-  'economía': 'economia',
   ia: 'ia',
   ai: 'ia',
   inteligencia_artificial: 'ia',
@@ -154,7 +141,7 @@ function normalizeTopic(t) {
 
 export async function fetchArticles() {
   const parser = new Parser({ timeout: 10000 });
-  // Roda 1x/dia (21h BRT) — janela cobre as últimas 24h a partir do horário
+  // Roda 1x/dia (20h BRT) — janela cobre as últimas 24h a partir do horário
   // de execução, recalculada a cada rodada (nunca é fixa, sempre "hoje até agora").
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
@@ -216,14 +203,14 @@ export async function selectAndSummarize(articles, apiKey) {
   const today = nowBR();
   const datePT = `${today.getUTCDate()} de ${MONTHS_PT[today.getUTCMonth()]} de ${today.getUTCFullYear()}`;
 
-  const TOPIC_LIMITS = { geopolitica: 8, economia: 16, ia: 20, crypto: 20 };
+  const TOPIC_LIMITS = { geopolitica: 10, ia: 24, crypto: 36 };
   const byTopic = {};
   for (const a of articles) {
     if (!byTopic[a.topic]) byTopic[a.topic] = [];
     const limit = TOPIC_LIMITS[a.topic] || 6;
     if (byTopic[a.topic].length < limit) byTopic[a.topic].push(a);
   }
-  const balanced = Object.values(byTopic).flat().slice(0, 64);
+  const balanced = Object.values(byTopic).flat().slice(0, 80);
 
   let articlesText = '';
   balanced.forEach((a, i) => {
@@ -239,13 +226,12 @@ export async function selectAndSummarize(articles, apiKey) {
 
   const prompt = `Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é ${datePT}.
 
-A resposta deve ter 4 arrays separados, um por tema, cada um com a quantidade EXATA de itens abaixo — preencha cada array até atingir esse número, mesmo que precise relaxar um pouco o critério de "buzz"/repercussão para completar (mas nunca invente notícia, use sempre artigos reais da lista):
-- "geopolitica": exatamente 2 itens
-- "economia": exatamente 6 itens
-- "ia": exatamente 12 itens
-- "crypto": exatamente 12 itens
+A resposta deve ter 3 arrays separados, um por tema, cada um com a quantidade de itens abaixo — preencha cada array até atingir esse número, mesmo que precise relaxar um pouco o critério de "buzz"/repercussão para completar (mas nunca invente notícia, use sempre artigos reais da lista):
+- "geopolitica": exatamente 4 itens
+- "ia": exatamente 10 itens
+- "crypto": no mínimo 16 e no máximo 20 itens
 
-Antes de finalizar, conte os itens de cada array. Se "ia" ou "crypto" tiverem menos que o exigido, volte à lista de artigos e complete com as melhores opções restantes daquele tema até bater o número exato.
+Antes de finalizar, conte os itens de cada array. Se algum tiver menos que o exigido, volte à lista de artigos e complete com as melhores opções restantes daquele tema até bater o número mínimo.
 
 REGRAS GERAIS — válidas para todos os temas:
 1. BREAKING NEWS e eventos de alto impacto têm prioridade ABSOLUTA.
@@ -266,16 +252,6 @@ GEOPOLÍTICA — priorizar:
 - Crises humanitárias de grande escala
 - Fatos políticos que impactam mercados, Fed, BCE ou juros globais
 - Decisões de líderes que afetam a economia global
-
-ECONOMIA — priorizar:
-- Decisões do Fed, BCE e Banco Central do Brasil
-- Dados de inflação, PIB e desemprego
-- Crashes e rallies relevantes no mercado de ações
-- Commodities (petróleo, ouro) e seu impacto
-- Tarifas, sanções e guerras comerciais
-- Crises econômicas em países relevantes
-- Economia brasileira
-- Reflexo de crises geopolíticas nos mercados e na inflação
 
 INTELIGÊNCIA ARTIFICIAL — priorizar:
 - Lançamentos de modelos novos (OpenAI, Google, Anthropic, Meta e outros)
@@ -302,17 +278,16 @@ CRIPTOMOEDAS — priorizar:
 - ETFs de cripto (mencionar pouco, só se houver fato muito relevante)
 - Projetos e tokens ganhando tração/atenção no momento (ex: Hyperliquid, novas L2s, memecoins relevantes, narrativas virais)
 
-Para cada notícia: escreva um resumo em português brasileiro com 10 a 14 linhas, explicando o contexto, o que aconteceu, quem está envolvido, o impacto e as possíveis consequências. Traduza os títulos para português. Inclua o link original da notícia.
+Para cada notícia: escreva um resumo em português brasileiro com 6 a 8 linhas, direto ao ponto, explicando o contexto, o que aconteceu, quem está envolvido e o impacto. Traduza os títulos para português. Inclua o link original da notícia.
 
 Além das notícias, gere um "fio condutor do dia" (campo thread_of_day): um parágrafo editorial de 3 a 4 frases conectando os principais temas do dia, explicando o que une as notícias mais importantes desta edição.
 
-Retorne APENAS JSON válido, sem texto antes ou depois, seguindo EXATAMENTE esta estrutura com 4 arrays separados (não use um array único "news"). IMPORTANTE: nos campos de texto (summary, title, thread_of_day), nunca use aspas duplas — use aspas simples ou reescreva a frase para evitá-las:
+Retorne APENAS JSON válido, sem texto antes ou depois, seguindo EXATAMENTE esta estrutura com 3 arrays separados (não use um array único "news"). IMPORTANTE: nos campos de texto (summary, title, thread_of_day), nunca use aspas duplas — use aspas simples ou reescreva a frase para evitá-las:
 {
   "thread_of_day": "Parágrafo editorial de 3 a 4 frases conectando os principais temas do dia.",
   "geopolitica": [
-    { "title": "Título em português", "summary": "Resumo detalhado com 12 a 16 linhas.", "source": "Fonte", "published_time": "HH:MM", "link": "https://..." }
+    { "title": "Título em português", "summary": "Resumo direto com 6 a 8 linhas.", "source": "Fonte", "published_time": "HH:MM", "link": "https://..." }
   ],
-  "economia": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
   "ia": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
   "crypto": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ]
 }
@@ -370,21 +345,12 @@ ${articlesText}`;
     }
   }
 
-  // Garante a cota exata por tema, mesmo que o modelo retorne mais ou menos itens.
+  // Garante a cota por tema, mesmo que o modelo retorne mais itens.
   // Mantém os mais recentes quando há excesso.
-  const QUOTAS = { geopolitica: 2, economia: 6, ia: 12, crypto: 12 };
+  const QUOTAS = { geopolitica: 4, ia: 10, crypto: 20 };
   for (const topic of Object.keys(grouped)) {
     grouped[topic].sort((a, b) => b.published_time.localeCompare(a.published_time));
     if (QUOTAS[topic]) grouped[topic] = grouped[topic].slice(0, QUOTAS[topic]);
-  }
-
-  // Geopolítica e Economia são selecionadas como categorias separadas (mais confiável
-  // para o modelo cumprir as cotas), mas exibidas juntas numa única aba.
-  if (grouped.geopolitica || grouped.economia) {
-    grouped.geopolitica_economia = [...(grouped.geopolitica || []), ...(grouped.economia || [])]
-      .sort((a, b) => b.published_time.localeCompare(a.published_time));
-    delete grouped.geopolitica;
-    delete grouped.economia;
   }
 
   const totalSelecionado = Object.values(grouped).reduce((sum, items) => sum + items.length, 0);
