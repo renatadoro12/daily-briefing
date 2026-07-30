@@ -229,7 +229,7 @@ export async function selectAndSummarize(articles, apiKey) {
 A resposta deve ter 3 arrays separados, um por tema, cada um com a quantidade de itens abaixo — preencha cada array até atingir esse número, mesmo que precise relaxar um pouco o critério de "buzz"/repercussão para completar (mas nunca invente notícia, use sempre artigos reais da lista):
 - "geopolitica": exatamente 4 itens
 - "ia": exatamente 10 itens
-- "crypto": no mínimo 16 e no máximo 20 itens
+- "crypto": até 16 itens, tentando ficar o mais próximo possível do máximo
 
 Antes de finalizar, conte os itens de cada array. Se algum tiver menos que o exigido, volte à lista de artigos e complete com as melhores opções restantes daquele tema até bater o número mínimo.
 
@@ -347,7 +347,7 @@ ${articlesText}`;
 
   // Garante a cota por tema, mesmo que o modelo retorne mais itens.
   // Mantém os mais recentes quando há excesso.
-  const QUOTAS = { geopolitica: 4, ia: 10, crypto: 20 };
+  const QUOTAS = { geopolitica: 4, ia: 10, crypto: 16 };
   for (const topic of Object.keys(grouped)) {
     grouped[topic].sort((a, b) => b.published_time.localeCompare(a.published_time));
     if (QUOTAS[topic]) grouped[topic] = grouped[topic].slice(0, QUOTAS[topic]);

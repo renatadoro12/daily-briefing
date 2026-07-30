@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">30 DE JULHO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">A geopolítica internacional esquenta com escaladas militares no Oriente Médio e Leste Europeu, enquanto a China consolida sua posição em IA com riscos crescentes para sua própria segurança. No front tecnológico, modelos de linguagem enfrentam vulnerabilidades fundamentais incontornáveis, e o mercado cripto testa resistência após decisão hawkish do Fed, com Bitcoin oscilando próximo a $64 mil em meio a tensões geopolíticas e fluxos institucionais vacilantes.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <span class="page-btn disabled">← Anterior</span>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30" selected>2026-07-30</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Cuba diz a Trump: estamos abertos para negócios Oficial cubano de alto escalão indicou que a ilha não negociará sua política interna, mas está aberta a conversas sobre investimentos, incluindo do presidente Trump. A mudança de tom marca possível abertura diplomática em questões comerciais e econômicas entre Washington e Havana. Cuba não compromete princípios políticos, mas sinalizou flexibilidade em matéria de relações comerciais. O desenvolvimento pode ter implicações para sanções americanas e recomposição de laços econômicos na região. NYT &gt; World News" data-title="Cuba diz a Trump: estamos abertos para negócios" data-share-url="https://www.nytimes.com/2026/07/30/world/americas/cuba-deputy-foreign-minister-interview-trump.html">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">08:57</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Cuba diz a Trump: estamos abertos para negócios</div>
+        <div class="news-summary">Oficial cubano de alto escalão indicou que a ilha não negociará sua política interna, mas está aberta a conversas sobre investimentos, incluindo do presidente Trump. A mudança de tom marca possível abertura diplomática em questões comerciais e econômicas entre Washington e Havana. Cuba não compromete princípios políticos, mas sinalizou flexibilidade em matéria de relações comerciais. O desenvolvimento pode ter implicações para sanções americanas e recomposição de laços econômicos na região.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/30/world/americas/cuba-deputy-foreign-minister-interview-trump.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Líder polonês diz que míssil russo pode ter atingido território polonês durante ataque à Ucrânia O governo polonês investiga possível impacto de míssil russo em seu território durante os ataques aéreos contra a Ucrânia. Mísseis russos já invadiram o espaço aéreo polonês em ocasiões anteriores, gerando tensões na OTAN. Investigadores ainda não identificaram definitivamente o objeto que atingiu a Polônia durante a noite. Este incidente escalaria significativamente o conflito se confirmado como agressão russa direta contra membro da OTAN. NYT &gt; World News" data-title="Líder polonês diz que míssil russo pode ter atingido território polonês durante ataque à Ucrânia" data-share-url="https://www.nytimes.com/2026/07/30/world/europe/ukraine-poland-russia-missile.html">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">07:57</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Líder polonês diz que míssil russo pode ter atingido território polonês durante ataque à Ucrânia</div>
+        <div class="news-summary">O governo polonês investiga possível impacto de míssil russo em seu território durante os ataques aéreos contra a Ucrânia. Mísseis russos já invadiram o espaço aéreo polonês em ocasiões anteriores, gerando tensões na OTAN. Investigadores ainda não identificaram definitivamente o objeto que atingiu a Polônia durante a noite. Este incidente escalaria significativamente o conflito se confirmado como agressão russa direta contra membro da OTAN.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/30/world/europe/ukraine-poland-russia-missile.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Rússia ataca Ucrânia com mísseis e drones, matando pelo menos 8 pessoas O presidente Volodymyr Zelensky confirmou que a Rússia conduziu novo ataque aéreo de grande escala contra a Ucrânia, com pelo menos 8 mortos, incluindo uma família de cinco pessoas morta em casa. Os ataques com mísseis e drones continuam uma estratégia de bombardeios sistemáticos contra civis. A ofensiva integra padrão de escalada militar russo que intensificou-se ao longo de 2026. O impacto humanitário cresce conforme infraestrutura civil é atingida repetidamente. NYT &gt; World News" data-title="Rússia ataca Ucrânia com mísseis e drones, matando pelo menos 8 pessoas" data-share-url="https://www.nytimes.com/2026/07/30/world/europe/russia-ukraine-war-missiles-drones-attacks.html">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">07:37</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Rússia ataca Ucrânia com mísseis e drones, matando pelo menos 8 pessoas</div>
+        <div class="news-summary">O presidente Volodymyr Zelensky confirmou que a Rússia conduziu novo ataque aéreo de grande escala contra a Ucrânia, com pelo menos 8 mortos, incluindo uma família de cinco pessoas morta em casa. Os ataques com mísseis e drones continuam uma estratégia de bombardeios sistemáticos contra civis. A ofensiva integra padrão de escalada militar russo que intensificou-se ao longo de 2026. O impacto humanitário cresce conforme infraestrutura civil é atingida repetidamente.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/30/world/europe/russia-ukraine-war-missiles-drones-attacks.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EUA e Arábia Saudita atacam milícias iraquianas, arriscando envolvimento delas na guerra Novos ataques conjuntos EUA-Saudita contra milícias alinhadas ao Irã no Iraque aumentam risco de escalada no conflito regional. As milícias enfrentam pressão crescente para desarmamento, mas os últimos bombardeios podem encorajá-las a envolvimento mais profundo na guerra. As operações revelam estratégia americana de contenção no Iraque enquanto a tensão com o Irã permanece alta. O impacto geopolítico estende-se à dinâmica entre Washington, Riad e Teerã. NYT &gt; World News" data-title="EUA e Arábia Saudita atacam milícias iraquianas, arriscando envolvimento delas na guerra" data-share-url="https://www.nytimes.com/2026/07/30/world/europe/iraqi-militias-iran-war-saudi-arabia-us.html">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">03:20</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">EUA e Arábia Saudita atacam milícias iraquianas, arriscando envolvimento delas na guerra</div>
+        <div class="news-summary">Novos ataques conjuntos EUA-Saudita contra milícias alinhadas ao Irã no Iraque aumentam risco de escalada no conflito regional. As milícias enfrentam pressão crescente para desarmamento, mas os últimos bombardeios podem encorajá-las a envolvimento mais profundo na guerra. As operações revelam estratégia americana de contenção no Iraque enquanto a tensão com o Irã permanece alta. O impacto geopolítico estende-se à dinâmica entre Washington, Riad e Teerã.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/07/30/world/europe/iraqi-militias-iran-war-saudi-arabia-us.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Microsoft confirma 'super app' Copilot chegando este ano Microsoft confirmou planos de lançar 'super app' Copilot que combina capacidades de chat, coding e agentes de IA. Anúncio foi feito durante call de resultados na quarta-feira. A plataforma unificada busca centralizar funcionalidades de IA dispersas. Movimento alinha-se com estratégia de Microsoft de competir com OpenAI e integrar IA profundamente em seu ecosistema. The Verge" data-title="Microsoft confirma 'super app' Copilot chegando este ano" data-share-url="https://www.theverge.com/tech/972927/microsoft-copilot-super-app-confirmed">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">19:17</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Microsoft confirma 'super app' Copilot chegando este ano</div>
+        <div class="news-summary">Microsoft confirmou planos de lançar 'super app' Copilot que combina capacidades de chat, coding e agentes de IA. Anúncio foi feito durante call de resultados na quarta-feira. A plataforma unificada busca centralizar funcionalidades de IA dispersas. Movimento alinha-se com estratégia de Microsoft de competir com OpenAI e integrar IA profundamente em seu ecosistema.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/972927/microsoft-copilot-super-app-confirmed" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Mark Zuckerberg planeja grande investida em agentes de IA pessoal Meta está totalmente engajada em IA e planeja grande push em agentes de IA pessoal capazes de executar tarefas em nome dos usuários. Zuckerberg sinalizou comprometimento da companhia com tecnologia de agentes autônomos. O movimento posiciona Meta contra concorrentes em corrida por IA generativa e interfaces conversacionais. Timing coincide com crescimento de companhias em IA e competição acirrada no setor. The Verge" data-title="Mark Zuckerberg planeja grande investida em agentes de IA pessoal" data-share-url="https://www.theverge.com/tech/972294/meta-q2-2026-earnings-mark-zuckerberg-personal-ai-agents">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">18:48</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Mark Zuckerberg planeja grande investida em agentes de IA pessoal</div>
+        <div class="news-summary">Meta está totalmente engajada em IA e planeja grande push em agentes de IA pessoal capazes de executar tarefas em nome dos usuários. Zuckerberg sinalizou comprometimento da companhia com tecnologia de agentes autônomos. O movimento posiciona Meta contra concorrentes em corrida por IA generativa e interfaces conversacionais. Timing coincide com crescimento de companhias em IA e competição acirrada no setor.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/972294/meta-q2-2026-earnings-mark-zuckerberg-personal-ai-agents" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Qualcomm aumenta preços de chips para telefones a partir de 1º de setembro Qualcomm anunciará aumento de preços em todos seus processadores começando 1º de setembro. CEO Cristiano Amon comunicou movimento durante earnings call. Aumento pode elevar custos finais de smartphones no mercado consumidor. Contexto inclui pressões de custos e demanda por chips mais avançados com capacidades de IA. The Verge" data-title="Qualcomm aumenta preços de chips para telefones a partir de 1º de setembro" data-share-url="https://www.theverge.com/tech/972894/qualcomm-price-hikes-q2-2026-earnings">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">18:41</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Qualcomm aumenta preços de chips para telefones a partir de 1º de setembro</div>
+        <div class="news-summary">Qualcomm anunciará aumento de preços em todos seus processadores começando 1º de setembro. CEO Cristiano Amon comunicou movimento durante earnings call. Aumento pode elevar custos finais de smartphones no mercado consumidor. Contexto inclui pressões de custos e demanda por chips mais avançados com capacidades de IA.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/972894/qualcomm-price-hikes-q2-2026-earnings" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="xAI tenta parar lei anti-nudificação de Minnesota com ação legal xAI processou Procurador-Geral de Minnesota Keith Ellison sobre lei de maio que visa aplicativos de nudificação, argumentando estatuto é excessivamente amplo. A empresa questiona constitucionalidade da medida regulatória. Lei busca restringir criação de imagens sintéticas de nudez. Disputa levanta questões sobre limites regulatórios em geração de conteúdo por IA. The Verge" data-title="xAI tenta parar lei anti-nudificação de Minnesota com ação legal" data-share-url="https://www.theverge.com/policy/972850/xai-grok-minnesota-nudification-lawsuit">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">18:06</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">xAI tenta parar lei anti-nudificação de Minnesota com ação legal</div>
+        <div class="news-summary">xAI processou Procurador-Geral de Minnesota Keith Ellison sobre lei de maio que visa aplicativos de nudificação, argumentando estatuto é excessivamente amplo. A empresa questiona constitucionalidade da medida regulatória. Lei busca restringir criação de imagens sintéticas de nudez. Disputa levanta questões sobre limites regulatórios em geração de conteúdo por IA.</div>
+        <div class="news-link"><a href="https://www.theverge.com/policy/972850/xai-grok-minnesota-nudification-lawsuit" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Receita Xbox cai 10% enquanto negócio de nuvem e IA da Microsoft dispara Xbox enfrentou trimestre difícil com receita de conteúdo e serviços caindo 10% nos últimos meses. Negócio de cloud e IA da Microsoft mostrou crescimento robusto. Contraste evidencia pivô corporativo para IA como prioritário frente gaming. Dinâmica reflete mudança maior na indústria tecnológica alocando recursos para IA generativa. The Verge" data-title="Receita Xbox cai 10% enquanto negócio de nuvem e IA da Microsoft dispara" data-share-url="https://www.theverge.com/tech/972738/xbox-revenue-microsoft-earnings-q4-2026">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">17:26</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Receita Xbox cai 10% enquanto negócio de nuvem e IA da Microsoft dispara</div>
+        <div class="news-summary">Xbox enfrentou trimestre difícil com receita de conteúdo e serviços caindo 10% nos últimos meses. Negócio de cloud e IA da Microsoft mostrou crescimento robusto. Contraste evidencia pivô corporativo para IA como prioritário frente gaming. Dinâmica reflete mudança maior na indústria tecnológica alocando recursos para IA generativa.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/972738/xbox-revenue-microsoft-earnings-q4-2026" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fed deixa taxas estáveis com dissensão interna significativa Banco Central americano manteve taxa de juros-alvo inalterada em meio a dissensão significativa de autoridades que preferiram aumentar taxas. Divergência dentro do Fed sinaliza falha de consenso sobre direção política monetária. Decisão de manter estável contrasta com pressões inflacionárias residuais. Impacto direto sobre ativos de risco, incluindo criptomoedas e ações tecnológicas. Axios" data-title="Fed deixa taxas estáveis com dissensão interna significativa" data-share-url="https://www.axios.com/2026/07/29/fed-warsh-rates-inflation">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">16:28</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Fed deixa taxas estáveis com dissensão interna significativa</div>
+        <div class="news-summary">Banco Central americano manteve taxa de juros-alvo inalterada em meio a dissensão significativa de autoridades que preferiram aumentar taxas. Divergência dentro do Fed sinaliza falha de consenso sobre direção política monetária. Decisão de manter estável contrasta com pressões inflacionárias residuais. Impacto direto sobre ativos de risco, incluindo criptomoedas e ações tecnológicas.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/07/29/fed-warsh-rates-inflation" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Planta geotérmica esquecida ganha segunda chance com IA Empresa Zanskar comprou planta geotérmica falha em New Mexico em junho 2024 que estava deteriorando rapidamente. Água vindo do solo subterrâneo apresentava problemas críticos. Renovação envolve aplicação de tecnologia moderna incluindo IA para otimização. Projeto exemplifica revitalização de infraestrutura energética legada com ferramentas contemporâneas. MIT Technology Review" data-title="Planta geotérmica esquecida ganha segunda chance com IA" data-share-url="https://www.technologyreview.com/2026/07/29/1140896/geothermal-second-chance/">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">14:58</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Planta geotérmica esquecida ganha segunda chance com IA</div>
+        <div class="news-summary">Empresa Zanskar comprou planta geotérmica falha em New Mexico em junho 2024 que estava deteriorando rapidamente. Água vindo do solo subterrâneo apresentava problemas críticos. Renovação envolve aplicação de tecnologia moderna incluindo IA para otimização. Projeto exemplifica revitalização de infraestrutura energética legada com ferramentas contemporâneas.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/07/29/1140896/geothermal-second-chance/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Fundo de hedge com $1,1B em ações de mineradores de Bitcoin busca capital após queda em tech Situational Awareness aproximou-se de investidores e credores após empréstimos amplificarem perdas durante venda de ações de IA em julho. Fundo estava muito exposto a setor de chips e IA. Movimento sinaliza vulnerabilidade de estratégias alavancadas durante volatilidade de mercado. Contexto inclui pressão generalizada em fundos tech durante correção de juli. Cointelegraph.com News" data-title="Fundo de hedge com $1,1B em ações de mineradores de Bitcoin busca capital após queda em tech" data-share-url="https://cointelegraph.com/markets/hedge-fund-with-11b-in-bitcoin-miner-stocks-seeks-capital-after-ai-sell-off-ft?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">08:29</span>
+          <span class="news-source">Cointelegraph.com News</span>
+        </div>
+        <div class="news-title">Fundo de hedge com $1,1B em ações de mineradores de Bitcoin busca capital após queda em tech</div>
+        <div class="news-summary">Situational Awareness aproximou-se de investidores e credores após empréstimos amplificarem perdas durante venda de ações de IA em julho. Fundo estava muito exposto a setor de chips e IA. Movimento sinaliza vulnerabilidade de estratégias alavancadas durante volatilidade de mercado. Contexto inclui pressão generalizada em fundos tech durante correção de juli.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/hedge-fund-with-11b-in-bitcoin-miner-stocks-seeks-capital-after-ai-sell-off-ft?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Falha fundamental deixa LLMs drasticamente vulneráveis a ataques Pesquisadores descobriram que é impossível tornar modelos de linguagem grandes totalmente seguros contra hacks devido a flaw fundamental em como funcionam. A vulnerabilidade inata dos LLMs limita a segurança mesmo com melhorias. O achado questiona a viabilidade de defesa completa em sistemas atuais. Implicações significativas para segurança corporativa e governamental que dependem desses modelos para processamento sensível de dados. MIT Technology Review" data-title="Falha fundamental deixa LLMs drasticamente vulneráveis a ataques" data-share-url="https://www.technologyreview.com/2026/07/30/1140927/a-fundamental-flaw-leaves-llms-vulnerable-to-attack/">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">07:15</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Falha fundamental deixa LLMs drasticamente vulneráveis a ataques</div>
+        <div class="news-summary">Pesquisadores descobriram que é impossível tornar modelos de linguagem grandes totalmente seguros contra hacks devido a flaw fundamental em como funcionam. A vulnerabilidade inata dos LLMs limita a segurança mesmo com melhorias. O achado questiona a viabilidade de defesa completa em sistemas atuais. Implicações significativas para segurança corporativa e governamental que dependem desses modelos para processamento sensível de dados.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/07/30/1140927/a-fundamental-flaw-leaves-llms-vulnerable-to-attack/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Laboratórios de IA enfrentam dilema do prisioneiro conforme cresce momentum para desaceleração de segurança Arquitetos americanos de IA convergem em consenso inquietante: ritmo de progresso pode em breve demandar desaceleração, mas nenhum laboratório individual pode arriscar desacelerar sozinho. Dilema coletivo de ação levanta questões críticas sobre coordenação em IA safety. Anthropic e OpenAI entre empresas sinalizando preocupação com velocidade de desenvolvimento. Impasse reflete desafios estruturais na governança de IA. Axios" data-title="Laboratórios de IA enfrentam dilema do prisioneiro conforme cresce momentum para desaceleração de segurança" data-share-url="https://www.axios.com/2026/07/30/ai-safety-slowdown-anthropic-openai">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Laboratórios de IA enfrentam dilema do prisioneiro conforme cresce momentum para desaceleração de segurança</div>
+        <div class="news-summary">Arquitetos americanos de IA convergem em consenso inquietante: ritmo de progresso pode em breve demandar desaceleração, mas nenhum laboratório individual pode arriscar desacelerar sozinho. Dilema coletivo de ação levanta questões críticas sobre coordenação em IA safety. Anthropic e OpenAI entre empresas sinalizando preocupação com velocidade de desenvolvimento. Impasse reflete desafios estruturais na governança de IA.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/07/30/ai-safety-slowdown-anthropic-openai" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Robinhood registra melhor trimestre de todos os tempos conforme mercados de predição disparam Robinhood alcançou receita recorde de $1,31 bilhão no Q2 com mercados de predição dominando revenues. Contratos de eventos geraram $156 milhões comparado a $100 milhões de trading cripto. Plataforma de predição tornou-se negócio principal superando crypto tradicional. Shift estratégico posiciona Robinhood além cripto pura em direção a aplicações de blockchain. Decrypt" data-title="Robinhood registra melhor trimestre de todos os tempos conforme mercados de predição disparam" data-share-url="https://decrypt.co/374693/robinhood-earnings-best-quarter-ever-crypto">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">19:01</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Robinhood registra melhor trimestre de todos os tempos conforme mercados de predição disparam</div>
+        <div class="news-summary">Robinhood alcançou receita recorde de $1,31 bilhão no Q2 com mercados de predição dominando revenues. Contratos de eventos geraram $156 milhões comparado a $100 milhões de trading cripto. Plataforma de predição tornou-se negócio principal superando crypto tradicional. Shift estratégico posiciona Robinhood além cripto pura em direção a aplicações de blockchain.</div>
+        <div class="news-link"><a href="https://decrypt.co/374693/robinhood-earnings-best-quarter-ever-crypto" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="MoonPay PayBox coloca carteira cripto dentro Claude e ChatGPT para pagar coisas autonomamente MoonPay lançou PayBox, integrando carteira cripto em assistentes de IA Claude e ChatGPT permitindo transferências de fundos autônomas. Usuário mantém controle enquanto IA executa transações sob permissão. Inovação marca convergência de IA e finanças descentralizadas. Impacto potencial significativo em como usuários interagem com criptomoedas via interfaces conversacionais. Decrypt" data-title="MoonPay PayBox coloca carteira cripto dentro Claude e ChatGPT para pagar coisas autonomamente" data-share-url="https://decrypt.co/374687/moonpays-paybox-crypto-wallet-claude-chatgpt">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">16:31</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">MoonPay PayBox coloca carteira cripto dentro Claude e ChatGPT para pagar coisas autonomamente</div>
+        <div class="news-summary">MoonPay lançou PayBox, integrando carteira cripto em assistentes de IA Claude e ChatGPT permitindo transferências de fundos autônomas. Usuário mantém controle enquanto IA executa transações sob permissão. Inovação marca convergência de IA e finanças descentralizadas. Impacto potencial significativo em como usuários interagem com criptomoedas via interfaces conversacionais.</div>
+        <div class="news-link"><a href="https://decrypt.co/374687/moonpays-paybox-crypto-wallet-claude-chatgpt" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Telegram enfrenta ação legal relacionada a terror na Austrália um dia após fundador ser acusado pela Rússia Autoridades australianas acionaram Telegram por supostas falhas em remover conteúdo relacionado a terror, com multa potencial de até $38 milhões. Ação ocorre um dia após fundador Pavel Durov ser acusado pela Rússia. Plataforma enfrenta escrutínio global sobre moderação de conteúdo extremista. Consequências legais múltiplas em jurisdições diferentes pressionam Telegram simultaneamente. CoinDesk" data-title="Telegram enfrenta ação legal relacionada a terror na Austrália um dia após fundador ser acusado pela Rússia" data-share-url="https://www.coindesk.com/policy/2026/07/30/telegram-faces-terror-related-legal-action-in-australia-one-day-after-founder-is-charged-by-russia">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">09:09</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Telegram enfrenta ação legal relacionada a terror na Austrália um dia após fundador ser acusado pela Rússia</div>
+        <div class="news-summary">Autoridades australianas acionaram Telegram por supostas falhas em remover conteúdo relacionado a terror, com multa potencial de até $38 milhões. Ação ocorre um dia após fundador Pavel Durov ser acusado pela Rússia. Plataforma enfrenta escrutínio global sobre moderação de conteúdo extremista. Consequências legais múltiplas em jurisdições diferentes pressionam Telegram simultaneamente.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/30/telegram-faces-terror-related-legal-action-in-australia-one-day-after-founder-is-charged-by-russia" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Unidade Samsung explora infraestrutura stablecoin com operador Upbit Samsung SDS discute infraestrutura stablecoin e modelos de pagamento baseados em IA com Dunamu, operadora do exchange cripto sul-coreano Upbit. Diálogo estratégico posiciona Samsung em ecossistema cripto emergente. Movimento alinha-se com interesse maior de corporações sul-coreanas em tokenização e criptomoedas. Potencial para produtos financeiros inovadores. Cointelegraph" data-title="Unidade Samsung explora infraestrutura stablecoin com operador Upbit" data-share-url="https://cointelegraph.com/news/samsung-sds-stablecoin-infrastructure-dunamu?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">08:46</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Unidade Samsung explora infraestrutura stablecoin com operador Upbit</div>
+        <div class="news-summary">Samsung SDS discute infraestrutura stablecoin e modelos de pagamento baseados em IA com Dunamu, operadora do exchange cripto sul-coreano Upbit. Diálogo estratégico posiciona Samsung em ecossistema cripto emergente. Movimento alinha-se com interesse maior de corporações sul-coreanas em tokenização e criptomoedas. Potencial para produtos financeiros inovadores.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/samsung-sds-stablecoin-infrastructure-dunamu?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="ETFs de Bitcoin encaminhados para menores inflows mensais de todos os tempos Produtos de Bitcoin spot nos EUA estão a caminho de registrar menores entradas de capital mensais desde lançamento. Fluxo institucional enfraqueceu significativamente em julho. Tendência reflete mudança no apetite investidor após volatilidade recente e decisão do Fed. Impacto direto na demanda institucional por exposição cripto. CoinDesk" data-title="ETFs de Bitcoin encaminhados para menores inflows mensais de todos os tempos" data-share-url="https://www.coindesk.com/daybook-us/2026/07/30/bitcoin-etfs-on-track-for-the-smallest-monthly-inflows-ever">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">08:18</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">ETFs de Bitcoin encaminhados para menores inflows mensais de todos os tempos</div>
+        <div class="news-summary">Produtos de Bitcoin spot nos EUA estão a caminho de registrar menores entradas de capital mensais desde lançamento. Fluxo institucional enfraqueceu significativamente em julho. Tendência reflete mudança no apetite investidor após volatilidade recente e decisão do Fed. Impacto direto na demanda institucional por exposição cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/daybook-us/2026/07/30/bitcoin-etfs-on-track-for-the-smallest-monthly-inflows-ever" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Coreia do Sul planeja taxar ganhos cripto acima de $1.740 conforme batalha política passa para parlamento Governo sul-coreano planeja instituir imposto sobre ganhos em criptomoedas acima de $1.740 a partir de 1º de janeiro 2027. Medida foi adiada três vezes previamente, sinalizando desta vez compromisso governamental. Lei passará agora por debate parlamentar. Implementação marcará grande passo em regulação cripto após anos de adiamentos. CoinDesk" data-title="Coreia do Sul planeja taxar ganhos cripto acima de $1.740 conforme batalha política passa para parlamento" data-share-url="https://www.coindesk.com/policy/2026/07/30/south-korea-s-long-delayed-crypto-tax-set-to-start-in-2027">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">08:17</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Coreia do Sul planeja taxar ganhos cripto acima de $1.740 conforme batalha política passa para parlamento</div>
+        <div class="news-summary">Governo sul-coreano planeja instituir imposto sobre ganhos em criptomoedas acima de $1.740 a partir de 1º de janeiro 2027. Medida foi adiada três vezes previamente, sinalizando desta vez compromisso governamental. Lei passará agora por debate parlamentar. Implementação marcará grande passo em regulação cripto após anos de adiamentos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/30/south-korea-s-long-delayed-crypto-tax-set-to-start-in-2027" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Resiliência cripto testada conforme petróleo sobe após ataques ao Irã, Fed sinaliza taxas ainda podem aumentar Bitcoin mantém-se próximo a $64 mil apesar de decisão hawkish do Fed, mísseis balísticos iranianos e surge de 8% em petróleo que derrubou Dow 2,2%. Mercado cripto teste resistência diante múltiplos stressors geopolíticos e monetários. Volatilidade reflete incerteza sobre direção de juros e tensões no Oriente Médio. Bitcoin oscila entre pressões de risco e busca por refúgio. CoinDesk" data-title="Resiliência cripto testada conforme petróleo sobe após ataques ao Irã, Fed sinaliza taxas ainda podem aumentar" data-share-url="https://www.coindesk.com/markets/2026/07/30/crypto-s-resilience-tested-as-oil-rises-after-iran-strikes-fed-signals-rates-could-still-rise">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">07:56</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Resiliência cripto testada conforme petróleo sobe após ataques ao Irã, Fed sinaliza taxas ainda podem aumentar</div>
+        <div class="news-summary">Bitcoin mantém-se próximo a $64 mil apesar de decisão hawkish do Fed, mísseis balísticos iranianos e surge de 8% em petróleo que derrubou Dow 2,2%. Mercado cripto teste resistência diante múltiplos stressors geopolíticos e monetários. Volatilidade reflete incerteza sobre direção de juros e tensões no Oriente Médio. Bitcoin oscila entre pressões de risco e busca por refúgio.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/30/crypto-s-resilience-tested-as-oil-rises-after-iran-strikes-fed-signals-rates-could-still-rise" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fundador BitRiver acusado na Rússia de fraude de $12,5 milhões Igor Runets foi transferido para detenção pré-julgamento da prisão domiciliar enquanto enfrenta acusações de falha em entregar contrato. Empresa e fundador envolvidos em transação com conglomerado local En+ resultando em $12,5 milhões em danos. Caso sinaliza perseguição de atividades cripto em Rússia. Impacto afeta negócio de mineração russa e sentimento internacional. CoinDesk" data-title="Fundador BitRiver acusado na Rússia de fraude de $12,5 milhões" data-share-url="https://www.coindesk.com/policy/2026/07/30/bitriver-founder-charged-in-russia-with-usd12-5-million-fraud">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">07:02</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Fundador BitRiver acusado na Rússia de fraude de $12,5 milhões</div>
+        <div class="news-summary">Igor Runets foi transferido para detenção pré-julgamento da prisão domiciliar enquanto enfrenta acusações de falha em entregar contrato. Empresa e fundador envolvidos em transação com conglomerado local En+ resultando em $12,5 milhões em danos. Caso sinaliza perseguição de atividades cripto em Rússia. Impacto afeta negócio de mineração russa e sentimento internacional.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/07/30/bitriver-founder-charged-in-russia-with-usd12-5-million-fraud" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Exchange de cripto Luno corta 20% da equipe em meio push de automação e queda em trading varejista Exchange Luno, de propriedade da DCG, demitiu 20% do quadro em contexto de push por automação e enfraquecimento do trading varejista. Empresa já havia cortado 35% em janeiro 2023 citando condições de mercado difíceis. Tendência reflete consolidação do setor e mudança de modelo de negócio para institucional. Layoffs integram rodada mais ampla de reestruturações cripto em julho. CoinDesk" data-title="Exchange de cripto Luno corta 20% da equipe em meio push de automação e queda em trading varejista" data-share-url="https://www.coindesk.com/business/2026/07/30/crypto-exchange-luno-cuts-20-of-staff-amid-automation-push-and-retail-trading-slumps">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">06:54</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Exchange de cripto Luno corta 20% da equipe em meio push de automação e queda em trading varejista</div>
+        <div class="news-summary">Exchange Luno, de propriedade da DCG, demitiu 20% do quadro em contexto de push por automação e enfraquecimento do trading varejista. Empresa já havia cortado 35% em janeiro 2023 citando condições de mercado difíceis. Tendência reflete consolidação do setor e mudança de modelo de negócio para institucional. Layoffs integram rodada mais ampla de reestruturações cripto em julho.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/07/30/crypto-exchange-luno-cuts-20-of-staff-amid-automation-push-and-retail-trading-slumps" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Novo site de staking Flare Network falso drenou $8,5 milhões em XRP, diz polícia de Seul Anel criminoso copiou Flare Network e token FXRP, plantando entradas Wikipedia, posts blog e vídeos YouTube para parecer legítimo. Golpe roubou $8,5 milhões em XRP de vítimas enganadas. Operação sofisticada exemplifica risco de phishing e imitação em cripto. Polícia de Seul investigou fraude demonstrando crescimento do crime cripto coordinado. Decrypt" data-title="Novo site de staking Flare Network falso drenou $8,5 milhões em XRP, diz polícia de Seul" data-share-url="https://decrypt.co/374696/fake-flare-network-staking-site-drained-8-5m-in-xrp-seoul-police">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">06:50</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Novo site de staking Flare Network falso drenou $8,5 milhões em XRP, diz polícia de Seul</div>
+        <div class="news-summary">Anel criminoso copiou Flare Network e token FXRP, plantando entradas Wikipedia, posts blog e vídeos YouTube para parecer legítimo. Golpe roubou $8,5 milhões em XRP de vítimas enganadas. Operação sofisticada exemplifica risco de phishing e imitação em cripto. Polícia de Seul investigou fraude demonstrando crescimento do crime cripto coordinado.</div>
+        <div class="news-link"><a href="https://decrypt.co/374696/fake-flare-network-staking-site-drained-8-5m-in-xrp-seoul-police" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin sobe acima de $64 mil conforme payoff de IA da Microsoft eleva ações Bitcoin recupera-se para acima de $64 mil enquanto futuros Nasdaq 100 sobem 1,5% e Microsoft sobe 8% no pré-market após unidade de cloud crescer no ritmo mais rápido em quatro anos. Recuperação em tech pesada impulsiona sentimento cripto apesar ambiente macroeconômico incerto. Movimento reflete correlação persistente entre ações big tech e criptomoedas. CoinDesk" data-title="Bitcoin sobe acima de $64 mil conforme payoff de IA da Microsoft eleva ações" data-share-url="https://www.coindesk.com/tech/2026/07/30/live-updates-bitcoin-holds-near-usd64-000-as-microsoft-s-ai-payoff-lifts-stocks">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">06:01</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin sobe acima de $64 mil conforme payoff de IA da Microsoft eleva ações</div>
+        <div class="news-summary">Bitcoin recupera-se para acima de $64 mil enquanto futuros Nasdaq 100 sobem 1,5% e Microsoft sobe 8% no pré-market após unidade de cloud crescer no ritmo mais rápido em quatro anos. Recuperação em tech pesada impulsiona sentimento cripto apesar ambiente macroeconômico incerto. Movimento reflete correlação persistente entre ações big tech e criptomoedas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/07/30/live-updates-bitcoin-holds-near-usd64-000-as-microsoft-s-ai-payoff-lifts-stocks" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercados Bitcoin e ether governados por perps; SpaceX mostrou até onde influência deles vai Futuros perpétuos dirigem grande parte da descoberta de preço para Bitcoin e ether. Quando traders apontaram mesma maquinaria para empresa privada, precificaram-na em níveis irrazoáveis. Dinâmica sinaliza risco sistêmico de leverage em mercados cripto. Estrutura perpetual futures amplifica volatilidade e pode desconectar preços de fundamentais. CoinDesk" data-title="Mercados Bitcoin e ether governados por perps; SpaceX mostrou até onde influência deles vai" data-share-url="https://www.coindesk.com/markets/2026/07/30/bitcoin-and-ether-markets-are-ruled-by-perps-spacex-showed-how-far-their-influence-can-go">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mercados Bitcoin e ether governados por perps; SpaceX mostrou até onde influência deles vai</div>
+        <div class="news-summary">Futuros perpétuos dirigem grande parte da descoberta de preço para Bitcoin e ether. Quando traders apontaram mesma maquinaria para empresa privada, precificaram-na em níveis irrazoáveis. Dinâmica sinaliza risco sistêmico de leverage em mercados cripto. Estrutura perpetual futures amplifica volatilidade e pode desconectar preços de fundamentais.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/30/bitcoin-and-ether-markets-are-ruled-by-perps-spacex-showed-how-far-their-influence-can-go" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Whipsaw Bitcoin e ether apaga $286 milhões em apostas alavancadas Volatilidade de preço em torno da decisão do Fed limpou posições para aproximadamente 90 mil traders, com perdas inusitadamente iguais para touros e ursos. Liquidações massivas ocorreram sobre movimento de preços relativamente contido nos últimos 24 horas. Evento exemplifica risco de estruturas alavancadas em mercados cripto voláteis. Impacto reflete fragilidade de muitos traders. CoinDesk" data-title="Whipsaw Bitcoin e ether apaga $286 milhões em apostas alavancadas" data-share-url="https://www.coindesk.com/markets/2026/07/30/bitcoin-ether-whipsaw-wipes-out-usd280-million-even-as-prices-remain-flat-over-24-hours">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">03:59</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Whipsaw Bitcoin e ether apaga $286 milhões em apostas alavancadas</div>
+        <div class="news-summary">Volatilidade de preço em torno da decisão do Fed limpou posições para aproximadamente 90 mil traders, com perdas inusitadamente iguais para touros e ursos. Liquidações massivas ocorreram sobre movimento de preços relativamente contido nos últimos 24 horas. Evento exemplifica risco de estruturas alavancadas em mercados cripto voláteis. Impacto reflete fragilidade de muitos traders.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/30/bitcoin-ether-whipsaw-wipes-out-usd280-million-even-as-prices-remain-flat-over-24-hours" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Analistas Bitcoin concordam que hold do Fed foi hawkish; dividem-se sobre próximo passo Quatro analistas concordam que decisão hawkish do Fed muda cálculo para ativos de risco, mas divergem sobre verdadeiro teste de Bitcoin já estar aqui ou ainda vir. Consenso em interpretação de política do Fed contrasta com desacordo em implicações para preço. Incerteza reflete ambiente macroeconômico complexo com múltiplos cenários possíveis. CoinDesk" data-title="Analistas Bitcoin concordam que hold do Fed foi hawkish; dividem-se sobre próximo passo" data-share-url="https://www.coindesk.com/markets/2026/07/30/bitcoin-analysts-agree-the-fed-s-hold-was-hawkish-they-don-t-agree-on-what-happens-next">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">03:28</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Analistas Bitcoin concordam que hold do Fed foi hawkish; dividem-se sobre próximo passo</div>
+        <div class="news-summary">Quatro analistas concordam que decisão hawkish do Fed muda cálculo para ativos de risco, mas divergem sobre verdadeiro teste de Bitcoin já estar aqui ou ainda vir. Consenso em interpretação de política do Fed contrasta com desacordo em implicações para preço. Incerteza reflete ambiente macroeconômico complexo com múltiplos cenários possíveis.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/07/30/bitcoin-analysts-agree-the-fed-s-hold-was-hawkish-they-don-t-agree-on-what-happens-next" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="EUA sanciona empresa marítima iraniana, diz que aceitou Bitcoin para evadir restrições Tesouro americano sancionou HormuzSafe, empresa marítima iraniana, por aceitar Bitcoin e outros ativos digitais para evadir sanções e gerar receita para Guarda Revolucionária Islâmica. Acusação marca uso de cripto como ferramenta de violação de sanções. Indicativo de como entidades iranianas usam blockchain para contorno de restrições. Impacto aumenta escrutínio regulatório sobre cripto. Cointelegraph" data-title="EUA sanciona empresa marítima iraniana, diz que aceitou Bitcoin para evadir restrições" data-share-url="https://cointelegraph.com/news/us-sanctions-iran-hormuzsafe-bitcoin?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">30 jul 2026</span>
+          <span class="news-time">02:23</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">EUA sanciona empresa marítima iraniana, diz que aceitou Bitcoin para evadir restrições</div>
+        <div class="news-summary">Tesouro americano sancionou HormuzSafe, empresa marítima iraniana, por aceitar Bitcoin e outros ativos digitais para evadir sanções e gerar receita para Guarda Revolucionária Islâmica. Acusação marca uso de cripto como ferramenta de violação de sanções. Indicativo de como entidades iranianas usam blockchain para contorno de restrições. Impacto aumenta escrutínio regulatório sobre cripto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/us-sanctions-iran-hormuzsafe-bitcoin?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
