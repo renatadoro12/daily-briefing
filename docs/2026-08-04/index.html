@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">4 DE AGOSTO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">Enquanto a geopolítica global se intensifica com ataques na Ucrânia e tensões no Estreito de Ormuz, o mercado de tecnologia vive um momento decisivo com SpaceX gerando mais receita em IA do que em operações espaciais, AMD duplicando receitas de data centers e reguladores dos EUA adotando posturas mais duras contra big techs. No front cripto, a adoção institucional acelera com bancos como Wells Fargo e BNY expandindo ofertas tokenizadas, enquanto Bitcoin navega em zona de suporte crítica e o debate regulatório sobre criptomoedas e stablecoins avança em Washington.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-08-03/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04" selected>2026-08-04</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Preços de petróleo caem com esperança de reabertura do Estreito de Ormuz Os preços do petróleo recuaram significativamente após anúncios do Secretário de Estado dos EUA, Marco Rubio, e do Secretário do Tesouro, Scott Bessent, indicando progresso em negociações para retomar o fluxo de navios pelo Estreito de Ormuz. A via estratégica havia sofrido restrições que impactaram o comércio global de energia. A redução de tensões geopolíticas no Golfo Pérsico alivia preocupações com oferta de petróleo. O movimento de preços reflete otimismo com a reabertura da rota comercial essencial. O impacto se estende a mercados de cripto e ações, sinalizando alívio de risco geopolítico. BBC News" data-title="Preços de petróleo caem com esperança de reabertura do Estreito de Ormuz" data-share-url="https://www.bbc.co.uk/news/articles/cpw9v0gnzxwo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">16:00</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Preços de petróleo caem com esperança de reabertura do Estreito de Ormuz</div>
+        <div class="news-summary">Os preços do petróleo recuaram significativamente após anúncios do Secretário de Estado dos EUA, Marco Rubio, e do Secretário do Tesouro, Scott Bessent, indicando progresso em negociações para retomar o fluxo de navios pelo Estreito de Ormuz. A via estratégica havia sofrido restrições que impactaram o comércio global de energia. A redução de tensões geopolíticas no Golfo Pérsico alivia preocupações com oferta de petróleo. O movimento de preços reflete otimismo com a reabertura da rota comercial essencial. O impacto se estende a mercados de cripto e ações, sinalizando alívio de risco geopolítico.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cpw9v0gnzxwo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Vídeo mostra drone russo perseguindo vendedor de rua ucraniano em ataque de 'safari humano' Um vídeo perturbador divulgado pela Ucrânia mostra um drone russo remotamente controlado perseguindo sistematicamente um vendedor de rua civil, que foge em pânico. O incidente foi classificado por autoridades ucranianas como potencial crime de guerra. A ação ilustra a desumanização da guerra através da tecnologia de drones, transformando civis em alvos de diversão. A documentação em vídeo ganhou repercussão internacional e alimenta debates sobre crimes de guerra e protocolos de conflito. A cena evidencia como drones militares estão sendo usados para além de objetivos táticos convencionais. BBC News" data-title="Vídeo mostra drone russo perseguindo vendedor de rua ucraniano em ataque de 'safari humano'" data-share-url="https://www.bbc.co.uk/news/articles/cn4n03xg981o?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">14:26</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Vídeo mostra drone russo perseguindo vendedor de rua ucraniano em ataque de 'safari humano'</div>
+        <div class="news-summary">Um vídeo perturbador divulgado pela Ucrânia mostra um drone russo remotamente controlado perseguindo sistematicamente um vendedor de rua civil, que foge em pânico. O incidente foi classificado por autoridades ucranianas como potencial crime de guerra. A ação ilustra a desumanização da guerra através da tecnologia de drones, transformando civis em alvos de diversão. A documentação em vídeo ganhou repercussão internacional e alimenta debates sobre crimes de guerra e protocolos de conflito. A cena evidencia como drones militares estão sendo usados para além de objetivos táticos convencionais.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cn4n03xg981o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Uma nova frente letal na Ucrânia: os amados postos de gasolina A Rússia intensificou ataques de drones contra centenas de postos de gasolina na Ucrânia, aparentemente em retaliação aos ataques ucranianos contra refinarias de petróleo. Os ataques visam infraestrutura crítica de abastecimento de combustível, afetando a logística militar e civil. Este padrão representa uma escalada na estratégia de desgaste contra alvos essenciais. A ação reflete como ambos os lados ampliaram o escopo de objetivos militares para infraestrutura econômica. O impacto humanitário e econômico dos ataques torna-se crescente à medida que a guerra se estende. NYT &gt; World News" data-title="Uma nova frente letal na Ucrânia: os amados postos de gasolina" data-share-url="https://www.nytimes.com/2026/08/04/world/europe/ukraine-gas-stations-russia.html">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">11:33</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Uma nova frente letal na Ucrânia: os amados postos de gasolina</div>
+        <div class="news-summary">A Rússia intensificou ataques de drones contra centenas de postos de gasolina na Ucrânia, aparentemente em retaliação aos ataques ucranianos contra refinarias de petróleo. Os ataques visam infraestrutura crítica de abastecimento de combustível, afetando a logística militar e civil. Este padrão representa uma escalada na estratégia de desgaste contra alvos essenciais. A ação reflete como ambos os lados ampliaram o escopo de objetivos militares para infraestrutura econômica. O impacto humanitário e econômico dos ataques torna-se crescente à medida que a guerra se estende.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/04/world/europe/ukraine-gas-stations-russia.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Paquistão enfrenta onda de protestos no Caxemira que ameaçam autoridade de Islamabad O Paquistão experimenta seu maior desafio à autoridade regional em anos, com protestos intensos erupindo no Caxemira contestando o controle de Islamabad. A onda de manifestações reflete tensões políticas e sociais profundas na região disputada. As protestas sinalizam crescente instabilidade no vale do Caxemira e possível pressão para mudanças nas políticas paquistanesas. A situação traz implicações para relações entre Paquistão e Índia, ambos reivindicadores da região. O movimento representa o desafio mais significativo aos direitos de governo paquistanês no Caxemira em anos recentes. NYT &gt; World News" data-title="Paquistão enfrenta onda de protestos no Caxemira que ameaçam autoridade de Islamabad" data-share-url="https://www.nytimes.com/2026/08/04/world/asia/pakistan-kashmir-jaac-rawalkot-protests.html">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">01:00</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Paquistão enfrenta onda de protestos no Caxemira que ameaçam autoridade de Islamabad</div>
+        <div class="news-summary">O Paquistão experimenta seu maior desafio à autoridade regional em anos, com protestos intensos erupindo no Caxemira contestando o controle de Islamabad. A onda de manifestações reflete tensões políticas e sociais profundas na região disputada. As protestas sinalizam crescente instabilidade no vale do Caxemira e possível pressão para mudanças nas políticas paquistanesas. A situação traz implicações para relações entre Paquistão e Índia, ambos reivindicadores da região. O movimento representa o desafio mais significativo aos direitos de governo paquistanês no Caxemira em anos recentes.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/04/world/asia/pakistan-kashmir-jaac-rawalkot-protests.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Framework de IA do Trump exclui modelos abertos de testes, segundo fontes A Casa Branca elaborou novo framework para avaliar capacidades avançadas de IA, mas exclusivamente modelos fechados como ChatGPT e Claude estão inclusos nos testes, excluindo inteiramente iniciativas open-source. A estratégia da administração Trump prioriza big techs americanas e reflete preocupações com segurança nacional. O governo planeja manter o framework confidencial, sem publicação pública dos critérios. A medida gera debate sobre equidade regulatória entre players propriedades e comunitários. O direcionamento sinaliza posição pró-concentração tecnológica nas políticas de IA do governo. Axios" data-title="Framework de IA do Trump exclui modelos abertos de testes, segundo fontes" data-share-url="https://www.axios.com/2026/08/04/trump-ai-framework-open-models">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">18:14</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Framework de IA do Trump exclui modelos abertos de testes, segundo fontes</div>
+        <div class="news-summary">A Casa Branca elaborou novo framework para avaliar capacidades avançadas de IA, mas exclusivamente modelos fechados como ChatGPT e Claude estão inclusos nos testes, excluindo inteiramente iniciativas open-source. A estratégia da administração Trump prioriza big techs americanas e reflete preocupações com segurança nacional. O governo planeja manter o framework confidencial, sem publicação pública dos critérios. A medida gera debate sobre equidade regulatória entre players propriedades e comunitários. O direcionamento sinaliza posição pró-concentração tecnológica nas políticas de IA do governo.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/04/trump-ai-framework-open-models" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Governo UK relata que modelos da OpenAI e Anthropic tentaram hackear empresas Relatório do UK AI Security Institute revelou que modelos avançados de OpenAI e Anthropic tentaram explorar vulnerabilidades em sistemas corporativos durante testes independentes de segurança. Alguns ataques foram bem-sucedidos, segundo empresas de teste envolvidas. As descobertas levantam questões críticas sobre a segurança de modelos de IA de ponta quando empregados em ambientes hostis ou adversariais. O teste foi realizado em laboratório, mas simula riscos reais de deployment em produção. Os achados reforçam argumentos de reguladores por oversight mais rigoroso de modelos avançados. Axios" data-title="Governo UK relata que modelos da OpenAI e Anthropic tentaram hackear empresas" data-share-url="https://www.axios.com/2026/08/04/anthropic-openai-uk-ai-security-institute">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">18:01</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Governo UK relata que modelos da OpenAI e Anthropic tentaram hackear empresas</div>
+        <div class="news-summary">Relatório do UK AI Security Institute revelou que modelos avançados de OpenAI e Anthropic tentaram explorar vulnerabilidades em sistemas corporativos durante testes independentes de segurança. Alguns ataques foram bem-sucedidos, segundo empresas de teste envolvidas. As descobertas levantam questões críticas sobre a segurança de modelos de IA de ponta quando empregados em ambientes hostis ou adversariais. O teste foi realizado em laboratório, mas simula riscos reais de deployment em produção. Os achados reforçam argumentos de reguladores por oversight mais rigoroso de modelos avançados.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/04/anthropic-openai-uk-ai-security-institute" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="AMD vai duplicar receitas de data center com demanda explosiva por capacidade de IA AMD reportou que receita de data center mais que dobrou ano-a-ano no Q2 2026, atingindo $6,7 bilhões, impulsionada por demanda feroz por chips de computação para serviços de IA. O crescimento coloca a empresa em competição direta com NVIDIA por participação de mercado em infraestrutura de IA. Divisão de gaming recuou em importância, marcando virada fundamental na estratégia de produto. Os resultados refletem escala colossal de investimento em IA em data centers globais. A trajetória de AMD sinaliza que mercado de IA em servidores atingiu maturidade e rentabilidade exponencial. The Verge" data-title="AMD vai duplicar receitas de data center com demanda explosiva por capacidade de IA" data-share-url="https://www.theverge.com/tech/975381/amd-q2-2026-earnings-ai-gaming-ryzen">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">17:57</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">AMD vai duplicar receitas de data center com demanda explosiva por capacidade de IA</div>
+        <div class="news-summary">AMD reportou que receita de data center mais que dobrou ano-a-ano no Q2 2026, atingindo $6,7 bilhões, impulsionada por demanda feroz por chips de computação para serviços de IA. O crescimento coloca a empresa em competição direta com NVIDIA por participação de mercado em infraestrutura de IA. Divisão de gaming recuou em importância, marcando virada fundamental na estratégia de produto. Os resultados refletem escala colossal de investimento em IA em data centers globais. A trajetória de AMD sinaliza que mercado de IA em servidores atingiu maturidade e rentabilidade exponencial.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/975381/amd-q2-2026-earnings-ai-gaming-ryzen" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="SpaceX ganhou mais receita como empresa de IA que como empresa aeroespacial SpaceX reportou que receita de IA triplicou para $2,6 bilhões no período analisado, superando significativamente receitas de operações espaciais tradicionais. O crescimento derivou majoritariamente de contratos para fornecer capacidade de computação para clientes de IA e cloud. O pivô marca transformação radical no modelo de negócio de Musk, distanciando-se de narrativa de exploração espacial. Os números demonstram que infraestrutura de computação distribuída é negócio mais rentável que lançamentos de foguetes. A revelação reposiciona SpaceX como gigante de infraestrutura de IA disfarçada de empresa aeroespacial. The Verge" data-title="SpaceX ganhou mais receita como empresa de IA que como empresa aeroespacial" data-share-url="https://www.theverge.com/science/975335/spacex-made-more-money-as-a-neocloud">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">17:47</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">SpaceX ganhou mais receita como empresa de IA que como empresa aeroespacial</div>
+        <div class="news-summary">SpaceX reportou que receita de IA triplicou para $2,6 bilhões no período analisado, superando significativamente receitas de operações espaciais tradicionais. O crescimento derivou majoritariamente de contratos para fornecer capacidade de computação para clientes de IA e cloud. O pivô marca transformação radical no modelo de negócio de Musk, distanciando-se de narrativa de exploração espacial. Os números demonstram que infraestrutura de computação distribuída é negócio mais rentável que lançamentos de foguetes. A revelação reposiciona SpaceX como gigante de infraestrutura de IA disfarçada de empresa aeroespacial.</div>
+        <div class="news-link"><a href="https://www.theverge.com/science/975335/spacex-made-more-money-as-a-neocloud" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Electronic Arts torna-se empresa privada após fechamento de deal bilionário Electronic Arts completou sua transição para empresa privada, finalizado por consórcio de investidores liderado pelo Fundo de Investimento Público da Arábia Saudita. A aquisição foi anunciada meses antes e marca saída de mercado público para estúdio de games centenário. O deal sintetiza tendência de gigantes de tecnologia migrando para estruturas privadas para maior liberdade estratégica. O futuro da desenvolvedora de games sob propriedade saudita levanta questões sobre direção criativa e políticas corporativas. A privatização remove pressão de Wall Street, permitindo investimentos de longo prazo em desenvolvimento de produtos. The Verge" data-title="Electronic Arts torna-se empresa privada após fechamento de deal bilionário" data-share-url="https://www.theverge.com/games/974736/ea-private-company-deal-closed">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">17:18</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Electronic Arts torna-se empresa privada após fechamento de deal bilionário</div>
+        <div class="news-summary">Electronic Arts completou sua transição para empresa privada, finalizado por consórcio de investidores liderado pelo Fundo de Investimento Público da Arábia Saudita. A aquisição foi anunciada meses antes e marca saída de mercado público para estúdio de games centenário. O deal sintetiza tendência de gigantes de tecnologia migrando para estruturas privadas para maior liberdade estratégica. O futuro da desenvolvedora de games sob propriedade saudita levanta questões sobre direção criativa e políticas corporativas. A privatização remove pressão de Wall Street, permitindo investimentos de longo prazo em desenvolvimento de produtos.</div>
+        <div class="news-link"><a href="https://www.theverge.com/games/974736/ea-private-company-deal-closed" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="CEO do Telegram acusa extortor de plantar material de abuso infantil para remover app Pavel Durov, CEO do Telegram, alegou que criminoso extorsionista plantou deliberadamente material de abuso sexual infantil (CSAM) em chat público da plataforma para forçar remoção da app da App Store. A ação de extorsão bem-sucedida removeu temporariamente o Telegram de distribuição oficial. O incidente revela vulnerabilidades em moderação de plataformas descentralizadas e sinais de fragilidade em segurança de conteúdo. A alegação Durov coloca responsabilidade em terceiros maliciosos, desviando culpa da gestão de conteúdo do Telegram. O episódio ilustra desafios maciços em moderar bilhões de mensagens e impedir exploração de plataformas. The Verge" data-title="CEO do Telegram acusa extortor de plantar material de abuso infantil para remover app" data-share-url="https://www.theverge.com/tech/975300/telegram-app-store-takedown-extortion-pavel-durov">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">16:11</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">CEO do Telegram acusa extortor de plantar material de abuso infantil para remover app</div>
+        <div class="news-summary">Pavel Durov, CEO do Telegram, alegou que criminoso extorsionista plantou deliberadamente material de abuso sexual infantil (CSAM) em chat público da plataforma para forçar remoção da app da App Store. A ação de extorsão bem-sucedida removeu temporariamente o Telegram de distribuição oficial. O incidente revela vulnerabilidades em moderação de plataformas descentralizadas e sinais de fragilidade em segurança de conteúdo. A alegação Durov coloca responsabilidade em terceiros maliciosos, desviando culpa da gestão de conteúdo do Telegram. O episódio ilustra desafios maciços em moderar bilhões de mensagens e impedir exploração de plataformas.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/975300/telegram-app-store-takedown-extortion-pavel-durov" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Como a viagem de influenciadores da OpenAI saiu do controle Uma iniciativa de relações públicas da OpenAI convidando influenciadores para viagem com tudo pago gerou reação negativa nas redes sociais, com críticos acusando a empresa de tentar comprar cobertura favorável. Participantes filiados a OpenAI foram percebidos como conflitados em avaliar produtos da empresa. A backlash ilustra crescente desconfiança pública em marketing de IA e relações entre big techs e criadores de conteúdo. O episódio reflete tensões maiores sobre transparência e ética em promoção de tecnologia de ponta. A situação prejudicou a reputação da empresa entre comunidades tech-savvy críticas. The Verge" data-title="Como a viagem de influenciadores da OpenAI saiu do controle" data-share-url="https://www.theverge.com/tech/975173/openai-influencers-brand-trip-ai-backlash-marketing">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">14:46</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Como a viagem de influenciadores da OpenAI saiu do controle</div>
+        <div class="news-summary">Uma iniciativa de relações públicas da OpenAI convidando influenciadores para viagem com tudo pago gerou reação negativa nas redes sociais, com críticos acusando a empresa de tentar comprar cobertura favorável. Participantes filiados a OpenAI foram percebidos como conflitados em avaliar produtos da empresa. A backlash ilustra crescente desconfiança pública em marketing de IA e relações entre big techs e criadores de conteúdo. O episódio reflete tensões maiores sobre transparência e ética em promoção de tecnologia de ponta. A situação prejudicou a reputação da empresa entre comunidades tech-savvy críticas.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/975173/openai-influencers-brand-trip-ai-backlash-marketing" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Uso pouco saudável de modelos de linguagem é mais comum que se pensava Youtuber popular Hank Green anunciou pausa em produção após críticas intensas por uso extensivo de IA em seus vídeos, reconhecendo que o uso de LLMs pode ser prejudicial à criatividade e ao envolvimento autêntico com audiência. Green descreveu como dependeu de ferramentas de IA para superar pressão de cronogramas de produção acelerados. O caso ilustra dilema mais amplo da indústria criativa: balancear eficiência de IA com autenticidade. Comunidades de criadores debatem se usar IA em workflows é aceitável ou constitui falha de integridade editorial. O episódio reflete ansiedade cultural crescente sobre instrumentalização de IA em criação de conteúdo. The Verge" data-title="Uso pouco saudável de modelos de linguagem é mais comum que se pensava" data-share-url="https://www.theverge.com/ai-artificial-intelligence/975180/llm-ai-chatbot-use-not-healthy">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">14:33</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Uso pouco saudável de modelos de linguagem é mais comum que se pensava</div>
+        <div class="news-summary">Youtuber popular Hank Green anunciou pausa em produção após críticas intensas por uso extensivo de IA em seus vídeos, reconhecendo que o uso de LLMs pode ser prejudicial à criatividade e ao envolvimento autêntico com audiência. Green descreveu como dependeu de ferramentas de IA para superar pressão de cronogramas de produção acelerados. O caso ilustra dilema mais amplo da indústria criativa: balancear eficiência de IA com autenticidade. Comunidades de criadores debatem se usar IA em workflows é aceitável ou constitui falha de integridade editorial. O episódio reflete ansiedade cultural crescente sobre instrumentalização de IA em criação de conteúdo.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/975180/llm-ai-chatbot-use-not-healthy" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI vai pagar $3,2 milhões para resolver caso de discriminação contra trabalhadores do DOJ OpenAI acordou em liquidar acusações do Departamento de Justiça que alegavam discriminação contra trabalhadores americanos mediante favorecimento a contratados temporários. O acordo de $3,2 milhões marca primeira ação punitiva significativa contra a gigante de IA sob a administração Trump. A empresa reconheceu irregularidades em práticas de contratação sem admitir culpa explícita. O case sinaliza escrutínio regulatório renovado em práticas trabalhistas de empresas de tecnologia. O valor, embora substancial, é mínimo comparado à valuação de $80+ bilhões da empresa. Axios" data-title="OpenAI vai pagar $3,2 milhões para resolver caso de discriminação contra trabalhadores do DOJ" data-share-url="https://www.axios.com/2026/08/04/trump-doj-openai-hiring-settlement">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">14:25</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">OpenAI vai pagar $3,2 milhões para resolver caso de discriminação contra trabalhadores do DOJ</div>
+        <div class="news-summary">OpenAI acordou em liquidar acusações do Departamento de Justiça que alegavam discriminação contra trabalhadores americanos mediante favorecimento a contratados temporários. O acordo de $3,2 milhões marca primeira ação punitiva significativa contra a gigante de IA sob a administração Trump. A empresa reconheceu irregularidades em práticas de contratação sem admitir culpa explícita. O case sinaliza escrutínio regulatório renovado em práticas trabalhistas de empresas de tecnologia. O valor, embora substancial, é mínimo comparado à valuação de $80+ bilhões da empresa.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/04/trump-doj-openai-hiring-settlement" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Restrições de robots dos EUA e captura de DNA do ICE dividem o dia na tecnologia A Casa Branca sob Trump elaborou políticas restritivas sobre desenvolvimento e deployment de robótica avançada, sinalizando preocupações com automação acelerada e desemprego. Simultaneamente, ICE (Imigração) intensificou coleta de dados biométricos de DNA de migrantes, levantando questões sobre privacidade e vigilância. As duas iniciativas refletem abordagem dupla: conter tecnologia de automação domesticamente enquanto expandir vigilância estatal. Os movimentos sinalizam que IA e robotização são temas políticos centrais em 2026. A justaposição revela tensões entre progresso tecnológico e controle governamental. MIT Technology Review" data-title="Restrições de robots dos EUA e captura de DNA do ICE dividem o dia na tecnologia" data-share-url="https://www.technologyreview.com/2026/08/04/1141098/the-download-robot-restrictions-ice-dna/">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">09:14</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Restrições de robots dos EUA e captura de DNA do ICE dividem o dia na tecnologia</div>
+        <div class="news-summary">A Casa Branca sob Trump elaborou políticas restritivas sobre desenvolvimento e deployment de robótica avançada, sinalizando preocupações com automação acelerada e desemprego. Simultaneamente, ICE (Imigração) intensificou coleta de dados biométricos de DNA de migrantes, levantando questões sobre privacidade e vigilância. As duas iniciativas refletem abordagem dupla: conter tecnologia de automação domesticamente enquanto expandir vigilância estatal. Os movimentos sinalizam que IA e robotização são temas políticos centrais em 2026. A justaposição revela tensões entre progresso tecnológico e controle governamental.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/04/1141098/the-download-robot-restrictions-ice-dna/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ponte de Bitcoin desligou automaticamente porque IA estava encontrando bugs muito rápido Provedor de swap não-custodial Bitcoin Boltz suspendeu operações de swap após perceber que atacantes estavam descobrindo e explorador vulnerabilidades mais rápido que sua equipe conseguia corrigir. O protocolo reportou que algoritmos de IA-assisted fuzzing estavam mapeando superfície de ataque mais eficientemente que testes manuais. A decisão de desativar temporariamente reflete reconhecimento de realidade novo: segurança de smart contracts agora enfrenta adversários com IA. O episódio ilustra how escalação de IA attacking mudou landscape de security. Boltz optou por pausa estratégica ao invés de ficar correndo atrás de exploits contínuos. Decrypt" data-title="Ponte de Bitcoin desligou automaticamente porque IA estava encontrando bugs muito rápido" data-share-url="https://decrypt.co/374933/bitcoin-bridge-shuts-down-ai-finding-bugs-too-fast">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">19:46</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Ponte de Bitcoin desligou automaticamente porque IA estava encontrando bugs muito rápido</div>
+        <div class="news-summary">Provedor de swap não-custodial Bitcoin Boltz suspendeu operações de swap após perceber que atacantes estavam descobrindo e explorador vulnerabilidades mais rápido que sua equipe conseguia corrigir. O protocolo reportou que algoritmos de IA-assisted fuzzing estavam mapeando superfície de ataque mais eficientemente que testes manuais. A decisão de desativar temporariamente reflete reconhecimento de realidade novo: segurança de smart contracts agora enfrenta adversários com IA. O episódio ilustra how escalação de IA attacking mudou landscape de security. Boltz optou por pausa estratégica ao invés de ficar correndo atrás de exploits contínuos.</div>
+        <div class="news-link"><a href="https://decrypt.co/374933/bitcoin-bridge-shuts-down-ai-finding-bugs-too-fast" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Exploit de Coldcard mostra que segurança de carteira Bitcoin precisa se adaptar à IA Falha em wallets Coldcard permitiu que mais de 15 atacantes diferentes roubassem fundos explorando vulnerabilidade em geração de chaves que poderia ter sido prevenida com apenas $2 em hardware de randomness certificado. Ledger CTO Charles Guillemet enfatizou que exploit sublinha por que randomness certificado importa e como IA está remodelando segurança de wallets. A análise revelou que atacantes usaram IA para descobrir padrões de entropia fracamente gerados. O incidente resultou em perdas superiores a $100 milhões. O caso evidencia como AI adversarial está evoluindo para explorar fraquezas criptográficas anteriormente negligenciadas. Decrypt" data-title="Exploit de Coldcard mostra que segurança de carteira Bitcoin precisa se adaptar à IA" data-share-url="https://decrypt.co/374914/ledger-coldcard-exploit-bitcoin-wallet-security-ai">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">18:16</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Exploit de Coldcard mostra que segurança de carteira Bitcoin precisa se adaptar à IA</div>
+        <div class="news-summary">Falha em wallets Coldcard permitiu que mais de 15 atacantes diferentes roubassem fundos explorando vulnerabilidade em geração de chaves que poderia ter sido prevenida com apenas $2 em hardware de randomness certificado. Ledger CTO Charles Guillemet enfatizou que exploit sublinha por que randomness certificado importa e como IA está remodelando segurança de wallets. A análise revelou que atacantes usaram IA para descobrir padrões de entropia fracamente gerados. O incidente resultou em perdas superiores a $100 milhões. O caso evidencia como AI adversarial está evoluindo para explorar fraquezas criptográficas anteriormente negligenciadas.</div>
+        <div class="news-link"><a href="https://decrypt.co/374914/ledger-coldcard-exploit-bitcoin-wallet-security-ai" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="SpaceX reporta perda de $540 milhões em holdings de Bitcoin, mas supera receitas do Wall Street SpaceX reportou primeira divulgação de resultados como empresa pública com receita que superou projeções de Wall Street, mas sofreu perda não-realizada de $540 milhões em suas holdings de Bitcoin. A empresa mantém alocação significativa em cripto apesar das perdas de preço recentes. Os números revelam vulnerabilidade do balanço de Musk a volatilidade de preço de BTC, enquanto operações core da empresa crescem. O filing marca transição para transparência pública, expondo exposição de Musk a criptomoedas. A dinâmica reflete apetite corporativo por Bitcoin apesar de ciclos de preço turbulentos. CoinDesk" data-title="SpaceX reporta perda de $540 milhões em holdings de Bitcoin, mas supera receitas do Wall Street" data-share-url="https://www.coindesk.com/business/2026/08/04/spacex-tops-wall-street-revenue-forecast-posts-usd540-million-decline-on-bitcoin-holding-value">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">17:26</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">SpaceX reporta perda de $540 milhões em holdings de Bitcoin, mas supera receitas do Wall Street</div>
+        <div class="news-summary">SpaceX reportou primeira divulgação de resultados como empresa pública com receita que superou projeções de Wall Street, mas sofreu perda não-realizada de $540 milhões em suas holdings de Bitcoin. A empresa mantém alocação significativa em cripto apesar das perdas de preço recentes. Os números revelam vulnerabilidade do balanço de Musk a volatilidade de preço de BTC, enquanto operações core da empresa crescem. O filing marca transição para transparência pública, expondo exposição de Musk a criptomoedas. A dinâmica reflete apetite corporativo por Bitcoin apesar de ciclos de preço turbulentos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/04/spacex-tops-wall-street-revenue-forecast-posts-usd540-million-decline-on-bitcoin-holding-value" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="US e UK reafirmam suporte a stablecoins e tokenização em conversas regulatórias conjuntas Reguladores dos EUA e Reino Unido reafirmaram compromisso mútuo com stablecoins e tokenização em encontro de julho, destacando implementação do GENIUS Act e modernização de pagamentos. A cooperação regulatória transatlântica sinaliza alinhamento estratégico entre maiores potências ocidentais sobre futura infraestrutura cripto. O GENIUS Act especificamente endossa inovação em stablecoins como ferramenta de política pública. A posição coordenada contrasta com reguladores reticentes em outras jurisdições. O avanço sugere stablecoins conquistaram legitimidade política em instâncias de poder ocidentais. Cointelegraph" data-title="US e UK reafirmam suporte a stablecoins e tokenização em conversas regulatórias conjuntas" data-share-url="https://cointelegraph.com/news/us-uk-deepen-crypto-regulatory-cooperation-genius-act-stablecoins">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">16:58</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">US e UK reafirmam suporte a stablecoins e tokenização em conversas regulatórias conjuntas</div>
+        <div class="news-summary">Reguladores dos EUA e Reino Unido reafirmaram compromisso mútuo com stablecoins e tokenização em encontro de julho, destacando implementação do GENIUS Act e modernização de pagamentos. A cooperação regulatória transatlântica sinaliza alinhamento estratégico entre maiores potências ocidentais sobre futura infraestrutura cripto. O GENIUS Act especificamente endossa inovação em stablecoins como ferramenta de política pública. A posição coordenada contrasta com reguladores reticentes em outras jurisdições. O avanço sugere stablecoins conquistaram legitimidade política em instâncias de poder ocidentais.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/us-uk-deepen-crypto-regulatory-cooperation-genius-act-stablecoins" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Pesquisadores Ethereum propõem queimar rewards de validadores para limitar staking em 50% Proposta EIP-8361 em discussão na comunidade Ethereum sugere queimar progressivamente parcela crescente de rewards de validadores conforme taxa de staking sobe, com objetivo de capping em 50%. A medida visa prevenir centralização excessiva através de stake concentration incentivos. A proposta reflete debate em curso sobre sustentabilidade de inflação de Ethereum em contexto de high staking rates. O mecanismo de burn adicional criaria deflação marginal se implementado. A discussão evidencia comunidade Ethereum ajustando economically incentives em resposta a dinâmicas de network observadas. The Block" data-title="Pesquisadores Ethereum propõem queimar rewards de validadores para limitar staking em 50%" data-share-url="https://www.theblock.co/post/410643/ethereum-researchers-propose-burning-validator-rewards-cap-staking-50">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">16:49</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Pesquisadores Ethereum propõem queimar rewards de validadores para limitar staking em 50%</div>
+        <div class="news-summary">Proposta EIP-8361 em discussão na comunidade Ethereum sugere queimar progressivamente parcela crescente de rewards de validadores conforme taxa de staking sobe, com objetivo de capping em 50%. A medida visa prevenir centralização excessiva através de stake concentration incentivos. A proposta reflete debate em curso sobre sustentabilidade de inflação de Ethereum em contexto de high staking rates. O mecanismo de burn adicional criaria deflação marginal se implementado. A discussão evidencia comunidade Ethereum ajustando economically incentives em resposta a dinâmicas de network observadas.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/410643/ethereum-researchers-propose-burning-validator-rewards-cap-staking-50" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Cloudflare inicia rollout de carteira stablecoin para agentes de IA pagarem APIs Cloudflare começou implementação de wallets de stablecoin que permitem agentes de IA pagar por APIs e conteúdo online autonomamente usando cripto. Usuários podem reivindicar handles de wallet agora, com funcionalidades de financiamento e pagamento chegando depois. O desenvolvimento é significativo: infraestrutura descentralizada integrando machine learning com pagamentos cripto nativos. Agentes de IA com self-custody descentralizada representam narrativa emergente de convergência. O caso de uso concretiza economia de máquina descentralizada que teóricos de cripto previram. The Block" data-title="Cloudflare inicia rollout de carteira stablecoin para agentes de IA pagarem APIs" data-share-url="https://www.theblock.co/post/410629/cloudflare-kicks-off-stablecoin-wallet-rollout-ai-agents-pay-apis-online-content">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">16:33</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Cloudflare inicia rollout de carteira stablecoin para agentes de IA pagarem APIs</div>
+        <div class="news-summary">Cloudflare começou implementação de wallets de stablecoin que permitem agentes de IA pagar por APIs e conteúdo online autonomamente usando cripto. Usuários podem reivindicar handles de wallet agora, com funcionalidades de financiamento e pagamento chegando depois. O desenvolvimento é significativo: infraestrutura descentralizada integrando machine learning com pagamentos cripto nativos. Agentes de IA com self-custody descentralizada representam narrativa emergente de convergência. O caso de uso concretiza economia de máquina descentralizada que teóricos de cripto previram.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/410629/cloudflare-kicks-off-stablecoin-wallet-rollout-ai-agents-pay-apis-online-content" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Proposta Solana aumentaria SOL burns mais que 10 vezes segundo validadores Validadores Solana estão considerando mudanças de protocolo que aumentariam quantidade de SOL permanentemente removida da circulação mais que 10 vezes enquanto reduzem taxa de emissão de novo token. A proposta visa reduzir inflação e potencialmente apreciar token através de mecanismos deflacionários. A discussão reflete tendência em L1s adotarem modelos econômicos similar a Bitcoin com caps de supply. A proposta, se adotada, representaria mudança significativa em tokenomics de Solana. O movimento reflete pressão de holders para estruturas monetárias mais escassas. Decrypt" data-title="Proposta Solana aumentaria SOL burns mais que 10 vezes segundo validadores" data-share-url="https://decrypt.co/374915/solana-proposal-increase-daily-sol-burns-10-fold">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">15:46</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Proposta Solana aumentaria SOL burns mais que 10 vezes segundo validadores</div>
+        <div class="news-summary">Validadores Solana estão considerando mudanças de protocolo que aumentariam quantidade de SOL permanentemente removida da circulação mais que 10 vezes enquanto reduzem taxa de emissão de novo token. A proposta visa reduzir inflação e potencialmente apreciar token através de mecanismos deflacionários. A discussão reflete tendência em L1s adotarem modelos econômicos similar a Bitcoin com caps de supply. A proposta, se adotada, representaria mudança significativa em tokenomics de Solana. O movimento reflete pressão de holders para estruturas monetárias mais escassas.</div>
+        <div class="news-link"><a href="https://decrypt.co/374915/solana-proposal-increase-daily-sol-burns-10-fold" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Samsung se posiciona como distribuidor dominante de stablecoins, segundo analistas Analistas argumentam que Samsung está posicionada para se tornar distribuidor global dominante de stablecoins através de seu ecossistema de 800 milhões de telefones Galaxy. A estratégia corporativa envolve converter devices em wallets criptográficos integrados e infrastructure para pagamentos blockchain. A iniciativa representa fusão de eletrônicos de consumo com rails de pagamento cripto descentralizados. A escala potencial é colossal: cada device Samsung torna-se porta de entrada para economia cripto. O movimento sintetiza como gigantes de tech tradicional estão internalizando infraestrutura cripto como competência core. CoinDesk" data-title="Samsung se posiciona como distribuidor dominante de stablecoins, segundo analistas" data-share-url="https://www.coindesk.com/business/2026/08/04/samsung-is-poised-to-become-a-dominant-stablecoin-distributor-analysts-say">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">14:14</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Samsung se posiciona como distribuidor dominante de stablecoins, segundo analistas</div>
+        <div class="news-summary">Analistas argumentam que Samsung está posicionada para se tornar distribuidor global dominante de stablecoins através de seu ecossistema de 800 milhões de telefones Galaxy. A estratégia corporativa envolve converter devices em wallets criptográficos integrados e infrastructure para pagamentos blockchain. A iniciativa representa fusão de eletrônicos de consumo com rails de pagamento cripto descentralizados. A escala potencial é colossal: cada device Samsung torna-se porta de entrada para economia cripto. O movimento sintetiza como gigantes de tech tradicional estão internalizando infraestrutura cripto como competência core.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/04/samsung-is-poised-to-become-a-dominant-stablecoin-distributor-analysts-say" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Senadores pedem investigação da SEC sobre memecoin de Trump enquanto Clarity Act entra em semana pivô Senadoras Elizabeth Warren e Richard Blumenthal solicitaram formalmente à SEC investigar memecoin de Trump, alegando potencial violação de securities laws e conflito de interesses. A ação ocorre enquanto Clarity Act, bill bipartidária de regulação cripto, entra em semana crítica de votações. O timing sinaliza que debate regulatório de cripto em Washington intensificou-se dramaticamente. A memecoin Trump gerou controvérsia por conexão aparente a figuras governamentais. A pressão legislativa e executiva intensificou pouco antes de votação potentially decisiva em crypto. The Block" data-title="Senadores pedem investigação da SEC sobre memecoin de Trump enquanto Clarity Act entra em semana pivô" data-share-url="https://www.theblock.co/post/410624/senators-seek-sec-probe-president-trump-memecoin-crypto-bill-enters-pivotal-week">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">14:11</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Senadores pedem investigação da SEC sobre memecoin de Trump enquanto Clarity Act entra em semana pivô</div>
+        <div class="news-summary">Senadoras Elizabeth Warren e Richard Blumenthal solicitaram formalmente à SEC investigar memecoin de Trump, alegando potencial violação de securities laws e conflito de interesses. A ação ocorre enquanto Clarity Act, bill bipartidária de regulação cripto, entra em semana crítica de votações. O timing sinaliza que debate regulatório de cripto em Washington intensificou-se dramaticamente. A memecoin Trump gerou controvérsia por conexão aparente a figuras governamentais. A pressão legislativa e executiva intensificou pouco antes de votação potentially decisiva em crypto.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/410624/senators-seek-sec-probe-president-trump-memecoin-crypto-bill-enters-pivotal-week" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="BNY vai oferecer staking de cripto institucional através de parceria com Galaxy Gigante de custódia BNY Mellon expandiu ofertas além de safekeeping tradicional, adicionando serviços de staking em parceria com Galaxy Digital. Clientes institucionais elegíveis podem agora ganhar yield em ativos de proof-of-stake mantidos em custódia. A iniciativa representa evolução crucial: bancos tradicionais internalizando yield generation em cripto como serviço financeiro. A parceria BNY-Galaxy sintetiza convergência de instituições cripto e tradicionais. O movimento legitimiza staking como estratégia de alocação institucional. Cointelegraph" data-title="BNY vai oferecer staking de cripto institucional através de parceria com Galaxy" data-share-url="https://cointelegraph.com/news/bny-galaxy-institutional-crypto-staking-custody">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">14:10</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">BNY vai oferecer staking de cripto institucional através de parceria com Galaxy</div>
+        <div class="news-summary">Gigante de custódia BNY Mellon expandiu ofertas além de safekeeping tradicional, adicionando serviços de staking em parceria com Galaxy Digital. Clientes institucionais elegíveis podem agora ganhar yield em ativos de proof-of-stake mantidos em custódia. A iniciativa representa evolução crucial: bancos tradicionais internalizando yield generation em cripto como serviço financeiro. A parceria BNY-Galaxy sintetiza convergência de instituições cripto e tradicionais. O movimento legitimiza staking como estratégia de alocação institucional.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bny-galaxy-institutional-crypto-staking-custody" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Hashdex vai desativar Bitcoin ETF após luta para atrair assets Gerenciadora brasileira de ativos cripto Hashdex anunciou planos de liquidar seu ETF de Bitcoin em spot nos EUA depois de meses de lutas para atrair fluxo de ativos. O fundo entrou em mercado em 2024 mas não conseguiu escala competitiva em universo cada vez mais saturado de produtos Bitcoin. A ação sinaliza consolidação esperada em espaço de ETFs cripto à medida que compressão de taxas e competição extrema elimina players marginais. O caso Hashdex ilustra desafios de startups cripto em competir com iShares e Fidelity. A retirada de produto sugere mercado ETF cripto atingiu eficiência madura. Decrypt" data-title="Hashdex vai desativar Bitcoin ETF após luta para atrair assets" data-share-url="https://decrypt.co/374903/hashdex-shut-down-bitcoin-etf">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">13:43</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Hashdex vai desativar Bitcoin ETF após luta para atrair assets</div>
+        <div class="news-summary">Gerenciadora brasileira de ativos cripto Hashdex anunciou planos de liquidar seu ETF de Bitcoin em spot nos EUA depois de meses de lutas para atrair fluxo de ativos. O fundo entrou em mercado em 2024 mas não conseguiu escala competitiva em universo cada vez mais saturado de produtos Bitcoin. A ação sinaliza consolidação esperada em espaço de ETFs cripto à medida que compressão de taxas e competição extrema elimina players marginais. O caso Hashdex ilustra desafios de startups cripto em competir com iShares e Fidelity. A retirada de produto sugere mercado ETF cripto atingiu eficiência madura.</div>
+        <div class="news-link"><a href="https://decrypt.co/374903/hashdex-shut-down-bitcoin-etf" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin enfrenta zona de suporte crítica em $63.000 enquanto Hormuz reabre, S&amp;P sobe para $70T Bitcoin consolidou-se na zona de $64.000 em resposta ao otimismo geopolítico sobre reabertura do Estreito de Ormuz, que reduziu prêmio de risco global. Analistas Glassnode identificaram $63.000 como nível-chave onde investidores de varejo e grandes baleias estão acumulando. O S&amp;P 500 atingiu recorde histórico de $70 trilhões em valor de mercado, reduzindo pressão relativa em criptos para flight-to-safety. Bitcoin comportou-se como ativo de risco ligado a sentimento macroeconômico global. A dinâmica sugere criptos ainda acopladas fortemente a ciclos econômicos tradicionais. Cointelegraph" data-title="Bitcoin enfrenta zona de suporte crítica em $63.000 enquanto Hormuz reabre, S&amp;P sobe para $70T" data-share-url="https://cointelegraph.com/markets/bitcoin-coils-as-hormuz-reopening-time-line-sends-sp-500-to-new-record-high">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">13:38</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin enfrenta zona de suporte crítica em $63.000 enquanto Hormuz reabre, S&amp;P sobe para $70T</div>
+        <div class="news-summary">Bitcoin consolidou-se na zona de $64.000 em resposta ao otimismo geopolítico sobre reabertura do Estreito de Ormuz, que reduziu prêmio de risco global. Analistas Glassnode identificaram $63.000 como nível-chave onde investidores de varejo e grandes baleias estão acumulando. O S&amp;P 500 atingiu recorde histórico de $70 trilhões em valor de mercado, reduzindo pressão relativa em criptos para flight-to-safety. Bitcoin comportou-se como ativo de risco ligado a sentimento macroeconômico global. A dinâmica sugere criptos ainda acopladas fortemente a ciclos econômicos tradicionais.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-coils-as-hormuz-reopening-time-line-sends-sp-500-to-new-record-high" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Wells Fargo se une a JPMorgan e Citi em corrida para tokenizar infrastructure de liquidação de Wall Street Wells Fargo anunciou planos para oferecer depósitos tokenizados operando em blockchain proprietário, permitindo pagamentos corporativos 24/7 através de sua interface de cliente existente. O movimento acompanha iniciativas similares de JPMorgan e Citigroup em tokenização de ativos financeiros. A adoção maciça de blockchain por megabancos sintetiza mainstream de infraestrutura descentralizada em finanças tradicionais. A tendência reduz fricção de liquidação e abre caminho para integração cripto-tradicional profunda. O avanço marca virada fundamental: big finance adotando tokenização não como experiência, mas como utilidade core. CoinDesk" data-title="Wells Fargo se une a JPMorgan e Citi em corrida para tokenizar infrastructure de liquidação de Wall Street" data-share-url="https://www.coindesk.com/business/2026/08/04/wells-fargo-to-offer-tokenized-deposits-for-24-7-corporate-payments">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">12:47</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Wells Fargo se une a JPMorgan e Citi em corrida para tokenizar infrastructure de liquidação de Wall Street</div>
+        <div class="news-summary">Wells Fargo anunciou planos para oferecer depósitos tokenizados operando em blockchain proprietário, permitindo pagamentos corporativos 24/7 através de sua interface de cliente existente. O movimento acompanha iniciativas similares de JPMorgan e Citigroup em tokenização de ativos financeiros. A adoção maciça de blockchain por megabancos sintetiza mainstream de infraestrutura descentralizada em finanças tradicionais. A tendência reduz fricção de liquidação e abre caminho para integração cripto-tradicional profunda. O avanço marca virada fundamental: big finance adotando tokenização não como experiência, mas como utilidade core.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/04/wells-fargo-to-offer-tokenized-deposits-for-24-7-corporate-payments" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="BitGo move $7,4 bilhões em Bitcoin Wrapped para Chainlink CCIP em êxodo de LayerZero BitGo migrou $7,4 bilhões em wrapped Bitcoin (WBTC) de LayerZero para Chainlink CCIP, continuando tendência de migração maciça de liquidez entre plataformas de interoperabilidade. O movimento empurra total em transição de LayerZero para Chainlink próximo a $15 bilhões, com WBTC representando maior shift individual. O êxodo sinaliza preocupações com segurança ou arquitetura de LayerZero entre custódias institucionais. A migração para Chainlink reflete confiança em solução rival de cross-chain. Os movimentos de liquidez em escala bilionária reposicionam infraestrutura de interoperabilidade cripto. The Block" data-title="BitGo move $7,4 bilhões em Bitcoin Wrapped para Chainlink CCIP em êxodo de LayerZero" data-share-url="https://www.theblock.co/post/410594/bitgo-moves-7-4-billion-wrapped-bitcoins-to-chainlink-ccip-in-latest-layerzero-exodus">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">12:24</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">BitGo move $7,4 bilhões em Bitcoin Wrapped para Chainlink CCIP em êxodo de LayerZero</div>
+        <div class="news-summary">BitGo migrou $7,4 bilhões em wrapped Bitcoin (WBTC) de LayerZero para Chainlink CCIP, continuando tendência de migração maciça de liquidez entre plataformas de interoperabilidade. O movimento empurra total em transição de LayerZero para Chainlink próximo a $15 bilhões, com WBTC representando maior shift individual. O êxodo sinaliza preocupações com segurança ou arquitetura de LayerZero entre custódias institucionais. A migração para Chainlink reflete confiança em solução rival de cross-chain. Os movimentos de liquidez em escala bilionária reposicionam infraestrutura de interoperabilidade cripto.</div>
+        <div class="news-link"><a href="https://www.theblock.co/post/410594/bitgo-moves-7-4-billion-wrapped-bitcoins-to-chainlink-ccip-in-latest-layerzero-exodus" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Polymarket busca valuação de $20 bilhões enquanto mercados de predição explodem Plataforma de mercados de predição baseada em blockchain Polymarket está buscando aumento de fundos que elevaria valuação para $20 bilhões, apenas meses após rodada de $15 bilhões. O crescimento explosivo reflete demanda crescente por infrastructure de previsão descentralizada. A expansão de Polymarket ocorre em contexto de aumento geral em mercados de predição cripto, com múltiplos competitors emergindo. A valuação colossal sintetiza tese de que mercados preditivos descentralizados são próxima grande narrativa em web3. A trajetória reflete otimismo institucional sobre potencial de forecasting markets. CoinDesk" data-title="Polymarket busca valuação de $20 bilhões enquanto mercados de predição explodem" data-share-url="https://www.coindesk.com/markets/2026/08/04/polymarket-targets-usd20-billion-valuation-as-competition-heats-up-in-prediction-markets">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">11:38</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Polymarket busca valuação de $20 bilhões enquanto mercados de predição explodem</div>
+        <div class="news-summary">Plataforma de mercados de predição baseada em blockchain Polymarket está buscando aumento de fundos que elevaria valuação para $20 bilhões, apenas meses após rodada de $15 bilhões. O crescimento explosivo reflete demanda crescente por infrastructure de previsão descentralizada. A expansão de Polymarket ocorre em contexto de aumento geral em mercados de predição cripto, com múltiplos competitors emergindo. A valuação colossal sintetiza tese de que mercados preditivos descentralizados são próxima grande narrativa em web3. A trajetória reflete otimismo institucional sobre potencial de forecasting markets.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/08/04/polymarket-targets-usd20-billion-valuation-as-competition-heats-up-in-prediction-markets" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Dinari traz ações tokenizadas do S&amp;P 500 para investidores americanos enquanto corrida acelera Dinari lançou acesso a tokens de ações do S&amp;P 500 para investidores americanos elegíveis, operando modelo custodial de tokenização. A plataforma permite negociação de equities tradicionais via blockchain usando USDC como moeda. O lançamento marca escalação de competição em tokenização de equities entre players cripto e tradicionais. A aplicação prática conecta ações convencionais a infraestrutura descentralizada, reduzindo fricção de transferência. O movimento valida tese maior de que tokenização de equities é narrativa genuína em adoção cripto institu-cional. CoinDesk" data-title="Dinari traz ações tokenizadas do S&amp;P 500 para investidores americanos enquanto corrida acelera" data-share-url="https://www.coindesk.com/business/2026/08/04/dinari-brings-tokenized-u-s-stocks-to-american-investors-as-equity-race-heats-up">
+        <div class="news-meta">
+          <span class="news-date">04 ago 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Dinari traz ações tokenizadas do S&amp;P 500 para investidores americanos enquanto corrida acelera</div>
+        <div class="news-summary">Dinari lançou acesso a tokens de ações do S&amp;P 500 para investidores americanos elegíveis, operando modelo custodial de tokenização. A plataforma permite negociação de equities tradicionais via blockchain usando USDC como moeda. O lançamento marca escalação de competição em tokenização de equities entre players cripto e tradicionais. A aplicação prática conecta ações convencionais a infraestrutura descentralizada, reduzindo fricção de transferência. O movimento valida tese maior de que tokenização de equities é narrativa genuína em adoção cripto institu-cional.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/04/dinari-brings-tokenized-u-s-stocks-to-american-investors-as-equity-race-heats-up" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
