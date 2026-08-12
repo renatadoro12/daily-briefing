@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">12 DE AGOSTO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia é marcado pela consolidação da IA e criptoativos no mainstream financeiro: Goldman Sachs adquire gestora de ETFs de Bitcoin por USD 2,25 bi, enquanto reguladores americanos pressionam por compliance em mercados de previsão, e a adoção institucional de stablecoins avança globalmente com testes do Banco da Inglaterra e lançamento de HKDAP em Hong Kong. Paralelamente, tensões geopolíticas reais — desde tarifs canadenses de Trump até crises humanitárias — contrastam com o otimismo tech, enquanto a IA enfrenta debates sobre privacidade de dados (watermarks da Anthropic) e aplicações controversas (choqueiras elétricas do ICE).</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-08-11/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12" selected>2026-08-12</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Tarifas de Trump forçam empresas canadenses a se mudarem para os EUA Empresas canadenses estão considerando realocar operações para os EUA em resposta às tarifas de 50% que o presidente Trump ameaça implementar no final de agosto sobre produtos canadenses. A ameaça coloca em risco a viabilidade econômica de negócios que dependem do mercado norte-americano, acelerando decisões de investimento e emprego. Analistas apontam que o setor manufatureiro canadense poderia sofrer danos significativos caso as tarifas entrem em vigor. A medida reflete a estratégia agressiva de Trump em renegociar termos comerciais. O impacto esperado vai além do comércio bilateral, afetando cadeias de suprimento norte-americanas. Empresas já começam a mapear alternativas para manter competitividade. NYT &gt; World News" data-title="Tarifas de Trump forçam empresas canadenses a se mudarem para os EUA" data-share-url="https://www.nytimes.com/2026/08/12/world/canada/canada-tariffs-manufacturing-trade-trump.html">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">09:43</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Tarifas de Trump forçam empresas canadenses a se mudarem para os EUA</div>
+        <div class="news-summary">Empresas canadenses estão considerando realocar operações para os EUA em resposta às tarifas de 50% que o presidente Trump ameaça implementar no final de agosto sobre produtos canadenses. A ameaça coloca em risco a viabilidade econômica de negócios que dependem do mercado norte-americano, acelerando decisões de investimento e emprego. Analistas apontam que o setor manufatureiro canadense poderia sofrer danos significativos caso as tarifas entrem em vigor. A medida reflete a estratégia agressiva de Trump em renegociar termos comerciais. O impacto esperado vai além do comércio bilateral, afetando cadeias de suprimento norte-americanas. Empresas já começam a mapear alternativas para manter competitividade.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/12/world/canada/canada-tariffs-manufacturing-trade-trump.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Tailândia suspende novos registros de armas após massacre em escola O governo da Tailândia anunciou a suspensão de novos registros de armas de fogo em resposta a um massacre recente em uma escola. O país já enfrentou uma série de assassinatos em massa com envolvimento de armas nos últimos anos, alimentando pressão por medidas mais rigorosas. A decisão reflete tentativa do governo de conter acesso a armas em uma população civil. Ainda é incerto até que ponto o governo irá expandir o controle de armas além dessa suspensão inicial. A medida é considerada simbólica por ativistas que demandam leis permanentes de controle mais severas. O debate sobre regulação de armas ganha importância política na Tailândia. NYT &gt; World News" data-title="Tailândia suspende novos registros de armas após massacre em escola" data-share-url="https://www.nytimes.com/2026/08/12/world/asia/thailand-gun-permits-school-shooting.html">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">06:39</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Tailândia suspende novos registros de armas após massacre em escola</div>
+        <div class="news-summary">O governo da Tailândia anunciou a suspensão de novos registros de armas de fogo em resposta a um massacre recente em uma escola. O país já enfrentou uma série de assassinatos em massa com envolvimento de armas nos últimos anos, alimentando pressão por medidas mais rigorosas. A decisão reflete tentativa do governo de conter acesso a armas em uma população civil. Ainda é incerto até que ponto o governo irá expandir o controle de armas além dessa suspensão inicial. A medida é considerada simbólica por ativistas que demandam leis permanentes de controle mais severas. O debate sobre regulação de armas ganha importância política na Tailândia.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/12/world/asia/thailand-gun-permits-school-shooting.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Barcos de pesca equatorianos atacados por agressor misterioso com drones Tripulações de pesca equatorianas que operam no Pacífico têm sido alvo de um grupo desconhecido equipado com drones que atacam embarcações. Alguns marinheiros desapareceram e alguns sofreram ferimentos em confrontos com os atacantes. As autoridades equatorianas investigam a identidade e motivações dos agressores. Os ataques levantam questões sobre segurança marítima e controle territorial em águas internacionais. A escalada de violência contra a frota pesqueira local criou clima de pânico entre trabalhadores do setor. O incidente suscita debates sobre segurança na região e possível envolvimento de quadrilhas de tráfico. NYT &gt; World News" data-title="Barcos de pesca equatorianos atacados por agressor misterioso com drones" data-share-url="https://www.nytimes.com/2026/08/12/world/americas/ecuador-fishing-boat-strikes.html">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">06:02</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Barcos de pesca equatorianos atacados por agressor misterioso com drones</div>
+        <div class="news-summary">Tripulações de pesca equatorianas que operam no Pacífico têm sido alvo de um grupo desconhecido equipado com drones que atacam embarcações. Alguns marinheiros desapareceram e alguns sofreram ferimentos em confrontos com os atacantes. As autoridades equatorianas investigam a identidade e motivações dos agressores. Os ataques levantam questões sobre segurança marítima e controle territorial em águas internacionais. A escalada de violência contra a frota pesqueira local criou clima de pânico entre trabalhadores do setor. O incidente suscita debates sobre segurança na região e possível envolvimento de quadrilhas de tráfico.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/12/world/americas/ecuador-fishing-boat-strikes.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Presidente zambiano Hichilema enfrenta rejeição antes de eleição presidencial O presidente da Zâmbia, Hakainde Hichilema, eleito cinco anos atrás com promessas de proteger liberdades civis, agora enfrenta críticas crescentes antes das próximas eleições presidenciais. Acusações sugerem que o governo recuou em compromissos democráticos originais. A Zâmbia é um país rico em cobre cuja situação política impacta a estabilidade regional e mercados de commodities. O descontentamento está se expandindo entre eleitorado e sociedade civil. As eleições próximas serão teste importante para a democracia africana e poder de recursos naturais como fator geopolítico. A campanha de Hichilema enfrentará desafios significativos para reter apoio. NYT &gt; World News" data-title="Presidente zambiano Hichilema enfrenta rejeição antes de eleição presidencial" data-share-url="https://www.nytimes.com/2026/08/12/world/africa/zambia-presidential-election-hichilema.html">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">01:01</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Presidente zambiano Hichilema enfrenta rejeição antes de eleição presidencial</div>
+        <div class="news-summary">O presidente da Zâmbia, Hakainde Hichilema, eleito cinco anos atrás com promessas de proteger liberdades civis, agora enfrenta críticas crescentes antes das próximas eleições presidenciais. Acusações sugerem que o governo recuou em compromissos democráticos originais. A Zâmbia é um país rico em cobre cuja situação política impacta a estabilidade regional e mercados de commodities. O descontentamento está se expandindo entre eleitorado e sociedade civil. As eleições próximas serão teste importante para a democracia africana e poder de recursos naturais como fator geopolítico. A campanha de Hichilema enfrentará desafios significativos para reter apoio.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/12/world/africa/zambia-presidential-election-hichilema.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Grok de Elon Musk quer fazer seu trabalho — mas precisa acessar suas contas SpaceX e Elon Musk desenvolvem bot Grok agentic que promete automatizar trabalhos de conhecimento, navegando em softwares empresariais e coordenando com outros bots de IA. Porém, o sistema requer acesso direto às contas e credenciais do usuário para operar — levantando sérias questões sobre segurança de dados e controle. Críticos apontam risco de vazamento de dados sensíveis e falta de transparência sobre como Grok utiliza informações acessadas. Usuários empresariais enfrentam dilema entre produtividade e exposição de segurança. A abordagem contrasta com design de segurança de competidores como Anthropic. Reguladores podem questionar permissões amplas solicitadas pelo sistema. Decrypt" data-title="Grok de Elon Musk quer fazer seu trabalho — mas precisa acessar suas contas" data-share-url="https://decrypt.co/375490/spacexai-grok-bot-do-job-needs-access-accounts">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">16:31</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Grok de Elon Musk quer fazer seu trabalho — mas precisa acessar suas contas</div>
+        <div class="news-summary">SpaceX e Elon Musk desenvolvem bot Grok agentic que promete automatizar trabalhos de conhecimento, navegando em softwares empresariais e coordenando com outros bots de IA. Porém, o sistema requer acesso direto às contas e credenciais do usuário para operar — levantando sérias questões sobre segurança de dados e controle. Críticos apontam risco de vazamento de dados sensíveis e falta de transparência sobre como Grok utiliza informações acessadas. Usuários empresariais enfrentam dilema entre produtividade e exposição de segurança. A abordagem contrasta com design de segurança de competidores como Anthropic. Reguladores podem questionar permissões amplas solicitadas pelo sistema.</div>
+        <div class="news-link"><a href="https://decrypt.co/375490/spacexai-grok-bot-do-job-needs-access-accounts" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="iPhone 18 pulará lançamento de outono; chegada prevista para 2027 Segundo relatório do Economic Daily News, o iPhone 18 (sucessor do iPhone 17) não será lançado no outono de 2026, marcando primeira vez que Apple pula ciclo de lançamento tradicional de outono. O novo modelo deverá chegar em 2027, possivelmente junto a capacidades de IA mais avançadas. A decisão reflete possível atraso em desenvolvimento de recursos ou ajustes estratégicos de Apple em mercado competitivo. Wall Street reage com preocupação sobre impacto em vendas e receita de serviços. A mudança altera expectativas de ciclo de produto da indústria de smartphones. Analistas especulam sobre razões técnicas ou de mercado por trás da decisão. The Verge" data-title="iPhone 18 pulará lançamento de outono; chegada prevista para 2027" data-share-url="https://www.theverge.com/tech/979231/apple-base-iphone-18-launch-delayed">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">16:27</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">iPhone 18 pulará lançamento de outono; chegada prevista para 2027</div>
+        <div class="news-summary">Segundo relatório do Economic Daily News, o iPhone 18 (sucessor do iPhone 17) não será lançado no outono de 2026, marcando primeira vez que Apple pula ciclo de lançamento tradicional de outono. O novo modelo deverá chegar em 2027, possivelmente junto a capacidades de IA mais avançadas. A decisão reflete possível atraso em desenvolvimento de recursos ou ajustes estratégicos de Apple em mercado competitivo. Wall Street reage com preocupação sobre impacto em vendas e receita de serviços. A mudança altera expectativas de ciclo de produto da indústria de smartphones. Analistas especulam sobre razões técnicas ou de mercado por trás da decisão.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/979231/apple-base-iphone-18-launch-delayed" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Cientistas criam clones fêmeas a partir de embriões de camundongos machos Pesquisadores japoneses conseguiram pela primeira vez converter deliberadamente embriões de camundongos machos em fêmeas usando abordagem baseada em CRISPR. O feito remove genes-chave do cromossomo Y responsáveis por desenvolvimento masculino. A pesquisa abre possibilidades para compreender biologia reprodutiva e potencialmente desenvolver novas terapias. O experimento tem implicações para biologia evolutiva e medicina regenerativa. Resultados foram publicados em revista científica de alto impacto. O trabalho levanta questões éticas sobre aplicações futuras em mamíferos superiores. MIT Technology Review" data-title="Cientistas criam clones fêmeas a partir de embriões de camundongos machos" data-share-url="https://www.technologyreview.com/2026/08/12/1141768/scientists-just-created-female-clones-of-male-mice/">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">15:59</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Cientistas criam clones fêmeas a partir de embriões de camundongos machos</div>
+        <div class="news-summary">Pesquisadores japoneses conseguiram pela primeira vez converter deliberadamente embriões de camundongos machos em fêmeas usando abordagem baseada em CRISPR. O feito remove genes-chave do cromossomo Y responsáveis por desenvolvimento masculino. A pesquisa abre possibilidades para compreender biologia reprodutiva e potencialmente desenvolver novas terapias. O experimento tem implicações para biologia evolutiva e medicina regenerativa. Resultados foram publicados em revista científica de alto impacto. O trabalho levanta questões éticas sobre aplicações futuras em mamíferos superiores.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/12/1141768/scientists-just-created-female-clones-of-male-mice/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Pixel 11 do Google chega com até USD 350 em cartões-presente para pré-venda Google anunciou pré-venda da série Pixel 11 com promoção agressiva oferecendo até USD 350 em cartões-presente para compradores iniciais. A linha inclui Pixel 11, Pixel 11 Pro e Pixel 11 Pro XL com capacidades de IA integradas. Os novos celulares apresentam processador próprio otimizado para tarefas de machine learning on-device. Google busca capturar market share em competição com iPhone 17 e Samsung Galaxy S25. As promoções indicam que Google considera a demanda inicial como crítica para sucesso de linha. Recursos de IA e câmera aprimorada são destaques principais da geração novo. The Verge" data-title="Pixel 11 do Google chega com até USD 350 em cartões-presente para pré-venda" data-share-url="https://www.theverge.com/gadgets/975970/google-pixel-11-series-where-to-buy-preorder-release-date">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">14:47</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Pixel 11 do Google chega com até USD 350 em cartões-presente para pré-venda</div>
+        <div class="news-summary">Google anunciou pré-venda da série Pixel 11 com promoção agressiva oferecendo até USD 350 em cartões-presente para compradores iniciais. A linha inclui Pixel 11, Pixel 11 Pro e Pixel 11 Pro XL com capacidades de IA integradas. Os novos celulares apresentam processador próprio otimizado para tarefas de machine learning on-device. Google busca capturar market share em competição com iPhone 17 e Samsung Galaxy S25. As promoções indicam que Google considera a demanda inicial como crítica para sucesso de linha. Recursos de IA e câmera aprimorada são destaques principais da geração novo.</div>
+        <div class="news-link"><a href="https://www.theverge.com/gadgets/975970/google-pixel-11-series-where-to-buy-preorder-release-date" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Twitch streamers podem agora optar por não treinar IA da Amazon Twitch anunciou opção para usuários recusarem que seu conteúdo (streams, VODs e clips) seja usado para treinar modelos generativos de IA da Amazon. A funcionalidade surgiu em resposta a pressões de criadores de conteúdo preocupados com direitos autorais e compensação. Usuários agora podem selecionar configurações de privacidade para proteger seus dados contra uso em treinamento de IA. A medida reflete tensão crescente entre plataformas tech e criadores sobre propriedade intelectual. Amazon/Twitch mantém direito de usar conteúdo dos que não optarem por exclusão. A iniciativa pode influenciar outras plataformas a oferecerem controles similares. The Verge" data-title="Twitch streamers podem agora optar por não treinar IA da Amazon" data-share-url="https://www.theverge.com/tech/979112/twitch-streamers-can-now-opt-out-from-training-amazons-ai">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">14:29</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Twitch streamers podem agora optar por não treinar IA da Amazon</div>
+        <div class="news-summary">Twitch anunciou opção para usuários recusarem que seu conteúdo (streams, VODs e clips) seja usado para treinar modelos generativos de IA da Amazon. A funcionalidade surgiu em resposta a pressões de criadores de conteúdo preocupados com direitos autorais e compensação. Usuários agora podem selecionar configurações de privacidade para proteger seus dados contra uso em treinamento de IA. A medida reflete tensão crescente entre plataformas tech e criadores sobre propriedade intelectual. Amazon/Twitch mantém direito de usar conteúdo dos que não optarem por exclusão. A iniciativa pode influenciar outras plataformas a oferecerem controles similares.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/979112/twitch-streamers-can-now-opt-out-from-training-amazons-ai" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="ICE busca luvas eletrizadas para coagir pessoas a cumprir ordens Imigração e Alfândega dos EUA (ICE) está buscando USD 20 milhões para equipar agentes com luvas especializadas que descarregam choques elétricos para subjugar pessoas durante detenções. A tecnologia visa causar dor e desabilitar a capacidade de reação do indivíduo. Iniciativa gerou controvérsia imediata entre defensores de direitos humanos que condenam uso de força potencialmente letal. Críticos apontam questões constitucionais e de proporcionalidade no uso de armas eletrônicas contra população civil. ICE argumenta que ferramenta reduz necessidade de força física mais severa. A proposta aguarda aprovação orçamentária do Congresso. The Verge" data-title="ICE busca luvas eletrizadas para coagir pessoas a cumprir ordens" data-share-url="https://www.theverge.com/policy/979010/ice-agents-electric-shock-gloves">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">13:58</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">ICE busca luvas eletrizadas para coagir pessoas a cumprir ordens</div>
+        <div class="news-summary">Imigração e Alfândega dos EUA (ICE) está buscando USD 20 milhões para equipar agentes com luvas especializadas que descarregam choques elétricos para subjugar pessoas durante detenções. A tecnologia visa causar dor e desabilitar a capacidade de reação do indivíduo. Iniciativa gerou controvérsia imediata entre defensores de direitos humanos que condenam uso de força potencialmente letal. Críticos apontam questões constitucionais e de proporcionalidade no uso de armas eletrônicas contra população civil. ICE argumenta que ferramenta reduz necessidade de força física mais severa. A proposta aguarda aprovação orçamentária do Congresso.</div>
+        <div class="news-link"><a href="https://www.theverge.com/policy/979010/ice-agents-electric-shock-gloves" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Escalação de agentes de IA requer dados confiáveis para operação em escala Líderes de negócio e tecnologia reconhecem que a era dos agentes de IA autônomos chegou, com organizações adotando rapidamente sistemas que executam tarefas complexas sem supervisão constante. O desafio crítico é garantir que dados usados para treinar e orientar esses agentes sejam confiáveis e de alta qualidade. Sem dados sólidos, agentes de IA cometem erros significativos em ambientes de produção. Empresas estão investindo em infraestrutura para validação e limpeza de dados antes de deployamento de agentes. O setor identifica qualidade de dados como fator limitante para expansão de IA agentic. Padrões e melhores práticas estão emergindo para governança de dados em sistemas autônomos. MIT Technology Review" data-title="Escalação de agentes de IA requer dados confiáveis para operação em escala" data-share-url="https://www.technologyreview.com/2026/08/12/1141032/scaling-ai-agents-with-trustworthy-data/">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">13:51</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Escalação de agentes de IA requer dados confiáveis para operação em escala</div>
+        <div class="news-summary">Líderes de negócio e tecnologia reconhecem que a era dos agentes de IA autônomos chegou, com organizações adotando rapidamente sistemas que executam tarefas complexas sem supervisão constante. O desafio crítico é garantir que dados usados para treinar e orientar esses agentes sejam confiáveis e de alta qualidade. Sem dados sólidos, agentes de IA cometem erros significativos em ambientes de produção. Empresas estão investindo em infraestrutura para validação e limpeza de dados antes de deployamento de agentes. O setor identifica qualidade de dados como fator limitante para expansão de IA agentic. Padrões e melhores práticas estão emergindo para governança de dados em sistemas autônomos.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/12/1141032/scaling-ai-agents-with-trustworthy-data/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="IA reduz custos em ensaios clínicos com eficiências em larga escala Novo estudo mostra que inteligência artificial está desbloqueando economias em milhões de dólares em ensaios clínicos de drogas, não apenas acelerando desenvolvimento inicial mas também gerando eficiências operacionais concretas. A IA otimiza seleção de pacientes, monitoramento de dados e análise de resultados em tempo real. Farmacêuticas já começam a integrar IA em protocolos para reduzir tempo e custo de aprovação de medicamentos. O impacto é particularmente significativo em fases tardias de desenvolvimento. Analistas projetam que IA se tornará padrão em desenvolvimento farmacêutico dentro de 2-3 anos. O avanço pode acelerar lançamento de novas terapias no mercado. Axios" data-title="IA reduz custos em ensaios clínicos com eficiências em larga escala" data-share-url="https://www.axios.com/2026/08/12/ai-clinical-trials-cost-savings">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">06:40</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">IA reduz custos em ensaios clínicos com eficiências em larga escala</div>
+        <div class="news-summary">Novo estudo mostra que inteligência artificial está desbloqueando economias em milhões de dólares em ensaios clínicos de drogas, não apenas acelerando desenvolvimento inicial mas também gerando eficiências operacionais concretas. A IA otimiza seleção de pacientes, monitoramento de dados e análise de resultados em tempo real. Farmacêuticas já começam a integrar IA em protocolos para reduzir tempo e custo de aprovação de medicamentos. O impacto é particularmente significativo em fases tardias de desenvolvimento. Analistas projetam que IA se tornará padrão em desenvolvimento farmacêutico dentro de 2-3 anos. O avanço pode acelerar lançamento de novas terapias no mercado.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/12/ai-clinical-trials-cost-savings" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Anthropic marca novo padrão em watermarks de IA para conformidade europeia Anthropic anunciou que seus novos modelos Claude incluirão watermarks legíveis por máquina em textos e arquivos gerados para cumprir novas regulações de transparência da União Europeia. Os watermarks permitem detectar conteúdo gerado por IA de forma automatizada. A medida representa resposta da indústria a crescentes demandas regulatórias sobre divulgação de conteúdo sintético. Antropic posiciona-se como líder em compliance de IA, diferenciando-se de competidores. A iniciativa sinaliza tendência global de regulação mais rigorosa sobre uso de modelos generativos. Outras big techs provavelmente adotarão abordagens similares em breve. Axios" data-title="Anthropic marca novo padrão em watermarks de IA para conformidade europeia" data-share-url="https://www.axios.com/2026/08/12/anthropic-claude-watermarks-ai-detection">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">06:20</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Anthropic marca novo padrão em watermarks de IA para conformidade europeia</div>
+        <div class="news-summary">Anthropic anunciou que seus novos modelos Claude incluirão watermarks legíveis por máquina em textos e arquivos gerados para cumprir novas regulações de transparência da União Europeia. Os watermarks permitem detectar conteúdo gerado por IA de forma automatizada. A medida representa resposta da indústria a crescentes demandas regulatórias sobre divulgação de conteúdo sintético. Antropic posiciona-se como líder em compliance de IA, diferenciando-se de competidores. A iniciativa sinaliza tendência global de regulação mais rigorosa sobre uso de modelos generativos. Outras big techs provavelmente adotarão abordagens similares em breve.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/12/anthropic-claude-watermarks-ai-detection" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="MIT reconhece 35 inovadores globais menores de 35 anos em 2026 MIT Technology Review anunciará em setembro a edição 2026 de sua lista Innovators Under 35, reconhecendo 35 jovens cientistas e engenheiros de destaque internacional. A seleção foi refinada através de processo rigoroso considerando impacto em múltiplos campos de tecnologia e inovação. Os escolhidos representam próxima geração de líderes em IA, biotecnologia, energia limpa e outras áreas. Prêmio é considerado catalisador para carreiras em tecnologia global. A lista será divulgada no dia 8 de setembro em cerimônia especial. Anualmente, o prêmio identifica talentos que moldaram futura trajetória tecnológica. MIT Technology Review" data-title="MIT reconhece 35 inovadores globais menores de 35 anos em 2026" data-share-url="https://www.technologyreview.com/2026/08/12/1141605/2026-innovators-under-35-top-young-scientists-engineers/">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">06:08</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">MIT reconhece 35 inovadores globais menores de 35 anos em 2026</div>
+        <div class="news-summary">MIT Technology Review anunciará em setembro a edição 2026 de sua lista Innovators Under 35, reconhecendo 35 jovens cientistas e engenheiros de destaque internacional. A seleção foi refinada através de processo rigoroso considerando impacto em múltiplos campos de tecnologia e inovação. Os escolhidos representam próxima geração de líderes em IA, biotecnologia, energia limpa e outras áreas. Prêmio é considerado catalisador para carreiras em tecnologia global. A lista será divulgada no dia 8 de setembro em cerimônia especial. Anualmente, o prêmio identifica talentos que moldaram futura trajetória tecnológica.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/12/1141605/2026-innovators-under-35-top-young-scientists-engineers/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Securitize cai 20% após miss em ganhos; receita de tokenização fica aquém Securitize, plataforma de tokenização de ativos, registrou queda de 20% nas ações após miss em ganhos trimestrais com receita de tokenização abaixo de expectativas do mercado. Embora ativos tokenizados tenham atingido recorde e volume de negociação tenha saltado, receita não acompanhou crescimento de atividade. É o primeiro relatório de ganhos desde IPO público de Securitize. Analistas questionam model de monetização da plataforma e capacidade de converter volume em lucro. Setor de tokenização permanece em expansão mas rentabilidade é desafio crítico. CoinDesk" data-title="Securitize cai 20% após miss em ganhos; receita de tokenização fica aquém" data-share-url="https://www.coindesk.com/markets/2026/08/12/securitize-falls-20-after-earnings-miss-as-tokenization-revenue-falls-short">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">19:26</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Securitize cai 20% após miss em ganhos; receita de tokenização fica aquém</div>
+        <div class="news-summary">Securitize, plataforma de tokenização de ativos, registrou queda de 20% nas ações após miss em ganhos trimestrais com receita de tokenização abaixo de expectativas do mercado. Embora ativos tokenizados tenham atingido recorde e volume de negociação tenha saltado, receita não acompanhou crescimento de atividade. É o primeiro relatório de ganhos desde IPO público de Securitize. Analistas questionam model de monetização da plataforma e capacidade de converter volume em lucro. Setor de tokenização permanece em expansão mas rentabilidade é desafio crítico.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/08/12/securitize-falls-20-after-earnings-miss-as-tokenization-revenue-falls-short" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Zerohash (parceira Morgan Stanley) rejeitada em candidatura para banco de confiança Zerohash, infraestrutura cripto que processa transações para Morgan Stanley E*Trade, foi rejeitada em tentativa de obter licença como banco de confiança nos EUA. Empresa sinalizou intenção de refazer candidatura esperando aprovação mais rápida em futuro próximo. Aprovação como banco de confiança teria permitido Zerohash oferecer custódia diretamente sem intermediários. Rejeição reflete cautela regulatória persistente com empresas cripto buscando licenças bancárias tradicionais. Zerohash continua crescendo em negócio de infraestrutura sem status de banco. CoinDesk" data-title="Zerohash (parceira Morgan Stanley) rejeitada em candidatura para banco de confiança" data-share-url="https://www.coindesk.com/policy/2026/08/12/morgan-stanley-s-infrastructure-partner-zerohash-rebuffed-in-pitch-to-be-u-s-trust-bank">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">19:11</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Zerohash (parceira Morgan Stanley) rejeitada em candidatura para banco de confiança</div>
+        <div class="news-summary">Zerohash, infraestrutura cripto que processa transações para Morgan Stanley E*Trade, foi rejeitada em tentativa de obter licença como banco de confiança nos EUA. Empresa sinalizou intenção de refazer candidatura esperando aprovação mais rápida em futuro próximo. Aprovação como banco de confiança teria permitido Zerohash oferecer custódia diretamente sem intermediários. Rejeição reflete cautela regulatória persistente com empresas cripto buscando licenças bancárias tradicionais. Zerohash continua crescendo em negócio de infraestrutura sem status de banco.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/12/morgan-stanley-s-infrastructure-partner-zerohash-rebuffed-in-pitch-to-be-u-s-trust-bank" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Havaí bane máquinas de cripto a partir de 1º de outubro Havaí se junta a Minnesota, Tennessee e Indiana tornando-se quarto estado americano a banir completamente máquinas ATM de criptomoedas e quiosques. Proibição entra em vigor em 1º de outubro, criminalizando operação desses terminais no estado. Movimento reflete preocupação regulatória sobre fraude e lavagem de dinheiro via máquinas de cripto. Indústria cripto critica decisão como excessivamente restritiva e prejudicial a adoção mainstream. Outros estados observam ação de Havaí para possível adoção de políticas similares. Tendência global aponta para regulação mais rigorosa de pontos de acesso cripto físicos. Cointelegraph" data-title="Havaí bane máquinas de cripto a partir de 1º de outubro" data-share-url="https://cointelegraph.com/news/hawaii-crypto-atm-ban-october-enforcement">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">18:21</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Havaí bane máquinas de cripto a partir de 1º de outubro</div>
+        <div class="news-summary">Havaí se junta a Minnesota, Tennessee e Indiana tornando-se quarto estado americano a banir completamente máquinas ATM de criptomoedas e quiosques. Proibição entra em vigor em 1º de outubro, criminalizando operação desses terminais no estado. Movimento reflete preocupação regulatória sobre fraude e lavagem de dinheiro via máquinas de cripto. Indústria cripto critica decisão como excessivamente restritiva e prejudicial a adoção mainstream. Outros estados observam ação de Havaí para possível adoção de políticas similares. Tendência global aponta para regulação mais rigorosa de pontos de acesso cripto físicos.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/hawaii-crypto-atm-ban-october-enforcement" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Tresouro Hyperliquid triplica lucros trimestrais com holdings de HYPE em alta Hyperion, veículo de tesouro da rede Hyperliquid, triplicou lucros operacionais no segundo trimestre enquanto holdings de HYPE aumentaram para USD 133 milhões de USD 71 milhões ao final de Q1. Valorização do token HYPE impulsionou ganhos de marca registrada. Crescimento reflete expansão rápida do ecossistema e adoção de derivativos perpétuos em Hyperliquid. Performance financeira forte do tesouro sinaliza solidez do modelo econômico. Hyperliquid está entre protocolos de layer2 emergentes em cripto. The Block" data-title="Tresouro Hyperliquid triplica lucros trimestrais com holdings de HYPE em alta" data-share-url="https://www.theblock.co/news/markets/2026-08-12-hyperliquid-treasury-hyperion-triples-quarterly-profits-as-hype-holdings-rise-in-value-411652">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">18:19</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Tresouro Hyperliquid triplica lucros trimestrais com holdings de HYPE em alta</div>
+        <div class="news-summary">Hyperion, veículo de tesouro da rede Hyperliquid, triplicou lucros operacionais no segundo trimestre enquanto holdings de HYPE aumentaram para USD 133 milhões de USD 71 milhões ao final de Q1. Valorização do token HYPE impulsionou ganhos de marca registrada. Crescimento reflete expansão rápida do ecossistema e adoção de derivativos perpétuos em Hyperliquid. Performance financeira forte do tesouro sinaliza solidez do modelo econômico. Hyperliquid está entre protocolos de layer2 emergentes em cripto.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/markets/2026-08-12-hyperliquid-treasury-hyperion-triples-quarterly-profits-as-hype-holdings-rise-in-value-411652" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="SEC autoriza Franklin Templeton usar sistema BENJI onchain para gestão de caixa Comissão de Valores Mobiliários (SEC) emitiu carta de no-action para Franklin Templeton permitindo que seus fundos registrados tradicionais invistam em fundo BENJI/FOBXX para gestão de caixa onchain. Aprovação marca validação regulatória de sistema blockchain para gestão de liquidez institucional. Franklin Templeton é pioneira em integração de blockchain em operações de fundos tradicionais. A decisão facilita fluxo de capital institucional para infraestrutura onchain. Outros gestores de ativos observam desenvolvimento para possível adoção. The Block" data-title="SEC autoriza Franklin Templeton usar sistema BENJI onchain para gestão de caixa" data-share-url="https://www.theblock.co/news/defi/2026-08-12-sec-clears-franklin-templeton-funds-use-onchain-benji-system-cash-management-411654">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">18:04</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">SEC autoriza Franklin Templeton usar sistema BENJI onchain para gestão de caixa</div>
+        <div class="news-summary">Comissão de Valores Mobiliários (SEC) emitiu carta de no-action para Franklin Templeton permitindo que seus fundos registrados tradicionais invistam em fundo BENJI/FOBXX para gestão de caixa onchain. Aprovação marca validação regulatória de sistema blockchain para gestão de liquidez institucional. Franklin Templeton é pioneira em integração de blockchain em operações de fundos tradicionais. A decisão facilita fluxo de capital institucional para infraestrutura onchain. Outros gestores de ativos observam desenvolvimento para possível adoção.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/defi/2026-08-12-sec-clears-franklin-templeton-funds-use-onchain-benji-system-cash-management-411654" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Consilho NYC investiga práticas de marketing predatório em mercados de previsão Conselho Municipal de Nova York, através da speaker Julie Menin, lançou investigação formal sobre práticas de marketing de quatro empresas de mercados de previsão operando em NY. Probe busca avaliar se campanhas estão explorando consumidores e violando regulações de proteção ao consumidor. Mercados de previsão enfrentam escrutínio crescente por cidades e estados americanos sobre acessibilidade a menores de idade. Reguladores questionam se plataformas como Kalshi e Polymarket estão adequadamente divulgando riscos. Investigação pode resultar em regulação local mais restritiva. Cointelegraph" data-title="Consilho NYC investiga práticas de marketing predatório em mercados de previsão" data-share-url="https://cointelegraph.com/news/new-york-council-probe-marketing-practices-prediction-markets">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">17:22</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Consilho NYC investiga práticas de marketing predatório em mercados de previsão</div>
+        <div class="news-summary">Conselho Municipal de Nova York, através da speaker Julie Menin, lançou investigação formal sobre práticas de marketing de quatro empresas de mercados de previsão operando em NY. Probe busca avaliar se campanhas estão explorando consumidores e violando regulações de proteção ao consumidor. Mercados de previsão enfrentam escrutínio crescente por cidades e estados americanos sobre acessibilidade a menores de idade. Reguladores questionam se plataformas como Kalshi e Polymarket estão adequadamente divulgando riscos. Investigação pode resultar em regulação local mais restritiva.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/new-york-council-probe-marketing-practices-prediction-markets" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Staking em Ethereum sobe para 34% com proposta para recompensas tapered Taxa de staking em Ethereum atingiu 34% enquanto pesquisadores apresentaram EIP-8361 propondo queima progressiva de recompensas de validadores conforme ratio de staking sobe. Proposta visa manter taxa de staking em nível ótimo evitando centralização e maximizando segurança. Discussão sobre recompensas de validador e tesouro de ETH ganhou momentum na comunidade. Ethereum continua evoluindo mecanismo de consenso para otimizar economics. Proposta ainda em fase de revisão pelos desenvolvedores core. The Block" data-title="Staking em Ethereum sobe para 34% com proposta para recompensas tapered" data-share-url="https://www.theblock.co/news/ecosystems/2026-08-12-ethereum-staking-climbs-34-proposal-targets-validator-rewards-eth-treasury-firm-yields-411312">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">16:16</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Staking em Ethereum sobe para 34% com proposta para recompensas tapered</div>
+        <div class="news-summary">Taxa de staking em Ethereum atingiu 34% enquanto pesquisadores apresentaram EIP-8361 propondo queima progressiva de recompensas de validadores conforme ratio de staking sobe. Proposta visa manter taxa de staking em nível ótimo evitando centralização e maximizando segurança. Discussão sobre recompensas de validador e tesouro de ETH ganhou momentum na comunidade. Ethereum continua evoluindo mecanismo de consenso para otimizar economics. Proposta ainda em fase de revisão pelos desenvolvedores core.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/ecosystems/2026-08-12-ethereum-staking-climbs-34-proposal-targets-validator-rewards-eth-treasury-firm-yields-411312" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Kraken adiciona S&amp;P 500 a programa de trading financiado; commodities em breve Exchange Kraken expandiu programa de trading financiado para incluir exposição 24/7 ao índice S&amp;P 500, ampliando oferta além de ativos cripto tradicionais. Commodities estão programadas para lançamento próximo, sinalizando expansão para multi-asset trading. Programa permite traders acessar capital para operar com alavancagem em múltiplas classes de ativos. Iniciativa posiciona Kraken como plataforma de trading diversificada competindo com exchanges tradicionais. Expansão reflete demanda de usuários por exposição além de Bitcoin e altcoins. Cointelegraph" data-title="Kraken adiciona S&amp;P 500 a programa de trading financiado; commodities em breve" data-share-url="https://cointelegraph.com/news/kraken-prop-sp500-perpetual-commodities-next">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">15:55</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Kraken adiciona S&amp;P 500 a programa de trading financiado; commodities em breve</div>
+        <div class="news-summary">Exchange Kraken expandiu programa de trading financiado para incluir exposição 24/7 ao índice S&amp;P 500, ampliando oferta além de ativos cripto tradicionais. Commodities estão programadas para lançamento próximo, sinalizando expansão para multi-asset trading. Programa permite traders acessar capital para operar com alavancagem em múltiplas classes de ativos. Iniciativa posiciona Kraken como plataforma de trading diversificada competindo com exchanges tradicionais. Expansão reflete demanda de usuários por exposição além de Bitcoin e altcoins.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/kraken-prop-sp500-perpetual-commodities-next" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitwise reduz 14% da força de trabalho mantendo projeções de crescimento Gestora de ativos cripto Bitwise anunciou demissão de 14% de sua força de trabalho mesmo mantendo projeções de crescimento futuro. Decisão reflete pressão de rentabilidade apesar de aumento em AUM. Bitwise se junta a outras grandes empresas cripto como Coinbase, BitGo, Robinhood e Polygon em demissões em 2026. Padrão de redução de custos enquanto cercam crescimento sugere transição de fase do mercado. Tendência sinaliza que indústria cripto está priorizando lucratividade sobre expansão agressiva. Cointelegraph" data-title="Bitwise reduz 14% da força de trabalho mantendo projeções de crescimento" data-share-url="https://cointelegraph.com/news/bitwise-staff-cuts-market-downturn-growth">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">15:01</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitwise reduz 14% da força de trabalho mantendo projeções de crescimento</div>
+        <div class="news-summary">Gestora de ativos cripto Bitwise anunciou demissão de 14% de sua força de trabalho mesmo mantendo projeções de crescimento futuro. Decisão reflete pressão de rentabilidade apesar de aumento em AUM. Bitwise se junta a outras grandes empresas cripto como Coinbase, BitGo, Robinhood e Polygon em demissões em 2026. Padrão de redução de custos enquanto cercam crescimento sugere transição de fase do mercado. Tendência sinaliza que indústria cripto está priorizando lucratividade sobre expansão agressiva.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bitwise-staff-cuts-market-downturn-growth" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Polymarket contrata executivo ex-Uber Travis VanderZanden como chief growth officer Plataforma de mercados de previsão Polymarket contratou Travis VanderZanden, executivo veterano de blitzscaling em Uber, Bird e Lyft, como chief growth officer. Hire sinaliza ambição de Polymarket em escalar user base e volume de trading agressivamente. VanderZanden traz expertise em growth hacking e operações de escala em startups. Contratação ocorre em contexto de crescimento rápido de mercados de previsão descentralizados. Polymarket busca consolidar posição como líder em mercados de previsão cripto. The Block" data-title="Polymarket contrata executivo ex-Uber Travis VanderZanden como chief growth officer" data-share-url="https://www.theblock.co/news/business/2026-08-12-polymarket-taps-ex-uber-and-bird-exec-travis-vanderzanden-to-boost-growth-411631">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">14:56</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Polymarket contrata executivo ex-Uber Travis VanderZanden como chief growth officer</div>
+        <div class="news-summary">Plataforma de mercados de previsão Polymarket contratou Travis VanderZanden, executivo veterano de blitzscaling em Uber, Bird e Lyft, como chief growth officer. Hire sinaliza ambição de Polymarket em escalar user base e volume de trading agressivamente. VanderZanden traz expertise em growth hacking e operações de escala em startups. Contratação ocorre em contexto de crescimento rápido de mercados de previsão descentralizados. Polymarket busca consolidar posição como líder em mercados de previsão cripto.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-08-12-polymarket-taps-ex-uber-and-bird-exec-travis-vanderzanden-to-boost-growth-411631" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Goldman Sachs adquire NEOS por USD 2,25 bi, ganhando ETFs de renda em Bitcoin Goldman Sachs anunciou aquisição por até USD 2,25 bilhões da gestora NEOS Investments, que opera ETFs de renda em Bitcoin e Ethereum gerando rendimento via opções cobertas. O negócio expande plataforma de derivativos de Goldman para USD 130 bilhões em ativos totais em ETFs. NEOS oferece Bitcoin High Income ETF e Ethereum High Income ETF com bilhões de dólares sob gestão. A transação demonstra apetite institucional crescente por produtos de cripto com rendimento. Goldman posiciona-se diretamente contra fundo rival BITA da BlackRock. A aquisição consolida tendência de big finance abraçando tokenização e produtos cripto. CoinDesk" data-title="Goldman Sachs adquire NEOS por USD 2,25 bi, ganhando ETFs de renda em Bitcoin" data-share-url="https://www.coindesk.com/business/2026/08/12/goldman-sachs-leaps-into-bitcoin-income-etfs-with-usd2-25-billion-neos-buyout">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">14:21</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Goldman Sachs adquire NEOS por USD 2,25 bi, ganhando ETFs de renda em Bitcoin</div>
+        <div class="news-summary">Goldman Sachs anunciou aquisição por até USD 2,25 bilhões da gestora NEOS Investments, que opera ETFs de renda em Bitcoin e Ethereum gerando rendimento via opções cobertas. O negócio expande plataforma de derivativos de Goldman para USD 130 bilhões em ativos totais em ETFs. NEOS oferece Bitcoin High Income ETF e Ethereum High Income ETF com bilhões de dólares sob gestão. A transação demonstra apetite institucional crescente por produtos de cripto com rendimento. Goldman posiciona-se diretamente contra fundo rival BITA da BlackRock. A aquisição consolida tendência de big finance abraçando tokenização e produtos cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/12/goldman-sachs-leaps-into-bitcoin-income-etfs-with-usd2-25-billion-neos-buyout" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fidelity pede autorização para staking em ETF de Ethereum com distribuição trimestral Fidelity Investments apresentou pedido para permitir que seu ETF de Ethereum (FETH) faça staking de até 100% do ETH sob custódia e distribua recompensas em caixa trimestral aos investidores. Aprovação pela SEC permitiria novo modelo de ETF cripto gerando yield nativo. Abordagem diferencia FETH de competidores ao maximizar participação em atividade de staking. Pedido reflete apetite institucional por exposição a Ethereum com componente de geração de renda. SEC não comentou ainda sobre decisão esperada nos próximos meses. Decrypt" data-title="Fidelity pede autorização para staking em ETF de Ethereum com distribuição trimestral" data-share-url="https://decrypt.co/375457/fidelity-files-ethereum-etf-stake-pay-investors">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">14:13</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Fidelity pede autorização para staking em ETF de Ethereum com distribuição trimestral</div>
+        <div class="news-summary">Fidelity Investments apresentou pedido para permitir que seu ETF de Ethereum (FETH) faça staking de até 100% do ETH sob custódia e distribua recompensas em caixa trimestral aos investidores. Aprovação pela SEC permitiria novo modelo de ETF cripto gerando yield nativo. Abordagem diferencia FETH de competidores ao maximizar participação em atividade de staking. Pedido reflete apetite institucional por exposição a Ethereum com componente de geração de renda. SEC não comentou ainda sobre decisão esperada nos próximos meses.</div>
+        <div class="news-link"><a href="https://decrypt.co/375457/fidelity-files-ethereum-etf-stake-pay-investors" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Banco da Inglaterra testa interoperabilidade de stablecoin com libra digital em pagamentos cross-border Banco da Inglaterra, através Digital Pound Lab, está testando fluxo de pagamento cross-border combinando stablecoins com liquidação simulada em libra digital. Teste simula operação de trade finance internacional usando blockchain. Programa busca validar viabilidade técnica de moedas digitais de bancos centrais interoperando com stablecoins privadas. Resultados poderão informar design final de libra digital no Reino Unido. Iniciativa marca progresso significativo na convergência de criptoativos com infraestrutura de pagamento tradicional. Cointelegraph" data-title="Banco da Inglaterra testa interoperabilidade de stablecoin com libra digital em pagamentos cross-border" data-share-url="https://cointelegraph.com/news/bank-of-england-tests-stablecoin-digital-pound-interoperability-in-cross-border-payments">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">13:50</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Banco da Inglaterra testa interoperabilidade de stablecoin com libra digital em pagamentos cross-border</div>
+        <div class="news-summary">Banco da Inglaterra, através Digital Pound Lab, está testando fluxo de pagamento cross-border combinando stablecoins com liquidação simulada em libra digital. Teste simula operação de trade finance internacional usando blockchain. Programa busca validar viabilidade técnica de moedas digitais de bancos centrais interoperando com stablecoins privadas. Resultados poderão informar design final de libra digital no Reino Unido. Iniciativa marca progresso significativo na convergência de criptoativos com infraestrutura de pagamento tradicional.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bank-of-england-tests-stablecoin-digital-pound-interoperability-in-cross-border-payments" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Wintermute planeja expansão de USD 1 bi além de cripto com foco em IA Trading firm Wintermute anunciou plano de USD 1 bilhão para expansão em mercados não-cripto, buscando que receita fora de cripto represente mais de 50% do negócio até 2027, subindo de 10% atualmente. Foco estratégico inclui inteligência artificial e modelos quantitativos aplicados a mercados tradicionais. A diversificação reflete maduridade da empresa e cautela com concentração em cripto. Wintermute continua sendo major market maker em blockchain networks. Movimento sinaliza que firms cripto estabelecidas estão expandindo além das moedas digitais. CoinDesk" data-title="Wintermute planeja expansão de USD 1 bi além de cripto com foco em IA" data-share-url="https://www.coindesk.com/business/2026/08/12/wintermute-plans-usd1-billion-ai-push-beyond-crypto-bloomberg">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">13:34</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Wintermute planeja expansão de USD 1 bi além de cripto com foco em IA</div>
+        <div class="news-summary">Trading firm Wintermute anunciou plano de USD 1 bilhão para expansão em mercados não-cripto, buscando que receita fora de cripto represente mais de 50% do negócio até 2027, subindo de 10% atualmente. Foco estratégico inclui inteligência artificial e modelos quantitativos aplicados a mercados tradicionais. A diversificação reflete maduridade da empresa e cautela com concentração em cripto. Wintermute continua sendo major market maker em blockchain networks. Movimento sinaliza que firms cripto estabelecidas estão expandindo além das moedas digitais.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/12/wintermute-plans-usd1-billion-ai-push-beyond-crypto-bloomberg" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Kalshi integra feed de dados de alta velocidade DoubleZero para operações institucionais Kalshi, plataforma de mercados de previsão, integrou feed de dados DoubleZero para oferecer preços de alta velocidade e dados de pedidos com latência mínima. A parceria responde a demandas de traders institucionais que requerem infraestrutura no nível de Wall Street. DoubleZero fornece conectividade via fibra dedicada para acesso a data feeds de esportes e cripto. A integração sinaliza profissionalização de mercados de previsão descentralizados. Kalshi busca atrair capital institucional em competição com exchanges tradicionais de derivativos. CoinDesk" data-title="Kalshi integra feed de dados de alta velocidade DoubleZero para operações institucionais" data-share-url="https://www.coindesk.com/business/2026/08/12/solana-platform-taps-prediction-market-kalshi-for-wall-street-style-high-speed-data-feed">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">13:14</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Kalshi integra feed de dados de alta velocidade DoubleZero para operações institucionais</div>
+        <div class="news-summary">Kalshi, plataforma de mercados de previsão, integrou feed de dados DoubleZero para oferecer preços de alta velocidade e dados de pedidos com latência mínima. A parceria responde a demandas de traders institucionais que requerem infraestrutura no nível de Wall Street. DoubleZero fornece conectividade via fibra dedicada para acesso a data feeds de esportes e cripto. A integração sinaliza profissionalização de mercados de previsão descentralizados. Kalshi busca atrair capital institucional em competição com exchanges tradicionais de derivativos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/12/solana-platform-taps-prediction-market-kalshi-for-wall-street-style-high-speed-data-feed" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ponte XRP drenada após software tratar depósitos falsos como reais Ponte cross-chain de XRP foi explorada e drenada após falha que permitiu atacante criar saldos não-lastreados e sacar XRP das reservas da ponte. A falha permaneceu indetectada durante múltiplas auditorias técnicas, revelando gaps em processos de segurança. Impacto financeiro exato ainda está sendo avaliado. Incidente aumenta preocupações sobre robustez de infraestrutura cross-chain em criptomoedas. Desenvolvedores de XRP iniciaram investigação completa e medidas para recuperar fundos. O evento reforça riscos de pontes descentralizadas em transferências entre blockchains. Decrypt" data-title="Ponte XRP drenada após software tratar depósitos falsos como reais" data-share-url="https://decrypt.co/375441/xrp-drained-tx-bridge">
+        <div class="news-meta">
+          <span class="news-date">12 ago 2026</span>
+          <span class="news-time">13:00</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Ponte XRP drenada após software tratar depósitos falsos como reais</div>
+        <div class="news-summary">Ponte cross-chain de XRP foi explorada e drenada após falha que permitiu atacante criar saldos não-lastreados e sacar XRP das reservas da ponte. A falha permaneceu indetectada durante múltiplas auditorias técnicas, revelando gaps em processos de segurança. Impacto financeiro exato ainda está sendo avaliado. Incidente aumenta preocupações sobre robustez de infraestrutura cross-chain em criptomoedas. Desenvolvedores de XRP iniciaram investigação completa e medidas para recuperar fundos. O evento reforça riscos de pontes descentralizadas em transferências entre blockchains.</div>
+        <div class="news-link"><a href="https://decrypt.co/375441/xrp-drained-tx-bridge" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
