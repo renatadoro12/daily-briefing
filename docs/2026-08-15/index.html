@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">15 DE AGOSTO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 15 de agosto de 2026 marca uma convergência crítica entre tensões geopolíticas crescentes no Oriente Médio e uma aceleração sem precedentes na adoção institucional de criptomoedas e ativos digitais. Enquanto Israel intensifica ataques no Líbano e a Europa busca se posicionar em futuras negociações sobre a Ucrânia, grandes bancos como UBS e fundos soberanos do Golfo aumentam dramaticamente suas exposições a Bitcoin e ativos tokenizados. A IA emerge como fio transversal: de regulações sobre modelos de watermarking até aquisições estratégicas como a de Cursor pela SpaceX, enquanto plataformas descentralizadas como Hyperliquid ganham tração com derivativos de IPO. Este é um momento de reposicionamento geoeconômico onde geopolítica, tecnologia e finanças descentralizadas se entrelaçam numa nova ordem global.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-08-14/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15" selected>2026-08-15</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Petição canadense pede expulsão do embaixador americano Pete Hoekstra Uma petição online no Canadá reuniu mais de 170 mil assinaturas exigindo a expulsão do embaixador americano Pete Hoekstra, designado pelo presidente Trump. Hoekstra tem sido o porta-voz fiel de Trump no Canadá durante uma fase histórica de deterioração nas relações bilaterais entre os dois países. A petição reflete frustração crescente dos canadenses com a abordagem confrontacional de Washington em relação ao vizinho do norte. O movimento político ocorre num contexto de tensões comerciais e diplomáticas que atingem seu pior patamar em anos. New York Times" data-title="Petição canadense pede expulsão do embaixador americano Pete Hoekstra" data-share-url="https://www.nytimes.com/2026/08/15/world/canada/hoekstra-ambassador-petition-canada-trump.html">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">15:15</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Petição canadense pede expulsão do embaixador americano Pete Hoekstra</div>
+        <div class="news-summary">Uma petição online no Canadá reuniu mais de 170 mil assinaturas exigindo a expulsão do embaixador americano Pete Hoekstra, designado pelo presidente Trump. Hoekstra tem sido o porta-voz fiel de Trump no Canadá durante uma fase histórica de deterioração nas relações bilaterais entre os dois países. A petição reflete frustração crescente dos canadenses com a abordagem confrontacional de Washington em relação ao vizinho do norte. O movimento político ocorre num contexto de tensões comerciais e diplomáticas que atingem seu pior patamar em anos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/15/world/canada/hoekstra-ambassador-petition-canada-trump.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Israel intensifica ataques no Líbano; 11 mortos, segundo órgãos de saúde Ataques aéreos israelenses contra alvos no Líbano resultaram em pelo menos 11 mortes, incluindo crianças, de acordo com o Ministério da Saúde libanês. O gabinete do primeiro-ministro israelense afirmou que Hezbollah atacou primeiro, causando ferimentos a soldados israelenses. Os ataques marcam uma escalada na tensão entre Israel e grupos armados no Líbano, intensificando os conflitos regionais no Oriente Médio. A situação reflete o aumento de hostilidades entre as duas partes após meses de tensões crescentes. O incidente ocorre em contexto de instabilidade mais ampla na região, com implicações para a segurança regional e internacional. New York Times" data-title="Israel intensifica ataques no Líbano; 11 mortos, segundo órgãos de saúde" data-share-url="https://www.nytimes.com/2026/08/15/world/middleeast/israel-strikes-lebanon-ansar.html">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">13:09</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Israel intensifica ataques no Líbano; 11 mortos, segundo órgãos de saúde</div>
+        <div class="news-summary">Ataques aéreos israelenses contra alvos no Líbano resultaram em pelo menos 11 mortes, incluindo crianças, de acordo com o Ministério da Saúde libanês. O gabinete do primeiro-ministro israelense afirmou que Hezbollah atacou primeiro, causando ferimentos a soldados israelenses. Os ataques marcam uma escalada na tensão entre Israel e grupos armados no Líbano, intensificando os conflitos regionais no Oriente Médio. A situação reflete o aumento de hostilidades entre as duas partes após meses de tensões crescentes. O incidente ocorre em contexto de instabilidade mais ampla na região, com implicações para a segurança regional e internacional.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/15/world/middleeast/israel-strikes-lebanon-ansar.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Terremoto de magnitude 7,7 atinge Indonésia; pelo menos 47 mortos Um terremoto de magnitude 7,7 atingiu a região de Flores na Indonésia, deixando pelo menos 47 mortos. Segundo funcionários locais, foi um dos tremores mais fortes que a área enfrentou em décadas, causando danos generalizados a estruturas e infraestrutura. O fenômeno natural desencadeou preocupações sobre tsunamis e réplicas adicionais na região do Oceano Índico. As autoridades indonésias acionaram protocolos de emergência e iniciaram operações de resgate. O desastre evidencia a vulnerabilidade geológica do arquipélago e a fragilidade das comunidades frente a fenômenos naturais de grande magnitude. New York Times" data-title="Terremoto de magnitude 7,7 atinge Indonésia; pelo menos 47 mortos" data-share-url="https://www.nytimes.com/2026/08/15/world/asia/earthquake-indonesia-flores-tsunami.html">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">10:08</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Terremoto de magnitude 7,7 atinge Indonésia; pelo menos 47 mortos</div>
+        <div class="news-summary">Um terremoto de magnitude 7,7 atingiu a região de Flores na Indonésia, deixando pelo menos 47 mortos. Segundo funcionários locais, foi um dos tremores mais fortes que a área enfrentou em décadas, causando danos generalizados a estruturas e infraestrutura. O fenômeno natural desencadeou preocupações sobre tsunamis e réplicas adicionais na região do Oceano Índico. As autoridades indonésias acionaram protocolos de emergência e iniciaram operações de resgate. O desastre evidencia a vulnerabilidade geológica do arquipélago e a fragilidade das comunidades frente a fenômenos naturais de grande magnitude.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/15/world/asia/earthquake-indonesia-flores-tsunami.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Europa busca papel em futuras negociações Rússia-Ucrânia, desconfiada de Trump Diplomatas franceses, alemães e britânicos estão trabalhando em um formato para futuras negociações entre Rússia e Ucrânia, na tentativa de garantir relevância europeia num processo de paz. A iniciativa reflete preocupação com o envolvimento da administração Trump em possíveis acordos bilaterais que excluam a Europa. Rússia ainda demonstra pouco interesse em negociações, mas a União Europeia busca antecipar-se a futuros diálogos. O movimento evidencia tensões transatlânticas sobre o futuro da segurança europeia e o papel de Washington na resolução do conflito. New York Times" data-title="Europa busca papel em futuras negociações Rússia-Ucrânia, desconfiada de Trump" data-share-url="https://www.nytimes.com/2026/08/15/world/europe/europe-russia-ukraine-talks.html">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">01:01</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Europa busca papel em futuras negociações Rússia-Ucrânia, desconfiada de Trump</div>
+        <div class="news-summary">Diplomatas franceses, alemães e britânicos estão trabalhando em um formato para futuras negociações entre Rússia e Ucrânia, na tentativa de garantir relevância europeia num processo de paz. A iniciativa reflete preocupação com o envolvimento da administração Trump em possíveis acordos bilaterais que excluam a Europa. Rússia ainda demonstra pouco interesse em negociações, mas a União Europeia busca antecipar-se a futuros diálogos. O movimento evidencia tensões transatlânticas sobre o futuro da segurança europeia e o papel de Washington na resolução do conflito.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/15/world/europe/europe-russia-ukraine-talks.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Mulher acusa padrasto de usar Grok para criar imagens explícitas de foto infantil Uma mulher apresentou acusação de que seu padrasto utilizou Grok, o modelo de IA de Elon Musk, para transformar uma foto infantil sua em conteúdo sexual explícito. O caso ilustra um risco grave de abuso de tecnologia de IA generativa, com impacto direto em segurança de menores. A denunciante caracterizou o incidente como um problema sistêmico onde ferramentas de IA convertem conteúdo cotidiano em abuso sexual infantil. O caso reaviva debates sobre responsabilidade de empresas de IA e necessidade de controles mais rigorosos contra abuso. Reguladores e pesquisadores alertam crescentemente sobre riscos similares em toda indústria. TechCrunch" data-title="Mulher acusa padrasto de usar Grok para criar imagens explícitas de foto infantil" data-share-url="https://techcrunch.com/2026/08/15/woman-claims-her-stepfather-used-grok-to-transform-childhood-photo-into-explicit-imagery/">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">18:29</span>
+          <span class="news-source">TechCrunch</span>
+        </div>
+        <div class="news-title">Mulher acusa padrasto de usar Grok para criar imagens explícitas de foto infantil</div>
+        <div class="news-summary">Uma mulher apresentou acusação de que seu padrasto utilizou Grok, o modelo de IA de Elon Musk, para transformar uma foto infantil sua em conteúdo sexual explícito. O caso ilustra um risco grave de abuso de tecnologia de IA generativa, com impacto direto em segurança de menores. A denunciante caracterizou o incidente como um problema sistêmico onde ferramentas de IA convertem conteúdo cotidiano em abuso sexual infantil. O caso reaviva debates sobre responsabilidade de empresas de IA e necessidade de controles mais rigorosos contra abuso. Reguladores e pesquisadores alertam crescentemente sobre riscos similares em toda indústria.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/08/15/woman-claims-her-stepfather-used-grok-to-transform-childhood-photo-into-explicit-imagery/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Bybit adiciona Unitree e Moonshot AI a linha de perpetuais pré-IPO Bybit expandiu sua plataforma de derivativos TradFi adicionando perpetuais de pré-IPO para Unitree e Moonshot AI, ampliando linha de produtos para mais de 200 instrumentos. A inclusão de startups de IA antes de IPOs marca tendência de exchanges de cripto penetrando mercados privados e oferecendo exposição a ativos alternativos. Unitree, fabricante de robôs, e Moonshot AI, desenvolvedora de modelos generativos, representam setores de crescimento acelerado. O movimento reflete demanda institucional por acesso antecipado a oportunidades de investimento em startups de alto potencial. Exchanges descentralizadas ganham relevância como intermediárias de mercados privados globalizados. Cointelegraph" data-title="Bybit adiciona Unitree e Moonshot AI a linha de perpetuais pré-IPO" data-share-url="https://cointelegraph.com/news/bybit-launches-unitree-pre-ipo-perpetual-as-crypto-platforms-push-into-private-markets?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">16:27</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bybit adiciona Unitree e Moonshot AI a linha de perpetuais pré-IPO</div>
+        <div class="news-summary">Bybit expandiu sua plataforma de derivativos TradFi adicionando perpetuais de pré-IPO para Unitree e Moonshot AI, ampliando linha de produtos para mais de 200 instrumentos. A inclusão de startups de IA antes de IPOs marca tendência de exchanges de cripto penetrando mercados privados e oferecendo exposição a ativos alternativos. Unitree, fabricante de robôs, e Moonshot AI, desenvolvedora de modelos generativos, representam setores de crescimento acelerado. O movimento reflete demanda institucional por acesso antecipado a oportunidades de investimento em startups de alto potencial. Exchanges descentralizadas ganham relevância como intermediárias de mercados privados globalizados.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bybit-launches-unitree-pre-ipo-perpetual-as-crypto-platforms-push-into-private-markets?utm_source=rss_feed&amp;utm_medium=rss_tag_ai&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Anthropic divulga detalhes sobre como funcionarão as novas marcas d'água de Claude Anthropic compartilhou detalhes técnicos sobre o sistema de watermarking que Claude implementará para detectar conteúdo gerado por IA. O sistema visa marcar digitalmente saídas de Claude de forma a serem identificáveis mesmo após edição superficial. A iniciativa aborda preocupações crescentes sobre a detecção de deepfakes e conteúdo gerado por IA em circulação sem identificação. Anthropic explicou como o watermarking funcionará em diferentes tipos de mídia, incluindo código, imagem e texto. O esforço reflete responsabilidade corporativa em mitigar possíveis abusos de modelos generativos avançados. TechCrunch" data-title="Anthropic divulga detalhes sobre como funcionarão as novas marcas d'água de Claude" data-share-url="https://techcrunch.com/2026/08/15/anthropic-shares-more-details-about-how-claudes-new-watermarks-will-work/">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">15:58</span>
+          <span class="news-source">TechCrunch</span>
+        </div>
+        <div class="news-title">Anthropic divulga detalhes sobre como funcionarão as novas marcas d'água de Claude</div>
+        <div class="news-summary">Anthropic compartilhou detalhes técnicos sobre o sistema de watermarking que Claude implementará para detectar conteúdo gerado por IA. O sistema visa marcar digitalmente saídas de Claude de forma a serem identificáveis mesmo após edição superficial. A iniciativa aborda preocupações crescentes sobre a detecção de deepfakes e conteúdo gerado por IA em circulação sem identificação. Anthropic explicou como o watermarking funcionará em diferentes tipos de mídia, incluindo código, imagem e texto. O esforço reflete responsabilidade corporativa em mitigar possíveis abusos de modelos generativos avançados.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/08/15/anthropic-shares-more-details-about-how-claudes-new-watermarks-will-work/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Apple recorre a Alibaba para construir modelo de IA para China Apple está combinando seu modelo de IA próprio com o Qwen da Alibaba para trazer Apple Intelligence a iPhones chineses, respondendo a exigências regulatórias de soberania tecnológica. A parceria ilustra estratégia de Apple em navegar regulações chinesas enquanto mantém experiência de IA diferenciada. Alibaba, campeã local de IA, oferece conformidade regulatória e integração com ecossistema chinês. O acordo reflete dinâmica global onde big techs americanas precisam parcerias locais para acessar mercados estratégicos. A tendência sinaliza fragmentação crescente de internet e IA em blocos geográficos com provedores regionais. Decrypt" data-title="Apple recorre a Alibaba para construir modelo de IA para China" data-share-url="https://decrypt.co/375724/apple-alibaba-build-ai-model-china">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">14:01</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Apple recorre a Alibaba para construir modelo de IA para China</div>
+        <div class="news-summary">Apple está combinando seu modelo de IA próprio com o Qwen da Alibaba para trazer Apple Intelligence a iPhones chineses, respondendo a exigências regulatórias de soberania tecnológica. A parceria ilustra estratégia de Apple em navegar regulações chinesas enquanto mantém experiência de IA diferenciada. Alibaba, campeã local de IA, oferece conformidade regulatória e integração com ecossistema chinês. O acordo reflete dinâmica global onde big techs americanas precisam parcerias locais para acessar mercados estratégicos. A tendência sinaliza fragmentação crescente de internet e IA em blocos geográficos com provedores regionais.</div>
+        <div class="news-link"><a href="https://decrypt.co/375724/apple-alibaba-build-ai-model-china" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="SpaceX conclui oficialmente aquisição da Cursor SpaceX fechou oficialmente a aquisição da Cursor, uma startup de codificação com IA, consolidando a entrada da empresa de Elon Musk no mercado de ferramentas de desenvolvimento de software. A Cursor oferece um IDE baseado em IA que auxilia programadores na escrita e depuração de código. A transação reflete a estratégia mais ampla de SpaceX em diversificar seu portfólio tecnológico além da exploração espacial. A integração da Cursor em operações SpaceX pode acelerar o desenvolvimento de software interno e criar novas linhas de negócio. O movimento sinaliza interesse crescente em IA para automação de trabalho técnico. TechCrunch" data-title="SpaceX conclui oficialmente aquisição da Cursor" data-share-url="https://techcrunch.com/2026/08/15/spacex-officially-closes-its-cursor-acquisition/">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">13:30</span>
+          <span class="news-source">TechCrunch</span>
+        </div>
+        <div class="news-title">SpaceX conclui oficialmente aquisição da Cursor</div>
+        <div class="news-summary">SpaceX fechou oficialmente a aquisição da Cursor, uma startup de codificação com IA, consolidando a entrada da empresa de Elon Musk no mercado de ferramentas de desenvolvimento de software. A Cursor oferece um IDE baseado em IA que auxilia programadores na escrita e depuração de código. A transação reflete a estratégia mais ampla de SpaceX em diversificar seu portfólio tecnológico além da exploração espacial. A integração da Cursor em operações SpaceX pode acelerar o desenvolvimento de software interno e criar novas linhas de negócio. O movimento sinaliza interesse crescente em IA para automação de trabalho técnico.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/08/15/spacex-officially-closes-its-cursor-acquisition/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta patenteia câmeras que reconhecem rostos e registram ações de usuários Meta apresentou depósito de patente para câmeras inteligentes capazes de reconhecer faces e registrar automaticamente ações dos usuários sem consentimento prévio. O sistema transformaria vídeo bruto em clipes etiquetados identificando quem fez o quê, criando banco de dados comportamental massivo. A tecnologia levanta questões críticas sobre privacidade, vigilância e consentimento informado em contexto de devices ubíquos. Críticos advertem que o sistema poderia normalizar monitoramento contínuo de ambientes domésticos e públicos. O depósito reflete ambição de Meta em expandir ecossistema de IA para hardware embarcado com capacidades de vigilância avançadas. Decrypt" data-title="Meta patenteia câmeras que reconhecem rostos e registram ações de usuários" data-share-url="https://decrypt.co/375698/meta-patents-cameras-recognize-faces-log-actions">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">12:01</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Meta patenteia câmeras que reconhecem rostos e registram ações de usuários</div>
+        <div class="news-summary">Meta apresentou depósito de patente para câmeras inteligentes capazes de reconhecer faces e registrar automaticamente ações dos usuários sem consentimento prévio. O sistema transformaria vídeo bruto em clipes etiquetados identificando quem fez o quê, criando banco de dados comportamental massivo. A tecnologia levanta questões críticas sobre privacidade, vigilância e consentimento informado em contexto de devices ubíquos. Críticos advertem que o sistema poderia normalizar monitoramento contínuo de ambientes domésticos e públicos. O depósito reflete ambição de Meta em expandir ecossistema de IA para hardware embarcado com capacidades de vigilância avançadas.</div>
+        <div class="news-link"><a href="https://decrypt.co/375698/meta-patents-cameras-recognize-faces-log-actions" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Faculdade perde monopólio sobre o sonho americano O diploma universitário tradicional enfrenta reavaliação crítica em contexto de transformação do mercado de trabalho acelerado por IA e adoção de credenciais alternativas. Análises indicam declínio na percepção de que educação superior é caminho único para mobilidade econômica nos EUA. Alternativas como cursos técnicos, certificações especializadas e plataformas de aprendizado online ganham legitimidade frente a custos crescentes de educação superior. A mudança reflete mudanças estruturais na economia americana e possível reposicionamento de como sociedade valida competência profissional. O fenômeno ameaça universidades tradicionais e cria oportunidades para novos modelos educacionais. Axios" data-title="Faculdade perde monopólio sobre o sonho americano" data-share-url="https://www.axios.com/2026/08/15/college-bachelors-degree-shift-ai-america">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Faculdade perde monopólio sobre o sonho americano</div>
+        <div class="news-summary">O diploma universitário tradicional enfrenta reavaliação crítica em contexto de transformação do mercado de trabalho acelerado por IA e adoção de credenciais alternativas. Análises indicam declínio na percepção de que educação superior é caminho único para mobilidade econômica nos EUA. Alternativas como cursos técnicos, certificações especializadas e plataformas de aprendizado online ganham legitimidade frente a custos crescentes de educação superior. A mudança reflete mudanças estruturais na economia americana e possível reposicionamento de como sociedade valida competência profissional. O fenômeno ameaça universidades tradicionais e cria oportunidades para novos modelos educacionais.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/15/college-bachelors-degree-shift-ai-america" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Estudantes repensam carreiras diante do impacto da IA; 'não há razão' Estudantes universitários e seus pais estão reavaliando escolhas de carreira sob o impacto crescente da automação por IA. Pesquisas indicam preocupação generalizada sobre a obsolescência de habilidades tradicionais e busca por majores à prova de IA. Muitos estudantes questiono o ROI de educação superior em campos ameaçados por automação inteligente. A tendência reflete anseio por cursos de estudo alinhados com demanda futura de trabalho em contexto de transformação tecnológica. Universidades e educadores enfrentam pressão para reformular currículos e preparar alunos para economias digitais emergentes. Axios" data-title="Estudantes repensam carreiras diante do impacto da IA; 'não há razão'" data-share-url="https://www.axios.com/2026/08/15/college-major-ai-skills-job-search">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">06:50</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Estudantes repensam carreiras diante do impacto da IA; 'não há razão'</div>
+        <div class="news-summary">Estudantes universitários e seus pais estão reavaliando escolhas de carreira sob o impacto crescente da automação por IA. Pesquisas indicam preocupação generalizada sobre a obsolescência de habilidades tradicionais e busca por majores à prova de IA. Muitos estudantes questiono o ROI de educação superior em campos ameaçados por automação inteligente. A tendência reflete anseio por cursos de estudo alinhados com demanda futura de trabalho em contexto de transformação tecnológica. Universidades e educadores enfrentam pressão para reformular currículos e preparar alunos para economias digitais emergentes.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/15/college-major-ai-skills-job-search" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Alibaba ultrapassa Meta e Google com 3 bilhões de downloads de modelos de IA Os modelos de IA de código aberto da Alibaba Group acumularam mais de 3 bilhões de downloads globais nos últimos seis meses, ultrapassando Meta Platforms e Google. Este marco demonstra a penetração acelerada da IA chinesa em mercados internacionais e a competitividade dos modelos Qwen da Alibaba. O feito reforça a posição da China como potência em IA, desafiando a hegemonia das big techs americanas. O crescimento reflete adoção massiva por desenvolvedores em todo o mundo em busca de alternativas abertas. A métrica sublinha a mudança no equilíbrio de poder tecnológico global. Bloomberg Technology" data-title="Alibaba ultrapassa Meta e Google com 3 bilhões de downloads de modelos de IA" data-share-url="https://www.bloomberg.com/news/articles/2026-08-15/alibaba-ai-models-hit-3-billion-downloads-passing-meta-google">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">06:16</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Alibaba ultrapassa Meta e Google com 3 bilhões de downloads de modelos de IA</div>
+        <div class="news-summary">Os modelos de IA de código aberto da Alibaba Group acumularam mais de 3 bilhões de downloads globais nos últimos seis meses, ultrapassando Meta Platforms e Google. Este marco demonstra a penetração acelerada da IA chinesa em mercados internacionais e a competitividade dos modelos Qwen da Alibaba. O feito reforça a posição da China como potência em IA, desafiando a hegemonia das big techs americanas. O crescimento reflete adoção massiva por desenvolvedores em todo o mundo em busca de alternativas abertas. A métrica sublinha a mudança no equilíbrio de poder tecnológico global.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-08-15/alibaba-ai-models-hit-3-billion-downloads-passing-meta-google" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Mastercard confirma breve interrupção de pagamentos na Austrália como resolvida Mastercard informou que uma falha técnica global causou rejeição temporária de pagamentos para clientes australianos no sábado à tarde, sendo posteriormente resolvida. O incidente afetou serviços de pagamento de forma localizada mas significativa em volume transacional. Mastercard não divulgou detalhes técnicos completos sobre a causa raiz, mas confirmou restauração de serviços normais. O evento destaca fragilidades em infraestrutura de pagamento global centralizada e riscos operacionais de grandes processadoras. O incidente reaviva debates sobre resiliência de sistemas financeiros críticos em contexto de dependência digital crescente. Bloomberg Technology" data-title="Mastercard confirma breve interrupção de pagamentos na Austrália como resolvida" data-share-url="https://www.bloomberg.com/news/articles/2026-08-15/mastercard-payments-being-declined-in-australia-bank-says">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">03:55</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Mastercard confirma breve interrupção de pagamentos na Austrália como resolvida</div>
+        <div class="news-summary">Mastercard informou que uma falha técnica global causou rejeição temporária de pagamentos para clientes australianos no sábado à tarde, sendo posteriormente resolvida. O incidente afetou serviços de pagamento de forma localizada mas significativa em volume transacional. Mastercard não divulgou detalhes técnicos completos sobre a causa raiz, mas confirmou restauração de serviços normais. O evento destaca fragilidades em infraestrutura de pagamento global centralizada e riscos operacionais de grandes processadoras. O incidente reaviva debates sobre resiliência de sistemas financeiros críticos em contexto de dependência digital crescente.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-08-15/mastercard-payments-being-declined-in-australia-bank-says" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Trump deve comparecer a encontro Casa Branca com CEOs cripto na próxima semana Fontes indicam que presidente Donald Trump deve comparecer a reunião na Casa Branca com executivos de empresas cripto, mercados de predição e IA marcada para próxima semana. Encontro é esperado como pontapé inicial para Innovation Advisory Committee da CFTC convocado para semana seguinte. Participação direta de Trump sinaliza prioridade política crescente em regulação cripto e mercados de predição em segundo mandato. Reunião traz oportunidade de cripto industry expor visão política a administração num momento crítico. Timing sugere administração Trump priorizando issue sob pressão de lobbying cripto. CoinDesk" data-title="Trump deve comparecer a encontro Casa Branca com CEOs cripto na próxima semana" data-share-url="https://www.coindesk.com/policy/2026/08/14/trump-expected-to-attend-white-house-meeting-with-crypto-ceos-sources-say">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">20:41</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Trump deve comparecer a encontro Casa Branca com CEOs cripto na próxima semana</div>
+        <div class="news-summary">Fontes indicam que presidente Donald Trump deve comparecer a reunião na Casa Branca com executivos de empresas cripto, mercados de predição e IA marcada para próxima semana. Encontro é esperado como pontapé inicial para Innovation Advisory Committee da CFTC convocado para semana seguinte. Participação direta de Trump sinaliza prioridade política crescente em regulação cripto e mercados de predição em segundo mandato. Reunião traz oportunidade de cripto industry expor visão política a administração num momento crítico. Timing sugere administração Trump priorizando issue sob pressão de lobbying cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/14/trump-expected-to-attend-white-house-meeting-with-crypto-ceos-sources-say" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="XRP sentimento social atinge mínimo de 3 meses; endereços ativos disparam Sentimento social do XRP atingiu mínimo de três meses enquanto atividade de rede em endereços ativos disparou significativamente, criando divergência bullish entre percepção de mercado e métrica on-chain. Aumento de atividade pode indicar acumulação institucional durante período de sentimento negativo. Divergência reflete dinâmica típica onde investidores sofisticados aproveitam fraqueza de sentimento retail. Métricas on-chain positivas combinadas com sentimento fraco sugerem potencial reversão de preço se narrativa mudar. Dinâmica reflete resilência subjacente de XRP apesar de pressão psicológica de mercado. Crypto Briefing" data-title="XRP sentimento social atinge mínimo de 3 meses; endereços ativos disparam" data-share-url="https://cryptobriefing.com/xrp-social-sentiment-hits-3-month-low-active-addresses-surge/">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">20:10</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">XRP sentimento social atinge mínimo de 3 meses; endereços ativos disparam</div>
+        <div class="news-summary">Sentimento social do XRP atingiu mínimo de três meses enquanto atividade de rede em endereços ativos disparou significativamente, criando divergência bullish entre percepção de mercado e métrica on-chain. Aumento de atividade pode indicar acumulação institucional durante período de sentimento negativo. Divergência reflete dinâmica típica onde investidores sofisticados aproveitam fraqueza de sentimento retail. Métricas on-chain positivas combinadas com sentimento fraco sugerem potencial reversão de preço se narrativa mudar. Dinâmica reflete resilência subjacente de XRP apesar de pressão psicológica de mercado.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/xrp-social-sentiment-hits-3-month-low-active-addresses-surge/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Pump.fun classifica terceira em receita de 7 dias entre todos protocolos, atrás apenas de Tether e Circle Pump.fun, plataforma de criação de memecoins em Solana, atingiu terceira maior receita de sete dias entre todos os protocolos blockchain, apenas abaixo de Tether e Circle. Posição destaca crescimento explosivo de plataforma geradora de tokens e dominância de Solana em atividade retail. Ascensão ilustra poder de redes de baixo custo em capturar demanda especulativa de retail investing. Receita alta aponta para natureza lucrativa de negócio de liquidity fee em mercados de alta velocidade. Fenômeno reflete tendência de protocols simples geradores de tokens dominarem em receita absoluta versus aplicações complexas. Crypto Briefing" data-title="Pump.fun classifica terceira em receita de 7 dias entre todos protocolos, atrás apenas de Tether e Circle" data-share-url="https://cryptobriefing.com/pumpfun-third-7-day-revenue-protocols/">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">19:59</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Pump.fun classifica terceira em receita de 7 dias entre todos protocolos, atrás apenas de Tether e Circle</div>
+        <div class="news-summary">Pump.fun, plataforma de criação de memecoins em Solana, atingiu terceira maior receita de sete dias entre todos os protocolos blockchain, apenas abaixo de Tether e Circle. Posição destaca crescimento explosivo de plataforma geradora de tokens e dominância de Solana em atividade retail. Ascensão ilustra poder de redes de baixo custo em capturar demanda especulativa de retail investing. Receita alta aponta para natureza lucrativa de negócio de liquidity fee em mercados de alta velocidade. Fenômeno reflete tendência de protocols simples geradores de tokens dominarem em receita absoluta versus aplicações complexas.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/pumpfun-third-7-day-revenue-protocols/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="JPMorgan cortou laços bancários de Polymarket em outubro mas quer papel em potencial IPO JPMorgan interrompeu relacionamento bancário com Polymarket em outubro mas mantém relacionamento ativo e próximo com plataforma de mercado de predição, buscando papel em eventual IPO. Polymarket migrou contas para lender desconhecido mas permanece próximo de JPMorgan. Dinâmica ilustra ambigüidade de Wall Street sobre mercados de predição; rejeitando atualmente mas posicionando para capturar valor futuro. Aproximação reflete confiança de JPMorgan em viabilidade longa prazo de plataforma apesar de pressão regulatória. Estratégia sugere banco apostando em mudança regulatória futura favorecendo mercados de predição. The Block" data-title="JPMorgan cortou laços bancários de Polymarket em outubro mas quer papel em potencial IPO" data-share-url="https://www.theblock.co/news/business/2026-08-15-jpmorgan-cut-polymarkets-banking-ties-in-october-but-still-wants-a-role-in-a-potential-ipo-ft-411929">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">18:51</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">JPMorgan cortou laços bancários de Polymarket em outubro mas quer papel em potencial IPO</div>
+        <div class="news-summary">JPMorgan interrompeu relacionamento bancário com Polymarket em outubro mas mantém relacionamento ativo e próximo com plataforma de mercado de predição, buscando papel em eventual IPO. Polymarket migrou contas para lender desconhecido mas permanece próximo de JPMorgan. Dinâmica ilustra ambigüidade de Wall Street sobre mercados de predição; rejeitando atualmente mas posicionando para capturar valor futuro. Aproximação reflete confiança de JPMorgan em viabilidade longa prazo de plataforma apesar de pressão regulatória. Estratégia sugere banco apostando em mudança regulatória futura favorecendo mercados de predição.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-08-15-jpmorgan-cut-polymarkets-banking-ties-in-october-but-still-wants-a-role-in-a-potential-ipo-ft-411929" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Solana lidera crescimento em T-bills tokenizados com aumento de USD 378 milhões Solana ultrapassou Ethereum em crescimento de títulos do Tesouro Americano tokenizados, com influxo de USD 378 milhões representando aceleração em adoção de ativos tradicionais em blockchain rápido e de baixo custo. Dinâmica reflete vantagem competitiva de Solana em velocidade de transação e taxa versus Ethereum. Crescimento de T-bills tokenizados reflete apetite institucional crescente por renda fixa blockchain. Solana emergindo como plataforma preferida para ativos tradicionais ameaça posição de Ethereum em DeFi institucional. Fenômeno marca inflexão em ecossistema Solana em direção a legitimidade financeira estabelecida. Crypto Briefing" data-title="Solana lidera crescimento em T-bills tokenizados com aumento de USD 378 milhões" data-share-url="https://cryptobriefing.com/solana-tokenized-treasury-bills-growth/">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">18:30</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Solana lidera crescimento em T-bills tokenizados com aumento de USD 378 milhões</div>
+        <div class="news-summary">Solana ultrapassou Ethereum em crescimento de títulos do Tesouro Americano tokenizados, com influxo de USD 378 milhões representando aceleração em adoção de ativos tradicionais em blockchain rápido e de baixo custo. Dinâmica reflete vantagem competitiva de Solana em velocidade de transação e taxa versus Ethereum. Crescimento de T-bills tokenizados reflete apetite institucional crescente por renda fixa blockchain. Solana emergindo como plataforma preferida para ativos tradicionais ameaça posição de Ethereum em DeFi institucional. Fenômeno marca inflexão em ecossistema Solana em direção a legitimidade financeira estabelecida.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/solana-tokenized-treasury-bills-growth/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Harvard mantém posição em ETF de Bitcoin no Q2 após corte de 43% no trimestre anterior Universidade de Harvard deixou stake em ETF de Bitcoin IBIT inalterada no segundo trimestre de 2026 após redução de 43% no primeiro trimestre. Mubadala Investment Company e Abu Dhabi Investment Council também mantiveram combinadas 22,9 milhões de ações IBIT. Estabilização de holdings após liquidação anterior sugere potencial inflexão em sentimento institucional sobre Bitcoin. Harvard e fundos do Golfo podem estar esperando oportunidade de recompra em níveis mais atrtativos. Movimento reflete volatilidade institucional em posições Bitcoin durante período de incerteza macro. The Block" data-title="Harvard mantém posição em ETF de Bitcoin no Q2 após corte de 43% no trimestre anterior" data-share-url="https://www.theblock.co/news/markets/2026-08-15-harvard-leaves-bitcoin-etf-stake-untouched-in-q2-after-cutting-it-43-in-the-prior-quarter-411926">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">15:37</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Harvard mantém posição em ETF de Bitcoin no Q2 após corte de 43% no trimestre anterior</div>
+        <div class="news-summary">Universidade de Harvard deixou stake em ETF de Bitcoin IBIT inalterada no segundo trimestre de 2026 após redução de 43% no primeiro trimestre. Mubadala Investment Company e Abu Dhabi Investment Council também mantiveram combinadas 22,9 milhões de ações IBIT. Estabilização de holdings após liquidação anterior sugere potencial inflexão em sentimento institucional sobre Bitcoin. Harvard e fundos do Golfo podem estar esperando oportunidade de recompra em níveis mais atrtativos. Movimento reflete volatilidade institucional em posições Bitcoin durante período de incerteza macro.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/markets/2026-08-15-harvard-leaves-bitcoin-etf-stake-untouched-in-q2-after-cutting-it-43-in-the-prior-quarter-411926" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Detentores de ações tokenizadas mais que dobram conforme volume mensal explode Número de detentores de equities tokenizadas mais que dobrou para 1,31 milhão no último mês, com volume de transferências mensais saltando 179% para USD 23,13 bilhões. Valor distribuído em tokens de ações cresceu significativamente, refletindo adoção massiva de mercados de ações tokenizadas. Dinâmica ilustra migração de trading de ações de exchanges tradicionais para plataformas blockchain 24/7. Crescimento explosivo sugere investidores descobrindo conveniência de trading sem-fronteiras e sem custos em equities globais. Fenômeno reflete tendência maior de tokenização de ativos tradicionais em blockchain. Cointelegraph" data-title="Detentores de ações tokenizadas mais que dobram conforme volume mensal explode" data-share-url="https://cointelegraph.com/news/tokenized-stock-holders-double-to-13m-as-activity-grows?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">14:26</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Detentores de ações tokenizadas mais que dobram conforme volume mensal explode</div>
+        <div class="news-summary">Número de detentores de equities tokenizadas mais que dobrou para 1,31 milhão no último mês, com volume de transferências mensais saltando 179% para USD 23,13 bilhões. Valor distribuído em tokens de ações cresceu significativamente, refletindo adoção massiva de mercados de ações tokenizadas. Dinâmica ilustra migração de trading de ações de exchanges tradicionais para plataformas blockchain 24/7. Crescimento explosivo sugere investidores descobrindo conveniência de trading sem-fronteiras e sem custos em equities globais. Fenômeno reflete tendência maior de tokenização de ativos tradicionais em blockchain.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/tokenized-stock-holders-double-to-13m-as-activity-grows?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fabricante de robôs Unitree vai abrir capital; traders no Hyperliquid apostam em 4x de valorização Traders na exchange Hyperliquid estão precificando Unitree, fabricante de robôs quadrúpedes, em quase USD 38 bilhões, versus USD 9 bilhões no IPO, gerando potencial de 4x de upside mas também exposição a risco em derivativos alavancados. Análise da Allium Labs aponta desproporcionalidade entre avaliação de mercado aberto e avaliação formal de IPO. A divergência ilustra como exchanges de cripto criam mercados paralelos de precificação para ativos alternativos antes de listagem tradicional. Traders apostam em narrativa bullish da IA e robótica, mas exposição alavancada deixa posições vulneráveis quando trading oficial começar. O fenômeno reflete nova realidade onde mercados de cripto antecedem mercados tradicionais em price discovery. CoinDesk" data-title="Fabricante de robôs Unitree vai abrir capital; traders no Hyperliquid apostam em 4x de valorização" data-share-url="https://www.coindesk.com/markets/2026/08/15/robot-maker-unitree-is-going-public-hyperliquid-traders-see-4x-upside-from-ipo-price">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">13:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Fabricante de robôs Unitree vai abrir capital; traders no Hyperliquid apostam em 4x de valorização</div>
+        <div class="news-summary">Traders na exchange Hyperliquid estão precificando Unitree, fabricante de robôs quadrúpedes, em quase USD 38 bilhões, versus USD 9 bilhões no IPO, gerando potencial de 4x de upside mas também exposição a risco em derivativos alavancados. Análise da Allium Labs aponta desproporcionalidade entre avaliação de mercado aberto e avaliação formal de IPO. A divergência ilustra como exchanges de cripto criam mercados paralelos de precificação para ativos alternativos antes de listagem tradicional. Traders apostam em narrativa bullish da IA e robótica, mas exposição alavancada deixa posições vulneráveis quando trading oficial começar. O fenômeno reflete nova realidade onde mercados de cripto antecedem mercados tradicionais em price discovery.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/08/15/robot-maker-unitree-is-going-public-hyperliquid-traders-see-4x-upside-from-ipo-price" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mega-banco UBS aumenta exposição a Bitcoin com explosão de 24x em opções de call de ETF UBS, segunda maior instituição bancária suíça, amplificou dramaticamente aposta bullish em Bitcoin com aumento de 24 vezes em holdings de opções de call sobre ETF de Bitcoin durante trimestre. Holdings diretos de IBIT também cresceram 12% para 407,890 ações, enquanto exposição em puts caiu 53%. O movimento reflete mudança estratégica de instituição financeira topo mundial em direção a postura mais otimista sobre Bitcoin. A escalada de opções de call sugere expectativa de movimentos de preço significativos em alta nos próximos meses. Sinal de UBS marca validação institucional crescente de Bitcoin como ativo estratégico em carteiras diversificadas. CoinDesk" data-title="Mega-banco UBS aumenta exposição a Bitcoin com explosão de 24x em opções de call de ETF" data-share-url="https://www.coindesk.com/business/2026/08/15/swiss-mega-bank-ubs-ramps-up-its-bitcoin-exposure-with-a-massive-24-fold-surge-in-etf-call-options">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">12:56</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Mega-banco UBS aumenta exposição a Bitcoin com explosão de 24x em opções de call de ETF</div>
+        <div class="news-summary">UBS, segunda maior instituição bancária suíça, amplificou dramaticamente aposta bullish em Bitcoin com aumento de 24 vezes em holdings de opções de call sobre ETF de Bitcoin durante trimestre. Holdings diretos de IBIT também cresceram 12% para 407,890 ações, enquanto exposição em puts caiu 53%. O movimento reflete mudança estratégica de instituição financeira topo mundial em direção a postura mais otimista sobre Bitcoin. A escalada de opções de call sugere expectativa de movimentos de preço significativos em alta nos próximos meses. Sinal de UBS marca validação institucional crescente de Bitcoin como ativo estratégico em carteiras diversificadas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/15/swiss-mega-bank-ubs-ramps-up-its-bitcoin-exposure-with-a-massive-24-fold-surge-in-etf-call-options" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Segundo maior poder de mineração de Bitcoin do mundo encerra operações na capital País de ranking número dois em capacidade de mineração de Bitcoin implementou restrição ano-rond de operações de mineração na capital como resposta a gargalos de capacidade energética. Ministério de Energia determinou encerramento de instalações de mineração energia-intensivas para mitigar pressão no sistema elétrico. A restrição reflete conflito crescente entre demanda de mineradores por eletricidade barata e necessidades de consumo doméstico. Medida impacta diretamente custos operacionais de mineradores locais e pode redistribuir hash rate globalmente. Dinâmica evidencia como escassez de energia e pressão ambiental redirecionam infraestrutura de mineração para jurisdições com energia renovável abundante. CoinDesk" data-title="Segundo maior poder de mineração de Bitcoin do mundo encerra operações na capital" data-share-url="https://www.coindesk.com/policy/2026/08/15/why-the-world-s-second-largest-bitcoin-mining-power-is-shutting-down-rigs-in-its-capital-city">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">12:21</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Segundo maior poder de mineração de Bitcoin do mundo encerra operações na capital</div>
+        <div class="news-summary">País de ranking número dois em capacidade de mineração de Bitcoin implementou restrição ano-rond de operações de mineração na capital como resposta a gargalos de capacidade energética. Ministério de Energia determinou encerramento de instalações de mineração energia-intensivas para mitigar pressão no sistema elétrico. A restrição reflete conflito crescente entre demanda de mineradores por eletricidade barata e necessidades de consumo doméstico. Medida impacta diretamente custos operacionais de mineradores locais e pode redistribuir hash rate globalmente. Dinâmica evidencia como escassez de energia e pressão ambiental redirecionam infraestrutura de mineração para jurisdições com energia renovável abundante.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/15/why-the-world-s-second-largest-bitcoin-mining-power-is-shutting-down-rigs-in-its-capital-city" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Trump e presidente CFTC Selig esperados em reunião Casa Branca com executivos cripto quarta-feira Reunião agendada para quarta-feira às 14h30 ET reunirá Trump e presidente CFTC Selig com executivos de cripto e mercados de predição, servindo como abertura para primeiro Innovation Advisory Committee da CFTC. Encontro de alto nível sinaliza priorização de issue cripto por administração Trump. Participação de Selig e Trump juntos sugere alinhamento entre executivo e regulador sobre direção política. Reunião oferece plataforma crítica para industry articular prioridades de política frente liderança política e regulatória. Timing indica janela de oportunidade política para reformas cripto em segundo mandato Trump. The Block" data-title="Trump e presidente CFTC Selig esperados em reunião Casa Branca com executivos cripto quarta-feira" data-share-url="https://www.theblock.co/news/regulation/2026-08-15-trump-cftc-chair-selig-expected-at-wednesday-white-house-meeting-with-crypto-and-prediction-market-executives-411919">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">12:20</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Trump e presidente CFTC Selig esperados em reunião Casa Branca com executivos cripto quarta-feira</div>
+        <div class="news-summary">Reunião agendada para quarta-feira às 14h30 ET reunirá Trump e presidente CFTC Selig com executivos de cripto e mercados de predição, servindo como abertura para primeiro Innovation Advisory Committee da CFTC. Encontro de alto nível sinaliza priorização de issue cripto por administração Trump. Participação de Selig e Trump juntos sugere alinhamento entre executivo e regulador sobre direção política. Reunião oferece plataforma crítica para industry articular prioridades de política frente liderança política e regulatória. Timing indica janela de oportunidade política para reformas cripto em segundo mandato Trump.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/regulation/2026-08-15-trump-cftc-chair-selig-expected-at-wednesday-white-house-meeting-with-crypto-and-prediction-market-executives-411919" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fundo de Paul Tudor Jones aumenta participação em ETF de Bitcoin da BlackRock após ano vendendo Firma de investimentos de Paul Tudor Jones reverteu postura de venda e aumentou stake em ETF de Bitcoin da BlackRock após período de um ano reduzindo exposição. Calls caíram 85,2% em 148 mil ações enquanto puts escorregaram 1,4% em 715 mil ações. A reversão após período de liquidação estratégica sinaliza renovado otimismo de gestor legendary sobre Bitcoin em contexto macro atual. Movement reflete potencial inflexão na percepção institucional sobre ciclo de preço de Bitcoin. Reaproximação de Tudor Jones reforça narrativa de fundo institucional crescente em Bitcoin após período de consolidação. CoinDesk" data-title="Fundo de Paul Tudor Jones aumenta participação em ETF de Bitcoin da BlackRock após ano vendendo" data-share-url="https://www.coindesk.com/business/2026/08/15/paul-tudor-jones-investment-firm-increases-stake-in-blackrock-s-bitcoin-etf-after-year-of-selling">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">12:12</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Fundo de Paul Tudor Jones aumenta participação em ETF de Bitcoin da BlackRock após ano vendendo</div>
+        <div class="news-summary">Firma de investimentos de Paul Tudor Jones reverteu postura de venda e aumentou stake em ETF de Bitcoin da BlackRock após período de um ano reduzindo exposição. Calls caíram 85,2% em 148 mil ações enquanto puts escorregaram 1,4% em 715 mil ações. A reversão após período de liquidação estratégica sinaliza renovado otimismo de gestor legendary sobre Bitcoin em contexto macro atual. Movement reflete potencial inflexão na percepção institucional sobre ciclo de preço de Bitcoin. Reaproximação de Tudor Jones reforça narrativa de fundo institucional crescente em Bitcoin após período de consolidação.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/15/paul-tudor-jones-investment-firm-increases-stake-in-blackrock-s-bitcoin-etf-after-year-of-selling" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fundos soberanos do Emirados Árabes Unidos detêm USD 763 milhões em ETF de Bitcoin da BlackRock Fundos soberanos dos Emirados Árabes Unidos, incluindo Mubadala e Abu Dhabi Investment Council, mantêm combinadas USD 763 milhões em posição IBIT da BlackRock, refletindo afirmação de Bitcoin como ativo estratégico para reservas soberanas. Posição massiva de fundos do Golfo sinaliza confiança institucional de longo prazo em Bitcoin como ativo de reserva. UAE prioriza adoção de ativos digitais como parte de diversificação de portfólio além de petróleo. Movimento reflete tendência maior de bancos centrais e fundos soberanos explorarem Bitcoin como hedge geopolítico e diversificação de reserva. Posição reforça narrativa de Bitcoin como futura reserva de valor soberana. AMBCrypto" data-title="Fundos soberanos do Emirados Árabes Unidos detêm USD 763 milhões em ETF de Bitcoin da BlackRock" data-share-url="https://ambcrypto.com/uae-sovereign-funds-hold-763m-in-blackrocks-ishares-bitcoin-etf-report/">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">12:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Fundos soberanos do Emirados Árabes Unidos detêm USD 763 milhões em ETF de Bitcoin da BlackRock</div>
+        <div class="news-summary">Fundos soberanos dos Emirados Árabes Unidos, incluindo Mubadala e Abu Dhabi Investment Council, mantêm combinadas USD 763 milhões em posição IBIT da BlackRock, refletindo afirmação de Bitcoin como ativo estratégico para reservas soberanas. Posição massiva de fundos do Golfo sinaliza confiança institucional de longo prazo em Bitcoin como ativo de reserva. UAE prioriza adoção de ativos digitais como parte de diversificação de portfólio além de petróleo. Movimento reflete tendência maior de bancos centrais e fundos soberanos explorarem Bitcoin como hedge geopolítico e diversificação de reserva. Posição reforça narrativa de Bitcoin como futura reserva de valor soberana.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/uae-sovereign-funds-hold-763m-in-blackrocks-ishares-bitcoin-etf-report/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="USD 11,2 bilhões em financiamento 2026 matou era permissionless da cripto Análise abrangente de toda atividade de deals cripto no primeiro semestre 2026 revela USD 11,2 bilhões em funding, consolidado entre BlackRock, Goldman Sachs e fundos soberanos do Golfo Pérsico. Concentração massiva de capital em mãos de instituições TradFi eliminou oportunidades para capital de risco permissionless tradicional. A tendência marca virada estrutural onde cripto transiciona de ecossistema aberto para espaço dominado por Wall Street e governo. Lawyer Irina Heaver e time detalham como grande capital mudou dinâmica competitiva, marginalizando startups independentes. Fenômeno reflete integração cripto na estrutura financeira estabelecida, sacrificando ethos libertário por legitimidade institucional. CoinDesk" data-title="USD 11,2 bilhões em financiamento 2026 matou era permissionless da cripto" data-share-url="https://www.coindesk.com/business/2026/08/15/the-usd11-2-billion-in-2026-funding-that-killed-crypto-s-permissionless-era">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">USD 11,2 bilhões em financiamento 2026 matou era permissionless da cripto</div>
+        <div class="news-summary">Análise abrangente de toda atividade de deals cripto no primeiro semestre 2026 revela USD 11,2 bilhões em funding, consolidado entre BlackRock, Goldman Sachs e fundos soberanos do Golfo Pérsico. Concentração massiva de capital em mãos de instituições TradFi eliminou oportunidades para capital de risco permissionless tradicional. A tendência marca virada estrutural onde cripto transiciona de ecossistema aberto para espaço dominado por Wall Street e governo. Lawyer Irina Heaver e time detalham como grande capital mudou dinâmica competitiva, marginalizando startups independentes. Fenômeno reflete integração cripto na estrutura financeira estabelecida, sacrificando ethos libertário por legitimidade institucional.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/15/the-usd11-2-billion-in-2026-funding-that-killed-crypto-s-permissionless-era" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Entidade ligada a Trump World Liberty obtém charter bancário condicional para stablecoin USD1 World Liberty Trust Company, entidade associada a esfera política de Trump, recebeu charter bancário condicional para emitir stablecoin USD1, assumindo operações prévias de BitGo. Aprovação marca primeira instância de infraestrutura de stablecoin diretamente controlada por entidade alignada a figura política americana proeminente. Movimento levanta questões sobre captura regulatória e uso de stablecoins para fins políticos. USD1 visa oferecer alternativa descentralizada a USDC e USDT, mas com governança controlada por World Liberty. Desenvolvimento reflete tendência de tokens lastreados em dólar se tornarem instrumentos geoeconômicos. Decrypt" data-title="Entidade ligada a Trump World Liberty obtém charter bancário condicional para stablecoin USD1" data-share-url="https://decrypt.co/375726/trump-world-liberty-bank-charter-usd1-stablecoin">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">10:01</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Entidade ligada a Trump World Liberty obtém charter bancário condicional para stablecoin USD1</div>
+        <div class="news-summary">World Liberty Trust Company, entidade associada a esfera política de Trump, recebeu charter bancário condicional para emitir stablecoin USD1, assumindo operações prévias de BitGo. Aprovação marca primeira instância de infraestrutura de stablecoin diretamente controlada por entidade alignada a figura política americana proeminente. Movimento levanta questões sobre captura regulatória e uso de stablecoins para fins políticos. USD1 visa oferecer alternativa descentralizada a USDC e USDT, mas com governança controlada por World Liberty. Desenvolvimento reflete tendência de tokens lastreados em dólar se tornarem instrumentos geoeconômicos.</div>
+        <div class="news-link"><a href="https://decrypt.co/375726/trump-world-liberty-bank-charter-usd1-stablecoin" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Clarity sobrevive (mal), Strategy vende, e a história oculta do acordo de USD 1,8 bilhão da Mastercard Resumo semanal de cripto revela Clarity Act mantendo esperança legislativa por margem estreita enquanto Wall Street aprofunda penetração em ativos digitais. Mastercard expandiu iniciativas cripto via acordo maior, enquanto alguns projetos venderam posições. Semana foi marcada por tentativa de segurança que causou transferência de bilhões em dólares de assets digitais. Clarity Act enfrenta desafios de ética, stablecoin yield e proteção de desenvolvedores em janela legislativa apertada. Narrativa reflete conflito entre ambições regulatórias progressistas e inércia de sistema estabelecido em Washington. CoinDesk" data-title="Clarity sobrevive (mal), Strategy vende, e a história oculta do acordo de USD 1,8 bilhão da Mastercard" data-share-url="https://www.coindesk.com/business/2026/08/15/clarity-survives-barely-strategy-sells-and-the-untold-story-of-mastercard-s-usd1-8-billion-deal-crypto-s-week-in-5-stories">
+        <div class="news-meta">
+          <span class="news-date">15 ago 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Clarity sobrevive (mal), Strategy vende, e a história oculta do acordo de USD 1,8 bilhão da Mastercard</div>
+        <div class="news-summary">Resumo semanal de cripto revela Clarity Act mantendo esperança legislativa por margem estreita enquanto Wall Street aprofunda penetração em ativos digitais. Mastercard expandiu iniciativas cripto via acordo maior, enquanto alguns projetos venderam posições. Semana foi marcada por tentativa de segurança que causou transferência de bilhões em dólares de assets digitais. Clarity Act enfrenta desafios de ética, stablecoin yield e proteção de desenvolvedores em janela legislativa apertada. Narrativa reflete conflito entre ambições regulatórias progressistas e inércia de sistema estabelecido em Washington.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/15/clarity-survives-barely-strategy-sells-and-the-untold-story-of-mastercard-s-usd1-8-billion-deal-crypto-s-week-in-5-stories" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
