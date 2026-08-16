@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">16 DE AGOSTO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O cenário geopolítico global de agosto de 2026 é marcado por negociações de alto risco: Kushner avança diálogos com Hamas em busca de paz em Gaza enquanto os EUA e Irã enfrentam deadlines críticos sobre armas nucleares; simultaneamente, a IA corporativa passa por um momento de crise de confiança, com OpenAI desmantelando sua equipe de segurança e Meta enfrentando julgamentos por dano à juventude, sinalizando que o entusiasmo inicial sobre tecnologia cede espaço à regulação e escrutínio. No mercado cripto, a adoção institucional avança (Solana acumula tokenized T-bills, stablecoins ganham tração) enquanto preocupações de segurança ressurgem com brechas em carteiras populares e manipulação de mercados, refletindo a tensão entre inovação financeira e confiabilidade regulatória.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-08-15/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15">2026-08-15</option><option value="2026-08-16" selected>2026-08-16</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Conversas de Kushner com Hamas avançam plano de paz de Trump para Gaza Jared Kushner, assessor presidencial, reuniu-se com líderes do Hamas no Cairo para impulsionar o plano de paz de Gaza do presidente Trump. De acordo com autoridades, os líderes do Hamas reafirmaram seu compromisso em se desarmarem e desmilitarizarem Gaza. Kushner também se reunirá em breve com Benjamin Netanyahu, primeiro-ministro israelense. A rodada de negociações marca uma tentativa diplomática significativa para resolver o conflito prolongado na região, envolvendo diálogos diretos entre Washington e grupos palestinos após meses de escalada. NYT &gt; World News / Axios" data-title="Conversas de Kushner com Hamas avançam plano de paz de Trump para Gaza" data-share-url="https://www.nytimes.com/2026/08/16/world/middleeast/kushner-hamas-talks.html">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">18:16</span>
+          <span class="news-source">NYT &gt; World News / Axios</span>
+        </div>
+        <div class="news-title">Conversas de Kushner com Hamas avançam plano de paz de Trump para Gaza</div>
+        <div class="news-summary">Jared Kushner, assessor presidencial, reuniu-se com líderes do Hamas no Cairo para impulsionar o plano de paz de Gaza do presidente Trump. De acordo com autoridades, os líderes do Hamas reafirmaram seu compromisso em se desarmarem e desmilitarizarem Gaza. Kushner também se reunirá em breve com Benjamin Netanyahu, primeiro-ministro israelense. A rodada de negociações marca uma tentativa diplomática significativa para resolver o conflito prolongado na região, envolvendo diálogos diretos entre Washington e grupos palestinos após meses de escalada.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/16/world/middleeast/kushner-hamas-talks.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EUA e Irã enfrentam conflito econômico enquanto estratégia nuclear fracassa Os Estados Unidos e Irã estão próximos de ultrapassar o prazo que estabeleceram para negociar paz e o programa nuclear iraniano. A guerra entre os dois países transformou-se em uma batalha econômica, com os EUA recorrendo a estratégias de sanção que ecoam abordagens históricas anteriores. As negociações nucleares enfrentam obstáculos significativos, refletindo tensões profundas na região e a incapacidade de ambos os lados alcançarem um acordo sobre armas atômicas e termos de paz. NYT &gt; World News" data-title="EUA e Irã enfrentam conflito econômico enquanto estratégia nuclear fracassa" data-share-url="https://www.nytimes.com/2026/08/16/world/middleeast/iran-war-us-trump.html">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">14:39</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">EUA e Irã enfrentam conflito econômico enquanto estratégia nuclear fracassa</div>
+        <div class="news-summary">Os Estados Unidos e Irã estão próximos de ultrapassar o prazo que estabeleceram para negociar paz e o programa nuclear iraniano. A guerra entre os dois países transformou-se em uma batalha econômica, com os EUA recorrendo a estratégias de sanção que ecoam abordagens históricas anteriores. As negociações nucleares enfrentam obstáculos significativos, refletindo tensões profundas na região e a incapacidade de ambos os lados alcançarem um acordo sobre armas atômicas e termos de paz.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/16/world/middleeast/iran-war-us-trump.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Trump expande controle sobre as Américas por meio de política de vistos Como parte de sua abordagem expansionista no Hemisfério Ocidental, a administração Trump está tentando reafirmar sua dominação sobre a região através de políticas restritivas de vistos. A Casa Branca utiliza a concessão e restrição de vistos para os EUA como ferramenta de influência geopolítica, afetando cidadãos de países latino-americanos. A estratégia reflete o esforço contínuo de Washington para manter seu controle sobre assuntos regionais e moldar o comportamento de governos aliados. NYT &gt; World News" data-title="Trump expande controle sobre as Américas por meio de política de vistos" data-share-url="https://www.nytimes.com/2026/08/16/world/americas/trump-americas-visas.html">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Trump expande controle sobre as Américas por meio de política de vistos</div>
+        <div class="news-summary">Como parte de sua abordagem expansionista no Hemisfério Ocidental, a administração Trump está tentando reafirmar sua dominação sobre a região através de políticas restritivas de vistos. A Casa Branca utiliza a concessão e restrição de vistos para os EUA como ferramenta de influência geopolítica, afetando cidadãos de países latino-americanos. A estratégia reflete o esforço contínuo de Washington para manter seu controle sobre assuntos regionais e moldar o comportamento de governos aliados.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/16/world/americas/trump-americas-visas.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Mulheres indianas enfrentam assédio online massivo após participar de protestos Mulheres que participaram de protestos políticos na Índia tornaram-se alvo de abuso online generalizado, acompanhado de visitas da polícia local. O episódio evidencia os riscos adicionais que mulheres enfrentam ao se manifestarem em uma sociedade patriarcal, onde represálias digitais e ações governamentais desencorajam a participação política feminina. Organizações de direitos humanos alertam que o padrão de intimidação cria um ambiente hostil para ativismo civil e liberdade de expressão. NYT &gt; World News" data-title="Mulheres indianas enfrentam assédio online massivo após participar de protestos" data-share-url="https://www.nytimes.com/2026/08/16/world/asia/india-women-protests-online-abuse.html">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">01:01</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Mulheres indianas enfrentam assédio online massivo após participar de protestos</div>
+        <div class="news-summary">Mulheres que participaram de protestos políticos na Índia tornaram-se alvo de abuso online generalizado, acompanhado de visitas da polícia local. O episódio evidencia os riscos adicionais que mulheres enfrentam ao se manifestarem em uma sociedade patriarcal, onde represálias digitais e ações governamentais desencorajam a participação política feminina. Organizações de direitos humanos alertam que o padrão de intimidação cria um ambiente hostil para ativismo civil e liberdade de expressão.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/16/world/asia/india-women-protests-online-abuse.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Novo modelo chinês amplifica competição global de IA A startup de IA chinesa Zhipu anunciou seu novo modelo GLM-5.3, que superou o Mythos 5 da Anthropic em um importante benchmark de cibersegurança, marcando o lançamento mais recente de uma operação chinesa competitiva. O desenvolvimento reflete a corrida tecnológica entre EUA e China no domínio de inteligência artificial, com startups chinesas ganhando terreno em capacidades técnicas. A competição intensifica pressões geopolíticas e levanta questões sobre liderança tecnológica global. Semafor" data-title="Novo modelo chinês amplifica competição global de IA" data-share-url="https://www.semafor.com/article/08/16/2026/new-chinese-model-adds-to-ai-competition">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">19:31</span>
+          <span class="news-source">Semafor</span>
+        </div>
+        <div class="news-title">Novo modelo chinês amplifica competição global de IA</div>
+        <div class="news-summary">A startup de IA chinesa Zhipu anunciou seu novo modelo GLM-5.3, que superou o Mythos 5 da Anthropic em um importante benchmark de cibersegurança, marcando o lançamento mais recente de uma operação chinesa competitiva. O desenvolvimento reflete a corrida tecnológica entre EUA e China no domínio de inteligência artificial, com startups chinesas ganhando terreno em capacidades técnicas. A competição intensifica pressões geopolíticas e levanta questões sobre liderança tecnológica global.</div>
+        <div class="news-link"><a href="https://www.semafor.com/article/08/16/2026/new-chinese-model-adds-to-ai-competition" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Eficiência de IA saltou 18x em 16 meses, descobre pesquisa de Stanford Pesquisadores de Stanford descobriram que a eficiência de IA aumentou 18 vezes em apenas 16 meses, medida em termos de inteligência por joule de energia consumida. A melhoria exponencial poderia reduzir significativamente custos operacionais e consumo de energia em aplicações de IA em larga escala. O salto sugere que barreiras econômicas para deployment de IA estão caindo rapidamente, potencialmente acelerando adoção comercial e ampliando acessibilidade tecnológica. Crypto Briefing" data-title="Eficiência de IA saltou 18x em 16 meses, descobre pesquisa de Stanford" data-share-url="https://cryptobriefing.com/ai-efficiency-18x-intelligence-per-joule/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">19:09</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Eficiência de IA saltou 18x em 16 meses, descobre pesquisa de Stanford</div>
+        <div class="news-summary">Pesquisadores de Stanford descobriram que a eficiência de IA aumentou 18 vezes em apenas 16 meses, medida em termos de inteligência por joule de energia consumida. A melhoria exponencial poderia reduzir significativamente custos operacionais e consumo de energia em aplicações de IA em larga escala. O salto sugere que barreiras econômicas para deployment de IA estão caindo rapidamente, potencialmente acelerando adoção comercial e ampliando acessibilidade tecnológica.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/ai-efficiency-18x-intelligence-per-joule/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI desmantelou sua equipe de preparação para riscos de IA De acordo com o Financial Times, OpenAI desmantelou sua equipe de preparação no final do mês passado. O trabalho dessa equipe era avaliar se modelos de IA avançados poderiam representar riscos existenciais ou de segurança em escala. O desmantelamento ocorre enquanto a empresa se prepara para um potencial IPO, sugerindo que questões de segurança podem estar sendo preteridas em favor de metas comerciais e de crescimento. A ação gerou preocupações na comunidade de segurança de IA sobre prioridades corporativas e responsabilidade. The Verge" data-title="OpenAI desmantelou sua equipe de preparação para riscos de IA" data-share-url="https://www.theverge.com/ai-artificial-intelligence/980817/openai-disbands-preparedness-team">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">18:32</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">OpenAI desmantelou sua equipe de preparação para riscos de IA</div>
+        <div class="news-summary">De acordo com o Financial Times, OpenAI desmantelou sua equipe de preparação no final do mês passado. O trabalho dessa equipe era avaliar se modelos de IA avançados poderiam representar riscos existenciais ou de segurança em escala. O desmantelamento ocorre enquanto a empresa se prepara para um potencial IPO, sugerindo que questões de segurança podem estar sendo preteridas em favor de metas comerciais e de crescimento. A ação gerou preocupações na comunidade de segurança de IA sobre prioridades corporativas e responsabilidade.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/980817/openai-disbands-preparedness-team" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Stripe adquire startup de IA OpenRouter por mais de US$ 7 bilhões A Stripe finalizou um acordo para adquirir a OpenRouter, uma startup que ajuda empresas a alternar entre diferentes modelos de inteligência artificial, por mais de US$ 7 bilhões. O CEO da OpenRouter descreveu recentemente a startup como 'Stripe para IA', posicionando-a como uma infraestrutura crítica para o ecossistema de IA. O acordo representa um investimento massivo em ferramentas que democratizam acesso a modelos de IA e reduzem custos de integração para desenvolvedores. Bloomberg Technology / TechCrunch" data-title="Stripe adquire startup de IA OpenRouter por mais de US$ 7 bilhões" data-share-url="https://www.bloomberg.com/news/articles/2026-08-16/stripe-nears-deal-to-buy-ai-firm-openrouter-for-over-7-billion">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">16:32</span>
+          <span class="news-source">Bloomberg Technology / TechCrunch</span>
+        </div>
+        <div class="news-title">Stripe adquire startup de IA OpenRouter por mais de US$ 7 bilhões</div>
+        <div class="news-summary">A Stripe finalizou um acordo para adquirir a OpenRouter, uma startup que ajuda empresas a alternar entre diferentes modelos de inteligência artificial, por mais de US$ 7 bilhões. O CEO da OpenRouter descreveu recentemente a startup como 'Stripe para IA', posicionando-a como uma infraestrutura crítica para o ecossistema de IA. O acordo representa um investimento massivo em ferramentas que democratizam acesso a modelos de IA e reduzem custos de integração para desenvolvedores.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-08-16/stripe-nears-deal-to-buy-ai-firm-openrouter-for-over-7-billion" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Amazon tenta esmagar ações coletivas antes que comecem Na sexta-feira, clientes da Amazon receberam um email alertando sobre atualizações nos termos e condições do site. Notavelmente, afirmou que disputas seriam resolvidas através de arbitragem individual em vez de ações coletivas, efetivamente impedindo processos de classe contra a empresa. A mudança permite à Amazon evitar litígios em massa sobre questões como privacidade, segurança de dados e práticas trabalhistas, transferindo toda a responsabilidade para processos arbitrais privados. The Verge" data-title="Amazon tenta esmagar ações coletivas antes que comecem" data-share-url="https://www.theverge.com/tech/980752/amazon-class-action-arbitration-terms-and-conditions">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">14:35</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Amazon tenta esmagar ações coletivas antes que comecem</div>
+        <div class="news-summary">Na sexta-feira, clientes da Amazon receberam um email alertando sobre atualizações nos termos e condições do site. Notavelmente, afirmou que disputas seriam resolvidas através de arbitragem individual em vez de ações coletivas, efetivamente impedindo processos de classe contra a empresa. A mudança permite à Amazon evitar litígios em massa sobre questões como privacidade, segurança de dados e práticas trabalhistas, transferindo toda a responsabilidade para processos arbitrais privados.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/980752/amazon-class-action-arbitration-terms-and-conditions" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="CEO da Anthropic diz que reação contra IA é fundamentalmente uma crise de confiança Dario Amodei, CEO da Anthropic, rebate a ideia de que pintou um quadro excessivamente pessimista de IA. Em raros comentários em redes sociais, Amodei reconheceu que empresas de IA 'ainda não entregaram em nossas grandes promessas de beneficiar o mundo'. O comentário reflete uma admissão mais ampla no setor de que o entusiasmo inicial sobre IA superestimou benefícios reais, enquanto os riscos e limitações foram subestimados. TechCrunch / Semafor" data-title="CEO da Anthropic diz que reação contra IA é fundamentalmente uma crise de confiança" data-share-url="https://techcrunch.com/2026/08/16/anthropic-ceo-says-ai-backlash-is-fundamentally-a-crisis-of-trust/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">13:53</span>
+          <span class="news-source">TechCrunch / Semafor</span>
+        </div>
+        <div class="news-title">CEO da Anthropic diz que reação contra IA é fundamentalmente uma crise de confiança</div>
+        <div class="news-summary">Dario Amodei, CEO da Anthropic, rebate a ideia de que pintou um quadro excessivamente pessimista de IA. Em raros comentários em redes sociais, Amodei reconheceu que empresas de IA 'ainda não entregaram em nossas grandes promessas de beneficiar o mundo'. O comentário reflete uma admissão mais ampla no setor de que o entusiasmo inicial sobre IA superestimou benefícios reais, enquanto os riscos e limitações foram subestimados.</div>
+        <div class="news-link"><a href="https://techcrunch.com/2026/08/16/anthropic-ceo-says-ai-backlash-is-fundamentally-a-crisis-of-trust/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Recurso Computer History do ChatGPT rastreia seus cliques e digitações O aplicativo desktop do ChatGPT no macOS apresenta um novo recurso chamado Computer History que transforma suas ações em dados de treinamento, aprendendo como você trabalha e sugerindo otimizações. O recurso levanta preocupações significativas sobre privacidade do usuário, coleta de dados e consentimento informado. Críticos argumentam que os usuários podem não estar plenamente conscientes de que cada ação está sendo monitorada e usada para melhorar os modelos de IA, criando um dilema ético sobre transparência corporativa. The Verge" data-title="Recurso Computer History do ChatGPT rastreia seus cliques e digitações" data-share-url="https://www.theverge.com/ai-artificial-intelligence/980742/chatgpts-computer-history-tracks-your-clicks-and-keystrokes">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">11:56</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Recurso Computer History do ChatGPT rastreia seus cliques e digitações</div>
+        <div class="news-summary">O aplicativo desktop do ChatGPT no macOS apresenta um novo recurso chamado Computer History que transforma suas ações em dados de treinamento, aprendendo como você trabalha e sugerindo otimizações. O recurso levanta preocupações significativas sobre privacidade do usuário, coleta de dados e consentimento informado. Críticos argumentam que os usuários podem não estar plenamente conscientes de que cada ação está sendo monitorada e usada para melhorar os modelos de IA, criando um dilema ético sobre transparência corporativa.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/980742/chatgpts-computer-history-tracks-your-clicks-and-keystrokes" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Califórnia busca banir chatbots de IA como terapeutas Um projeto de lei californiano aguardando votação na Assembleia busca colocar 'guardas de proteção' em torno de chatbots de IA e impedir que funcionem como terapeutas. A legislação responde ao crescimento de pessoas buscando saúde mental em assistentes de IA em vez de profissionais humanos, levantando questões sobre qualificações, responsabilidade legal e segurança do paciente. A medida reflete preocupações mais amplas sobre substituição de profissionais humanos especializados por sistemas automatizados. Decrypt" data-title="Califórnia busca banir chatbots de IA como terapeutas" data-share-url="https://decrypt.co/375725/california-bill-ban-ai-chatbots-therapy-mental-health">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">11:01</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Califórnia busca banir chatbots de IA como terapeutas</div>
+        <div class="news-summary">Um projeto de lei californiano aguardando votação na Assembleia busca colocar 'guardas de proteção' em torno de chatbots de IA e impedir que funcionem como terapeutas. A legislação responde ao crescimento de pessoas buscando saúde mental em assistentes de IA em vez de profissionais humanos, levantando questões sobre qualificações, responsabilidade legal e segurança do paciente. A medida reflete preocupações mais amplas sobre substituição de profissionais humanos especializados por sistemas automatizados.</div>
+        <div class="news-link"><a href="https://decrypt.co/375725/california-bill-ban-ai-chatbots-therapy-mental-health" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta enfrenta julgamento histórico por alegações de dano à juventude Meta enfrenta um julgamento federal histórico trazido por 29 estados sobre alegações de que Facebook e Instagram foram deliberadamente projetados para viciar usuários jovens. O Procurador-Geral da Califórnia, Rob Bonta, chamou o caso de um 'momento tabaco', alegando que a Meta colocou lucro acima da segurança das crianças. O julgamento marca um ponto de virada na regulação de tecnologia social e responsabilidade corporativa sobre saúde mental juvenil. Bloomberg Technology" data-title="Meta enfrenta julgamento histórico por alegações de dano à juventude" data-share-url="https://www.bloomberg.com/news/videos/2026-08-16/meta-faces-landmark-trial-over-youth-harm-claims-video">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">09:21</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Meta enfrenta julgamento histórico por alegações de dano à juventude</div>
+        <div class="news-summary">Meta enfrenta um julgamento federal histórico trazido por 29 estados sobre alegações de que Facebook e Instagram foram deliberadamente projetados para viciar usuários jovens. O Procurador-Geral da Califórnia, Rob Bonta, chamou o caso de um 'momento tabaco', alegando que a Meta colocou lucro acima da segurança das crianças. O julgamento marca um ponto de virada na regulação de tecnologia social e responsabilidade corporativa sobre saúde mental juvenil.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/videos/2026-08-16/meta-faces-landmark-trial-over-youth-harm-claims-video" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="IA poderia trazer cuidados de qualidade Mayo para todos Um artigo de opinião com fatos concretos examina como inteligência artificial poderia democratizar acesso a cuidados de saúde de qualidade em escala. O autor ilustra o potencial através de sua experiência pessoal com cronificação de condições médicas, destacando como IA diagnóstica e sistemas de recomendação poderiam reduzir erros médicos e melhorar resultados. A peça conecta aplicações reais de IA em saúde com a crise de acesso desigual a cuidados preventivos nos EUA. Axios" data-title="IA poderia trazer cuidados de qualidade Mayo para todos" data-share-url="https://www.axios.com/2026/08/16/ai-mayo-clinic-health-care-fix-jim-vandehei">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">IA poderia trazer cuidados de qualidade Mayo para todos</div>
+        <div class="news-summary">Um artigo de opinião com fatos concretos examina como inteligência artificial poderia democratizar acesso a cuidados de saúde de qualidade em escala. O autor ilustra o potencial através de sua experiência pessoal com cronificação de condições médicas, destacando como IA diagnóstica e sistemas de recomendação poderiam reduzir erros médicos e melhorar resultados. A peça conecta aplicações reais de IA em saúde com a crise de acesso desigual a cuidados preventivos nos EUA.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/16/ai-mayo-clinic-health-care-fix-jim-vandehei" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Demanda de Bitcoin nos EUA pisca aviso de 90 dias — o que significa para BTC O Coinbase Premium negativo estendido pode sinalizar pressão de venda contínua de traders americanos, sugerindo que demanda institucional doméstica não está impulsionando preços para cima. A métrica é frequentemente usada como indicador de contrarian para avaliar sentimento do lado de compra americano. A leitura coloca em questão a narrativa de adoção institucional sustentando movimento de preços em 2026. AMBCrypto" data-title="Demanda de Bitcoin nos EUA pisca aviso de 90 dias — o que significa para BTC" data-share-url="https://ambcrypto.com/bitcoins-u-s-demand-flashes-a-90-day-warning-what-it-means-for-btc/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">20:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Demanda de Bitcoin nos EUA pisca aviso de 90 dias — o que significa para BTC</div>
+        <div class="news-summary">O Coinbase Premium negativo estendido pode sinalizar pressão de venda contínua de traders americanos, sugerindo que demanda institucional doméstica não está impulsionando preços para cima. A métrica é frequentemente usada como indicador de contrarian para avaliar sentimento do lado de compra americano. A leitura coloca em questão a narrativa de adoção institucional sustentando movimento de preços em 2026.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/bitcoins-u-s-demand-flashes-a-90-day-warning-what-it-means-for-btc/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ofensor israelense acusado de usar intel militar classificada para apostar em Polymarket Um oficial da Força Aérea de Israel foi acusado de usar informações militares classificadas para fazer apostas no mercado de previsão Polymarket. O caso destaca vulnerabilidades em segurança de informações e potencial para abuso de acesso oficial. O episódio provavelmente promoverá maior escrutínio sobre como informações oficiais navegam para plataformas de trading descentralizadas. Crypto Briefing" data-title="Ofensor israelense acusado de usar intel militar classificada para apostar em Polymarket" data-share-url="https://cryptobriefing.com/israeli-officer-polymarket-classified-info-betting/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">19:28</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Ofensor israelense acusado de usar intel militar classificada para apostar em Polymarket</div>
+        <div class="news-summary">Um oficial da Força Aérea de Israel foi acusado de usar informações militares classificadas para fazer apostas no mercado de previsão Polymarket. O caso destaca vulnerabilidades em segurança de informações e potencial para abuso de acesso oficial. O episódio provavelmente promoverá maior escrutínio sobre como informações oficiais navegam para plataformas de trading descentralizadas.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/israeli-officer-polymarket-classified-info-betting/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Senadores Moreno e Lummis apoiam Lei de Competição de Cartão de Crédito Senadores Moreno e Lummis endossaram o Credit Card Competition Act, que visa reduzir o domínio de Visa e Mastercard no sistema de pagamentos americano. O ato poderia remodelar dinâmicas financeiras ao desafiar poder entrincheirado e potencialmente reduzindo custos para comerciantes. A aprovação contaria com aliança improvável entre defensores tradicionais de competição e entusiastas de criptografia. Crypto Briefing" data-title="Senadores Moreno e Lummis apoiam Lei de Competição de Cartão de Crédito" data-share-url="https://cryptobriefing.com/moreno-lummis-credit-card-competition-act/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">19:19</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Senadores Moreno e Lummis apoiam Lei de Competição de Cartão de Crédito</div>
+        <div class="news-summary">Senadores Moreno e Lummis endossaram o Credit Card Competition Act, que visa reduzir o domínio de Visa e Mastercard no sistema de pagamentos americano. O ato poderia remodelar dinâmicas financeiras ao desafiar poder entrincheirado e potencialmente reduzindo custos para comerciantes. A aprovação contaria com aliança improvável entre defensores tradicionais de competição e entusiastas de criptografia.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/moreno-lummis-credit-card-competition-act/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Oferta do senado do Clarity Act em dúvida após recesso de agosto O recesso de agosto do Senado colocou em risco o progresso do Clarity Act, um importante projeto de lei para regulação de criptografia. O risco à legislação reflete desafios estruturais na aprovação de leis técnicas complexas em ciclos políticos caóticos. Se não aprovado ainda este ano, o ato pode enfrentar pressão renovada ou reformulação no próximo ciclo legislativo. Crypto Briefing" data-title="Oferta do senado do Clarity Act em dúvida após recesso de agosto" data-share-url="https://cryptobriefing.com/senate-clarity-act-august-recess-concerns/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">18:42</span>
+          <span class="news-source">Crypto Briefing</span>
+        </div>
+        <div class="news-title">Oferta do senado do Clarity Act em dúvida após recesso de agosto</div>
+        <div class="news-summary">O recesso de agosto do Senado colocou em risco o progresso do Clarity Act, um importante projeto de lei para regulação de criptografia. O risco à legislação reflete desafios estruturais na aprovação de leis técnicas complexas em ciclos políticos caóticos. Se não aprovado ainda este ano, o ato pode enfrentar pressão renovada ou reformulação no próximo ciclo legislativo.</div>
+        <div class="news-link"><a href="https://cryptobriefing.com/senate-clarity-act-august-recess-concerns/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Mercado de previsão Novig processa Procurador-Geral de Wisconsin sobre contratos esportivos A Novig, que anunciou recentemente uma parceria com o New York Mets, processou autoridades em cinco estados, incluindo Wisconsin, desde 4 de agosto. O litígio reflete conflito regulatório sobre jurisdiction e legitimidade de mercados de previsão descentralizados que oferecem mercados esportivos. As batalhas legais sinalizamimpasse entre inovadores cripto e reguladores estatuais. The Block" data-title="Mercado de previsão Novig processa Procurador-Geral de Wisconsin sobre contratos esportivos" data-share-url="https://www.theblock.co/news/business/2026-08-16-prediction-market-novig-sues-wisconsin-ag-in-latest-spat-over-sports-contracts-411938">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">18:40</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Mercado de previsão Novig processa Procurador-Geral de Wisconsin sobre contratos esportivos</div>
+        <div class="news-summary">A Novig, que anunciou recentemente uma parceria com o New York Mets, processou autoridades em cinco estados, incluindo Wisconsin, desde 4 de agosto. O litígio reflete conflito regulatório sobre jurisdiction e legitimidade de mercados de previsão descentralizados que oferecem mercados esportivos. As batalhas legais sinalizamimpasse entre inovadores cripto e reguladores estatuais.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-08-16-prediction-market-novig-sues-wisconsin-ag-in-latest-spat-over-sports-contracts-411938" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Solana adiciona US$ 378M em T-bills tokenizados — Ethereum está perdendo terreno? Solana atingiu uma marca de US$ 378 milhões em Treasuries americanas tokenizadas, enquanto a tokenização se expande de emissões do Tesouro para uso on-chain mais amplo em redes blockchain principais. O crescimento sugere que Solana está ganhando adoção para casos de uso de valor estável, desafiando a posição histórica de Ethereum. A tendência reflete otimismo sobre infra de ativos tokenizados e integração entre finanças tradicionais e criptografia. AMBCrypto" data-title="Solana adiciona US$ 378M em T-bills tokenizados — Ethereum está perdendo terreno?" data-share-url="https://ambcrypto.com/solana-adds-378m-in-tokenized-t-bills-is-ethereum-losing-ground/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">18:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Solana adiciona US$ 378M em T-bills tokenizados — Ethereum está perdendo terreno?</div>
+        <div class="news-summary">Solana atingiu uma marca de US$ 378 milhões em Treasuries americanas tokenizadas, enquanto a tokenização se expande de emissões do Tesouro para uso on-chain mais amplo em redes blockchain principais. O crescimento sugere que Solana está ganhando adoção para casos de uso de valor estável, desafiando a posição histórica de Ethereum. A tendência reflete otimismo sobre infra de ativos tokenizados e integração entre finanças tradicionais e criptografia.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/solana-adds-378m-in-tokenized-t-bills-is-ethereum-losing-ground/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Reunião da SEC que não aconteceu — estado da criptografia Havia esperança de que reguladores pudessem avançar se o Clarity Act não progredisse legislativamente, mas também podem estar em pausa. O impasse regulatório deixa o mercado cripto aguardando clareza sobre jurisdição, aprovação de stablecoins e estrutura de compliance. A inação regulatória cria incerteza para instituições tentando entrar no espaço cripto e afeta o cronograma de inovação de produtos. CoinDesk" data-title="Reunião da SEC que não aconteceu — estado da criptografia" data-share-url="https://www.coindesk.com/policy/2026/08/16/the-sec-meeting-that-wasnt-state-of-crypto">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">15:30</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Reunião da SEC que não aconteceu — estado da criptografia</div>
+        <div class="news-summary">Havia esperança de que reguladores pudessem avançar se o Clarity Act não progredisse legislativamente, mas também podem estar em pausa. O impasse regulatório deixa o mercado cripto aguardando clareza sobre jurisdição, aprovação de stablecoins e estrutura de compliance. A inação regulatória cria incerteza para instituições tentando entrar no espaço cripto e afeta o cronograma de inovação de produtos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/16/the-sec-meeting-that-wasnt-state-of-crypto" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Investidores de cripto voltam-se para fundamentos em vez de rankings de cap de mercado Executivos da indústria relatam que investidores estão começando a julgar tokens criptográficos com base em uso, economia e captura de valor em vez de classificação por capitalização de mercado. Essa mudança paradigmática sugere uma maturação do mercado cripto, afastando-se de especulação pura em direção à análise fundamental. O movimento reflete aprendizados de ciclos anteriores de boom-bust e uma busca por modelos econômicos sustentáveis. CoinDesk" data-title="Investidores de cripto voltam-se para fundamentos em vez de rankings de cap de mercado" data-share-url="https://www.coindesk.com/business/2026/08/16/crypto-investors-are-looking-past-market-cap-rankings-and-back-to-fundamentals">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">13:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Investidores de cripto voltam-se para fundamentos em vez de rankings de cap de mercado</div>
+        <div class="news-summary">Executivos da indústria relatam que investidores estão começando a julgar tokens criptográficos com base em uso, economia e captura de valor em vez de classificação por capitalização de mercado. Essa mudança paradigmática sugere uma maturação do mercado cripto, afastando-se de especulação pura em direção à análise fundamental. O movimento reflete aprendizados de ciclos anteriores de boom-bust e uma busca por modelos econômicos sustentáveis.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/16/crypto-investors-are-looking-past-market-cap-rankings-and-back-to-fundamentals" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Hackers exploram falha de Screen Sharing do macOS para instalar mineradores Monero Agência de cibersegurança holandesa alertou que hackers exploraram uma falha de Screen Sharing do macOS para instalar software de mineração Monero em máquinas comprometidas. Autoridades dos EUA classificaram a vulnerabilidade como crítica 9.8/10 na escala CVSS, e especialistas alertam usuários para atualizar dispositivos imediatamente. O incidente evidencia riscos de segurança contínuos em infraestrutura técnica que suporta criptografia. The Block" data-title="Hackers exploram falha de Screen Sharing do macOS para instalar mineradores Monero" data-share-url="https://www.theblock.co/news/defi/2026-08-16-hackers-exploited-macos-screen-sharing-flaw-to-install-monero-miners-dutch-cyber-agency-says-411932">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">12:07</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Hackers exploram falha de Screen Sharing do macOS para instalar mineradores Monero</div>
+        <div class="news-summary">Agência de cibersegurança holandesa alertou que hackers exploraram uma falha de Screen Sharing do macOS para instalar software de mineração Monero em máquinas comprometidas. Autoridades dos EUA classificaram a vulnerabilidade como crítica 9.8/10 na escala CVSS, e especialistas alertam usuários para atualizar dispositivos imediatamente. O incidente evidencia riscos de segurança contínuos em infraestrutura técnica que suporta criptografia.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/defi/2026-08-16-hackers-exploited-macos-screen-sharing-flaw-to-install-monero-miners-dutch-cyber-agency-says-411932" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Carteira de cripto SafePal revela invasão de dados expondo quase 40 mil clientes A SafePal, provedor de carteira de criptomoedas, revelou uma invasão de dados que expôs informações de pedidos pessoais de quase 40 mil clientes. Embora chaves privadas, frases-sementes e ativos criptográficos permaneçam completamente protegidos, a invasão sinalizou vulnerabilidades em camadas de dados não-sensíveis. Os clientes foram alvo de tentativas de phishing associadas à invasão, levantando preocupações sobre segurança operacional e práticas de proteção de dados em exchanges e carteiras. CoinDesk / The Block" data-title="Carteira de cripto SafePal revela invasão de dados expondo quase 40 mil clientes" data-share-url="https://www.coindesk.com/tech/2026/08/16/crypto-wallet-safepal-reveals-a-data-breach-exposing-nearly-40-000-customers-order-info">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">11:02</span>
+          <span class="news-source">CoinDesk / The Block</span>
+        </div>
+        <div class="news-title">Carteira de cripto SafePal revela invasão de dados expondo quase 40 mil clientes</div>
+        <div class="news-summary">A SafePal, provedor de carteira de criptomoedas, revelou uma invasão de dados que expôs informações de pedidos pessoais de quase 40 mil clientes. Embora chaves privadas, frases-sementes e ativos criptográficos permaneçam completamente protegidos, a invasão sinalizou vulnerabilidades em camadas de dados não-sensíveis. Os clientes foram alvo de tentativas de phishing associadas à invasão, levantando preocupações sobre segurança operacional e práticas de proteção de dados em exchanges e carteiras.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/08/16/crypto-wallet-safepal-reveals-a-data-breach-exposing-nearly-40-000-customers-order-info" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="A limpeza de MiCA cria nova onda de scams em toda a União Europeia A regulação Markets in Crypto Assets (MiCA) da UE forçou migrações de contas que criaram uma oportunidade para golpistas. Fraudadores estão se passando por reguladores e exchanges de criptografia licenciadas para roubar fundos de usuários em transição. A situação ilustra como a implementação regulatória, embora bem-intencionada, pode criar lacunas de segurança e expor usuários a ataques direcionados durante períodos de conformidade mandatória. CoinDesk" data-title="A limpeza de MiCA cria nova onda de scams em toda a União Europeia" data-share-url="https://www.coindesk.com/business/2026/08/14/mica-s-cleanup-is-creating-a-new-scam-wave-across-the-european-union">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">A limpeza de MiCA cria nova onda de scams em toda a União Europeia</div>
+        <div class="news-summary">A regulação Markets in Crypto Assets (MiCA) da UE forçou migrações de contas que criaram uma oportunidade para golpistas. Fraudadores estão se passando por reguladores e exchanges de criptografia licenciadas para roubar fundos de usuários em transição. A situação ilustra como a implementação regulatória, embora bem-intencionada, pode criar lacunas de segurança e expor usuários a ataques direcionados durante períodos de conformidade mandatória.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/14/mica-s-cleanup-is-creating-a-new-scam-wave-across-the-european-union" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Batalha de rendimento de stablecoin que não desaparece coloca bancos vs. cripto Banqueiros argumentam que pessoas devem ser mantidas em depósitos de rendimento mais baixo pelo bem do sistema financeiro tradicional, enquanto provedores de cripto oferecem rendimentos significativamente mais altos em stablecoins. O conflito reflete uma tensão fundamental sobre estruturas de incentivos econômicos e poder distributivo em um sistema financeiro fragmentado. A disputa testa se reguladores permitirão competição direta de rendimento entre instituições tradicionais e descentralizadas. CoinDesk" data-title="Batalha de rendimento de stablecoin que não desaparece coloca bancos vs. cripto" data-share-url="https://www.coindesk.com/news-analysis/2026/08/14/the-stablecoin-yield-clash-that-won-t-go-away-has-banks-crypto-battling-over-tradition">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Batalha de rendimento de stablecoin que não desaparece coloca bancos vs. cripto</div>
+        <div class="news-summary">Banqueiros argumentam que pessoas devem ser mantidas em depósitos de rendimento mais baixo pelo bem do sistema financeiro tradicional, enquanto provedores de cripto oferecem rendimentos significativamente mais altos em stablecoins. O conflito reflete uma tensão fundamental sobre estruturas de incentivos econômicos e poder distributivo em um sistema financeiro fragmentado. A disputa testa se reguladores permitirão competição direta de rendimento entre instituições tradicionais e descentralizadas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/news-analysis/2026/08/14/the-stablecoin-yield-clash-that-won-t-go-away-has-banks-crypto-battling-over-tradition" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin entra em zona de 'venda agressiva' — fundo próximo? Bitcoin está exibindo sinais históricos de fundo, frequentemente associados com reabertura de ciclos de alta. Análise técnica sugere que os preços atuais podem representar oportunidades de compra estatisticamente atraentes baseadas em métricas históricas. No entanto, analistas alertam que condições de mercado atuais diferem significativamente de ciclos anteriores, criando incerteza sobre se padrões históricos mantêm validade preditiva. AMBCrypto" data-title="Bitcoin entra em zona de 'venda agressiva' — fundo próximo?" data-share-url="https://ambcrypto.com/bitcoin-price-enters-fire-sale-zone-is-the-btc-bottom-near/">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">10:00</span>
+          <span class="news-source">AMBCrypto</span>
+        </div>
+        <div class="news-title">Bitcoin entra em zona de 'venda agressiva' — fundo próximo?</div>
+        <div class="news-summary">Bitcoin está exibindo sinais históricos de fundo, frequentemente associados com reabertura de ciclos de alta. Análise técnica sugere que os preços atuais podem representar oportunidades de compra estatisticamente atraentes baseadas em métricas históricas. No entanto, analistas alertam que condições de mercado atuais diferem significativamente de ciclos anteriores, criando incerteza sobre se padrões históricos mantêm validade preditiva.</div>
+        <div class="news-link"><a href="https://ambcrypto.com/bitcoin-price-enters-fire-sale-zone-is-the-btc-bottom-near/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="DefiLlama atrasa lançamento de aplicativo móvel por apps de phishing na Apple Store O fundador da DefiLlama disse que a empresa atrasou o lançamento de seu aplicativo móvel após descobrir múltiplos apps de phishing falsos na Apple Store drenando fundos de carteiras de criptografia dos usuários. A Apple removeu um app falso dentro de dias após a documentação da empresa, mas o incidente expõe vulnerabilidades em controle de qualidade de lojas de aplicativos. A situação levanta questões sobre responsabilidade de plataformas pela segurança de usuários de criptografia. Cointelegraph" data-title="DefiLlama atrasa lançamento de aplicativo móvel por apps de phishing na Apple Store" data-share-url="https://cointelegraph.com/news/defillama-delayed-app-launch-fake-phishing-apps-apple">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">09:48</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">DefiLlama atrasa lançamento de aplicativo móvel por apps de phishing na Apple Store</div>
+        <div class="news-summary">O fundador da DefiLlama disse que a empresa atrasou o lançamento de seu aplicativo móvel após descobrir múltiplos apps de phishing falsos na Apple Store drenando fundos de carteiras de criptografia dos usuários. A Apple removeu um app falso dentro de dias após a documentação da empresa, mas o incidente expõe vulnerabilidades em controle de qualidade de lojas de aplicativos. A situação levanta questões sobre responsabilidade de plataformas pela segurança de usuários de criptografia.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/defillama-delayed-app-launch-fake-phishing-apps-apple" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Era de 'compre bitcoin, venda bancos' oficialmente termina com abraços de TradFi Gigantes de finanças tradicionais estão se associando a especialistas para construir infraestrutura de ativos digitais, eliminando linhas entre finanças tradicionais e descentralizadas. O movimento marca um ponto de virada cultural onde Bitcoin deixou de ser uma aposta anticorpo financeiro para se tornar um ativo institucional mainstream. A integração reflete reconhecimento de que criptografia não substituirá o sistema bancário, mas será incorporada nele. CoinDesk" data-title="Era de 'compre bitcoin, venda bancos' oficialmente termina com abraços de TradFi" data-share-url="https://www.coindesk.com/business/2026/08/13/the-long-bitcoin-short-the-bankers-era-is-officially-over-as-tradfi-giants-embrace-digital-assets">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Era de 'compre bitcoin, venda bancos' oficialmente termina com abraços de TradFi</div>
+        <div class="news-summary">Gigantes de finanças tradicionais estão se associando a especialistas para construir infraestrutura de ativos digitais, eliminando linhas entre finanças tradicionais e descentralizadas. O movimento marca um ponto de virada cultural onde Bitcoin deixou de ser uma aposta anticorpo financeiro para se tornar um ativo institucional mainstream. A integração reflete reconhecimento de que criptografia não substituirá o sistema bancário, mas será incorporada nele.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/13/the-long-bitcoin-short-the-bankers-era-is-officially-over-as-tradfi-giants-embrace-digital-assets" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Desenvolvedores Ethereum estreitam 66 propostas ligadas à atualização Hegotá Desenvolvedores da rede Ethereum estão reduzindo o número de propostas de melhorias para focar em implementações críticas relacionadas à atualização Hegotá. A atualização visa introduzir mais privacidade nativa para aplicações Ethereum. O processo de refinamento reflete maturação na governança de protocolo e priorização de features com máximo impacto. Cointelegraph" data-title="Desenvolvedores Ethereum estreitam 66 propostas ligadas à atualização Hegotá" data-share-url="https://cointelegraph.com/news/ethereum-devs-66-proposals-hegota-upgrade">
+        <div class="news-meta">
+          <span class="news-date">16 ago 2026</span>
+          <span class="news-time">08:12</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Desenvolvedores Ethereum estreitam 66 propostas ligadas à atualização Hegotá</div>
+        <div class="news-summary">Desenvolvedores da rede Ethereum estão reduzindo o número de propostas de melhorias para focar em implementações críticas relacionadas à atualização Hegotá. A atualização visa introduzir mais privacidade nativa para aplicações Ethereum. O processo de refinamento reflete maturação na governança de protocolo e priorização de features com máximo impacto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/ethereum-devs-66-proposals-hegota-upgrade" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
