@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">17 DE AGOSTO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 17 de agosto marca uma escalada nas tensões geopolíticas globais, com o Irã sinalizando postura belicista, Trump questionando alianças no Pacífico e negociações sobre Gaza patinando, enquanto reguladores americanos avançam na definição de regras para stablecoins e cripto. A competição geoeconômica entre EUA e China por IA e dados ganha urgência, refletindo-se também no mercado cripto, onde Bitcoin flutua em $64K e grandes players institucionais como Bitmine e Strategy reposicionam portfólios em contexto de incerteza macroeconômica.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-08-16/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15">2026-08-15</option><option value="2026-08-16">2026-08-16</option><option value="2026-08-17" selected>2026-08-17</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Satélites ucranianos alimentam operações de drones na guerra Equipes de drones ucranianos agora dispõem de ferramenta poderosa: informações em tempo quase real sobre movimentos e localizações de tropas fornecidas por satélites próprios. A capacidade de inteligência orbitada permite resposta tática mais rápida e precisa contra invasores russos, multiplicando a eficácia das operações de combate. A Ucrânia desenvolveu cadeia sofisticada de coleta, análise e disseminação de dados operacionais que reduz ciclo OODA (Observe-Orient-Decide-Act). Essa vantagem tecnológica compensa desvantagens numéricas e de logística. A integração satélite-drone representa modelo inovador de guerra moderna e inspirará doutrina militar global. The New York Times" data-title="Satélites ucranianos alimentam operações de drones na guerra" data-share-url="https://www.nytimes.com/2026/08/17/world/europe/from-the-sky-to-the-battlefield.html">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">17:38</span>
+          <span class="news-source">The New York Times</span>
+        </div>
+        <div class="news-title">Satélites ucranianos alimentam operações de drones na guerra</div>
+        <div class="news-summary">Equipes de drones ucranianos agora dispõem de ferramenta poderosa: informações em tempo quase real sobre movimentos e localizações de tropas fornecidas por satélites próprios. A capacidade de inteligência orbitada permite resposta tática mais rápida e precisa contra invasores russos, multiplicando a eficácia das operações de combate. A Ucrânia desenvolveu cadeia sofisticada de coleta, análise e disseminação de dados operacionais que reduz ciclo OODA (Observe-Orient-Decide-Act). Essa vantagem tecnológica compensa desvantagens numéricas e de logística. A integração satélite-drone representa modelo inovador de guerra moderna e inspirará doutrina militar global.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/17/world/europe/from-the-sky-to-the-battlefield.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="China quer que seus dados alimentem IA do mundo inteiro Beijing está exportando mais que modelos de IA; busca injetar seus dados e narrativas em chatbots globais, levantando temores sobre difusão de perspectivas propagandísticas chinesas. A estratégia aproveita vácuo regulatório e dependência ocidental de dados de treinamento para influenciar outputs de sistemas de IA amplamente usados. China investe em construção de infraestrutura de dados competitiva e propostas de padrões de exportação de dados treinados. A competição EUA-China por dominância em IA transcende capacidade computacional e envolve luta por controle narrativo em plataformas globais de IA. The New York Times" data-title="China quer que seus dados alimentem IA do mundo inteiro" data-share-url="https://www.nytimes.com/2026/08/17/world/asia/china-ai-data-chatbots.html">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">08:10</span>
+          <span class="news-source">The New York Times</span>
+        </div>
+        <div class="news-title">China quer que seus dados alimentem IA do mundo inteiro</div>
+        <div class="news-summary">Beijing está exportando mais que modelos de IA; busca injetar seus dados e narrativas em chatbots globais, levantando temores sobre difusão de perspectivas propagandísticas chinesas. A estratégia aproveita vácuo regulatório e dependência ocidental de dados de treinamento para influenciar outputs de sistemas de IA amplamente usados. China investe em construção de infraestrutura de dados competitiva e propostas de padrões de exportação de dados treinados. A competição EUA-China por dominância em IA transcende capacidade computacional e envolve luta por controle narrativo em plataformas globais de IA.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/17/world/asia/china-ai-data-chatbots.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Trump pressiona redução de exercícios militares com Coreia do Sul, tensionando aliança O presidente Trump propõe reduzir os exercícios militares conjuntos EUA-Coreia do Sul, argumentando que provocam hostilidade da Coreia do Norte sob Kim Jong-un. A movimentação enfraquece a coesão da aliança histórica no Pacífico, justamente quando a região enfrenta crescente assertividade norte-coreana. Analistas alertam que o recuo militar pode emboldar Pyongyang e desestabilizar a península coreana. Trump prioriza diálogo direto com Kim, deixando Seul à margem das negociações. A medida ilustra reconfiguração das alianças americanas no Pacífico em favor de engajamento bilateral com adversários. The New York Times" data-title="Trump pressiona redução de exercícios militares com Coreia do Sul, tensionando aliança" data-share-url="https://www.nytimes.com/2026/08/17/world/asia/trump-korea-military-kim-jong-un.html">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">07:57</span>
+          <span class="news-source">The New York Times</span>
+        </div>
+        <div class="news-title">Trump pressiona redução de exercícios militares com Coreia do Sul, tensionando aliança</div>
+        <div class="news-summary">O presidente Trump propõe reduzir os exercícios militares conjuntos EUA-Coreia do Sul, argumentando que provocam hostilidade da Coreia do Norte sob Kim Jong-un. A movimentação enfraquece a coesão da aliança histórica no Pacífico, justamente quando a região enfrenta crescente assertividade norte-coreana. Analistas alertam que o recuo militar pode emboldar Pyongyang e desestabilizar a península coreana. Trump prioriza diálogo direto com Kim, deixando Seul à margem das negociações. A medida ilustra reconfiguração das alianças americanas no Pacífico em favor de engajamento bilateral com adversários.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/17/world/asia/trump-korea-military-kim-jong-un.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Líder supremo do Irã sinaliza intenção de manter país em pé de guerra Ayatollah Mojtaba Khamenei designou loyalistas linha-dura para cargos-chave do governo iraniano, sinalizando preparação para manter o país em postura beligerante contínua. A medida ocorre em contexto de escalada das tensões no Oriente Médio, com ataques dos Houthis patrocinados pelo Irã contra navios sauditas no Mar Vermelho. A designação de militantes radicais para posições estratégicas sugere endurecimento de políticas exteriores e repressão interna. O movimento contrasta com tentativas da administração Trump de mediar cessar-fogo em Gaza e negocia limites ao programa nuclear iraniano, indicando baixa probabilidade de acordo diplomático. O Irã rejeita pressões internacionais e reafirma preparo militar. The New York Times" data-title="Líder supremo do Irã sinaliza intenção de manter país em pé de guerra" data-share-url="https://www.nytimes.com/2026/08/17/world/middleeast/iran-khamenei-military-leaders-war.html">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">06:42</span>
+          <span class="news-source">The New York Times</span>
+        </div>
+        <div class="news-title">Líder supremo do Irã sinaliza intenção de manter país em pé de guerra</div>
+        <div class="news-summary">Ayatollah Mojtaba Khamenei designou loyalistas linha-dura para cargos-chave do governo iraniano, sinalizando preparação para manter o país em postura beligerante contínua. A medida ocorre em contexto de escalada das tensões no Oriente Médio, com ataques dos Houthis patrocinados pelo Irã contra navios sauditas no Mar Vermelho. A designação de militantes radicais para posições estratégicas sugere endurecimento de políticas exteriores e repressão interna. O movimento contrasta com tentativas da administração Trump de mediar cessar-fogo em Gaza e negocia limites ao programa nuclear iraniano, indicando baixa probabilidade de acordo diplomático. O Irã rejeita pressões internacionais e reafirma preparo militar.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/17/world/middleeast/iran-khamenei-military-leaders-war.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Democratas no Congresso planejam pressão sobre poderes de guerra após ameaça de Trump a Omã Democratas congressistas planejam novo esforço para restringir poderes de guerra presidencial após Trump ameaçar bombardear Omã. A retórica beligerante reaviva debate sobre controle legislativo sobre militar. Legisladores buscam fortalecer mecanismos de aprovação congressional para ações militares. A movimentação reflete preocupação bipartidária (parcial) sobre expansão de poderes executivos em segurança nacional. Debate de poderes de guerra segue central nas tensões EUA-Irã. Axios" data-title="Democratas no Congresso planejam pressão sobre poderes de guerra após ameaça de Trump a Omã" data-share-url="https://www.axios.com/2026/08/17/trump-oman-democrats-congress-war-powers-iran">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">20:14</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Democratas no Congresso planejam pressão sobre poderes de guerra após ameaça de Trump a Omã</div>
+        <div class="news-summary">Democratas congressistas planejam novo esforço para restringir poderes de guerra presidencial após Trump ameaçar bombardear Omã. A retórica beligerante reaviva debate sobre controle legislativo sobre militar. Legisladores buscam fortalecer mecanismos de aprovação congressional para ações militares. A movimentação reflete preocupação bipartidária (parcial) sobre expansão de poderes executivos em segurança nacional. Debate de poderes de guerra segue central nas tensões EUA-Irã.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/17/trump-oman-democrats-congress-war-powers-iran" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="ABC lança programa de TV ao vivo alimentado por trending topics ABC News apresentou oficialmente Searched, um show transmitido ao vivo que destaca histórias que as pessoas discutem em redes sociais e buscam na web. O programa utiliza algoritmos de tendência em tempo real para curar conteúdo dinâmico que reflete conversas do público. A abordagem inovadora busca atrair audiência mais jovem e conectar jornalismo tradicional com dinâmica digital. A plataforma integra dados de múltiplas fontes sociais para identificar narrativas emergentes. O experimento reflete pressão sobre mídia broadcast para se reinventar e acompanhar consumo fragmentado de notícias. The Verge" data-title="ABC lança programa de TV ao vivo alimentado por trending topics" data-share-url="https://www.theverge.com/streaming/981209/abc-news-searched-livestreamed-show">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">17:59</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">ABC lança programa de TV ao vivo alimentado por trending topics</div>
+        <div class="news-summary">ABC News apresentou oficialmente Searched, um show transmitido ao vivo que destaca histórias que as pessoas discutem em redes sociais e buscam na web. O programa utiliza algoritmos de tendência em tempo real para curar conteúdo dinâmico que reflete conversas do público. A abordagem inovadora busca atrair audiência mais jovem e conectar jornalismo tradicional com dinâmica digital. A plataforma integra dados de múltiplas fontes sociais para identificar narrativas emergentes. O experimento reflete pressão sobre mídia broadcast para se reinventar e acompanhar consumo fragmentado de notícias.</div>
+        <div class="news-link"><a href="https://www.theverge.com/streaming/981209/abc-news-searched-livestreamed-show" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Paciência americana testada por demandas no Oriente Médio enquanto presença no Pacífico enfraquece Redirecionamento de carrier USS George Washington do Pacífico para o Oriente Médio deixa EUA sem portador de aviões na região Indo-Pacífica por período, enfraquecendo deterrence regional. Aliados como Japão e Coreia expressam preocupação com hiato de segurança. A reconfiguração ilustra trade-off estratégico entre comprometimentos globais americanos. Analistas alertam para oportunidade de China ou adversários explorarem lacuna temporária. Debate sobre suficiência da frota carrier cobra intensidade. Axios" data-title="Paciência americana testada por demandas no Oriente Médio enquanto presença no Pacífico enfraquece" data-share-url="https://www.axios.com/2026/08/17/us-allies-pacific-aircraft-carrier-gap">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">17:10</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Paciência americana testada por demandas no Oriente Médio enquanto presença no Pacífico enfraquece</div>
+        <div class="news-summary">Redirecionamento de carrier USS George Washington do Pacífico para o Oriente Médio deixa EUA sem portador de aviões na região Indo-Pacífica por período, enfraquecendo deterrence regional. Aliados como Japão e Coreia expressam preocupação com hiato de segurança. A reconfiguração ilustra trade-off estratégico entre comprometimentos globais americanos. Analistas alertam para oportunidade de China ou adversários explorarem lacuna temporária. Debate sobre suficiência da frota carrier cobra intensidade.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/17/us-allies-pacific-aircraft-carrier-gap" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="O que os defensores do Flock estão deixando passar Análise crítica da Escola de Tecnologia do MIT examina limitações nos argumentos dos defensores da plataforma Flock, questionando premissas sobre benefícios sociais e impacto tecnológico. O texto levanta pontos sobre transparência, governança e consequências não intencionais. Flock permanece na mira de crítica acadêmica enquanto comunidade de tech divide opiniões. A discussão reflete tensão entre inovação e responsabilidade em plataformas emergentes. MIT Technology Review" data-title="O que os defensores do Flock estão deixando passar" data-share-url="https://www.technologyreview.com/2026/08/17/1142200/what-flocks-defenders-are-missing/">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">16:16</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">O que os defensores do Flock estão deixando passar</div>
+        <div class="news-summary">Análise crítica da Escola de Tecnologia do MIT examina limitações nos argumentos dos defensores da plataforma Flock, questionando premissas sobre benefícios sociais e impacto tecnológico. O texto levanta pontos sobre transparência, governança e consequências não intencionais. Flock permanece na mira de crítica acadêmica enquanto comunidade de tech divide opiniões. A discussão reflete tensão entre inovação e responsabilidade em plataformas emergentes.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/17/1142200/what-flocks-defenders-are-missing/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="YouTube muda contagem de visualizações para impulsionar números YouTube modificará sua métrica de contagem de views para registrar uma visualização assim que o vídeo começa a ser reproduzido, alinhando-se com sistemas usados por Instagram, TikTok e YouTube Shorts. A mudança beneficia criadores e a plataforma ao inflar métricas aparentes, incentivando mais conteúdo. O novo método aproxima ecossistema YouTube de concorrentes de short-form. Analistas alertam que a alteração pode distorcer dados reais de engajamento e complicar medição ROI de publicidade. A medida reflete pressão competitiva por crescimento de métricas no mercado de vídeo. The Verge" data-title="YouTube muda contagem de visualizações para impulsionar números" data-share-url="https://www.theverge.com/streaming/981105/youtube-video-view-counting-update">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">14:13</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">YouTube muda contagem de visualizações para impulsionar números</div>
+        <div class="news-summary">YouTube modificará sua métrica de contagem de views para registrar uma visualização assim que o vídeo começa a ser reproduzido, alinhando-se com sistemas usados por Instagram, TikTok e YouTube Shorts. A mudança beneficia criadores e a plataforma ao inflar métricas aparentes, incentivando mais conteúdo. O novo método aproxima ecossistema YouTube de concorrentes de short-form. Analistas alertam que a alteração pode distorcer dados reais de engajamento e complicar medição ROI de publicidade. A medida reflete pressão competitiva por crescimento de métricas no mercado de vídeo.</div>
+        <div class="news-link"><a href="https://www.theverge.com/streaming/981105/youtube-video-view-counting-update" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Sonos finalmente adicionou controles de Live Activities na tela bloqueada do iPhone Sonos lançou atualização do app mobile que introduz suporte a Live Activities do iOS, dando aos usuários de iPhone acesso rápido aos controles de reprodução direto da tela bloqueada. A funcionalidade reduz fricção para controle de música e alinham-se com padrão de integração profunda com SO. A implementação tardio reflete complexidades de integração com sistemas Apple. O update melhora experiência do usuário em ecossistema iOS. The Verge" data-title="Sonos finalmente adicionou controles de Live Activities na tela bloqueada do iPhone" data-share-url="https://www.theverge.com/tech/981008/sonos-mobile-ios-iphone-app-live-activities">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">13:38</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Sonos finalmente adicionou controles de Live Activities na tela bloqueada do iPhone</div>
+        <div class="news-summary">Sonos lançou atualização do app mobile que introduz suporte a Live Activities do iOS, dando aos usuários de iPhone acesso rápido aos controles de reprodução direto da tela bloqueada. A funcionalidade reduz fricção para controle de música e alinham-se com padrão de integração profunda com SO. A implementação tardio reflete complexidades de integração com sistemas Apple. O update melhora experiência do usuário em ecossistema iOS.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/981008/sonos-mobile-ios-iphone-app-live-activities" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Apple ordenada a parar de assustar usuários de iPhone de apps de terceiros Autoridade antitruste alemã (Bundeskartamt) determinou que Apple cessou o uso de prompts de consentimento de coleta de dados com design que desestimulava usuários a permitir rastreamento. O design original funcionava como fricção intencional contra adoção de tracking de terceiros. A decisão reforça precedente europeu de que UI/UX design pode constituir abuso de posição dominante. Apple será auditada para conformidade com novas exigências de neutralidade. O caso ilustra como reguladores combatem dark patterns e design coercitivo em tech. The Verge" data-title="Apple ordenada a parar de assustar usuários de iPhone de apps de terceiros" data-share-url="https://www.theverge.com/tech/980977/apple-app-tracking-transparency-settlement-germany">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">12:10</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Apple ordenada a parar de assustar usuários de iPhone de apps de terceiros</div>
+        <div class="news-summary">Autoridade antitruste alemã (Bundeskartamt) determinou que Apple cessou o uso de prompts de consentimento de coleta de dados com design que desestimulava usuários a permitir rastreamento. O design original funcionava como fricção intencional contra adoção de tracking de terceiros. A decisão reforça precedente europeu de que UI/UX design pode constituir abuso de posição dominante. Apple será auditada para conformidade com novas exigências de neutralidade. O caso ilustra como reguladores combatem dark patterns e design coercitivo em tech.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/980977/apple-app-tracking-transparency-settlement-germany" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Uber se associa com Zipline para entregas por drone no Eats Uber anunciou parceria com empresa de drones Zipline para iniciar entregas de comida via aérea ainda este ano, com meta de um milhão de entregas diárias via drone. O projeto levará serviço de last-mile delivery a novo patamar de eficiência e velocidade. Zipline, especialista em voos autônomos, fornecerá infraestrutura aérea enquanto Uber oferece plataforma logística. A iniciativa reduz tempo de entrega e custos operacionais, além de mitigar congestionamento urbano. O acordo marca avanço significativo na adoção prática de tecnologia de drones autônomos em escala comercial. The Verge" data-title="Uber se associa com Zipline para entregas por drone no Eats" data-share-url="https://www.theverge.com/transportation/980912/uber-eats-zipline-drone-delivery-investment">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">11:24</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Uber se associa com Zipline para entregas por drone no Eats</div>
+        <div class="news-summary">Uber anunciou parceria com empresa de drones Zipline para iniciar entregas de comida via aérea ainda este ano, com meta de um milhão de entregas diárias via drone. O projeto levará serviço de last-mile delivery a novo patamar de eficiência e velocidade. Zipline, especialista em voos autônomos, fornecerá infraestrutura aérea enquanto Uber oferece plataforma logística. A iniciativa reduz tempo de entrega e custos operacionais, além de mitigar congestionamento urbano. O acordo marca avanço significativo na adoção prática de tecnologia de drones autônomos em escala comercial.</div>
+        <div class="news-link"><a href="https://www.theverge.com/transportation/980912/uber-eats-zipline-drone-delivery-investment" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="O que acontece quando o melhor amigo robô de uma criança morre? Investigação MIT examina impacto psicológico e emocional quando crianças que desenvolvem apego a robôs companheiros (como Moxie) sofrem perda quando o dispositivo falha ou é descontinuado. O case estuda separação e luto infantil mediado por IA. Pesquisa levanta questões éticas sobre design de robôs sociais para públicos vulneráveis. O tema ganha relevância conforme IA companheira avança. Psicólogos debatem se e como avisar crianças sobre impermanência de robôs-amigos. MIT Technology Review" data-title="O que acontece quando o melhor amigo robô de uma criança morre?" data-share-url="https://www.technologyreview.com/2026/08/17/1141568/moxie-when-kids-robot-best-friend-dies/">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">O que acontece quando o melhor amigo robô de uma criança morre?</div>
+        <div class="news-summary">Investigação MIT examina impacto psicológico e emocional quando crianças que desenvolvem apego a robôs companheiros (como Moxie) sofrem perda quando o dispositivo falha ou é descontinuado. O case estuda separação e luto infantil mediado por IA. Pesquisa levanta questões éticas sobre design de robôs sociais para públicos vulneráveis. O tema ganha relevância conforme IA companheira avança. Psicólogos debatem se e como avisar crianças sobre impermanência de robôs-amigos.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/17/1141568/moxie-when-kids-robot-best-friend-dies/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Quanto hidrogênio aguarda sob terra? Investigação sobre depósitos naturais de hidrogênio subterrâneo, revisitando pesquisa seminal de Barbara Sherwood Lollar nos anos 1990 em minas profundas do Canadá. Descobre potencial imenso de hidrogênio geológico como fonte de energia limpa. A pesquisa sugere volumes significativos de H2 natural podem viabilizar economia de hidrogênio sem produção por eletrólise. O achado ressoa com interesse global em descarbonização e transição energética. Exploração de hidrogênio natural abre nova fronteira em energia renovável. MIT Technology Review" data-title="Quanto hidrogênio aguarda sob terra?" data-share-url="https://www.technologyreview.com/2026/08/17/1141560/how-much-hydrogen-awaits-us-underground/">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Quanto hidrogênio aguarda sob terra?</div>
+        <div class="news-summary">Investigação sobre depósitos naturais de hidrogênio subterrâneo, revisitando pesquisa seminal de Barbara Sherwood Lollar nos anos 1990 em minas profundas do Canadá. Descobre potencial imenso de hidrogênio geológico como fonte de energia limpa. A pesquisa sugere volumes significativos de H2 natural podem viabilizar economia de hidrogênio sem produção por eletrólise. O achado ressoa com interesse global em descarbonização e transição energética. Exploração de hidrogênio natural abre nova fronteira em energia renovável.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/17/1141560/how-much-hydrogen-awaits-us-underground/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Robinhood Chain TVL salta 45% em agosto conforme RWAs tokenizados perdem terreno Total Value Locked (TVL) na Robinhood Chain expandiu 45% durante agosto, com market cap de stablecoins na cadeia atingindo $640 milhões (maioria em USDe). Crescimento reflete aceleração de adoção de RWA nativa à cadeia. Robinhood continua apostando em integração deep com plataforma tradicional. Dinâmica sugere capital fluindo para soluções RWA de trading/finança. The Block" data-title="Robinhood Chain TVL salta 45% em agosto conforme RWAs tokenizados perdem terreno" data-share-url="https://www.theblock.co/news/ecosystems/2026-08-17-robinhood-chain-tvl-surges-45-august-tokenized-rwas-lose-ground-411998">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">19:26</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Robinhood Chain TVL salta 45% em agosto conforme RWAs tokenizados perdem terreno</div>
+        <div class="news-summary">Total Value Locked (TVL) na Robinhood Chain expandiu 45% durante agosto, com market cap de stablecoins na cadeia atingindo $640 milhões (maioria em USDe). Crescimento reflete aceleração de adoção de RWA nativa à cadeia. Robinhood continua apostando em integração deep com plataforma tradicional. Dinâmica sugere capital fluindo para soluções RWA de trading/finança.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/ecosystems/2026-08-17-robinhood-chain-tvl-surges-45-august-tokenized-rwas-lose-ground-411998" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Pai Kraken Payward se une ao Glasswing de Anthropic para segurança de IA Payward, empresa-mãe da exchange Kraken, ingressou no Project Glasswing de Anthropic, programa que fornece acesso a modelos de cibersegurança poderosos de IA para organizações vetadas. Payward utilizará modelo Claude Mythos para caçar vulnerabilidades e compartilhar achados open-source com comunidade cripto. A parceria combina expertise em segurança cripto com capacidades de IA defensiva. Objetiva reduzir riscos de hack e exploits em infraestrutura financeira descentralizada. CoinDesk" data-title="Pai Kraken Payward se une ao Glasswing de Anthropic para segurança de IA" data-share-url="https://www.coindesk.com/tech/2026/08/17/kraken-parent-payward-joins-anthropic-s-project-glasswing-for-ai-security-push">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">19:12</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Pai Kraken Payward se une ao Glasswing de Anthropic para segurança de IA</div>
+        <div class="news-summary">Payward, empresa-mãe da exchange Kraken, ingressou no Project Glasswing de Anthropic, programa que fornece acesso a modelos de cibersegurança poderosos de IA para organizações vetadas. Payward utilizará modelo Claude Mythos para caçar vulnerabilidades e compartilhar achados open-source com comunidade cripto. A parceria combina expertise em segurança cripto com capacidades de IA defensiva. Objetiva reduzir riscos de hack e exploits em infraestrutura financeira descentralizada.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/08/17/kraken-parent-payward-joins-anthropic-s-project-glasswing-for-ai-security-push" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="OCC aprova empresa cripto da família Trump para charter de confiança Controlador da Moeda dos EUA (OCC) concedeu aprovação condicional para a bid de charter de confiança da World Liberty Financial, empresa cripto ligada à família Trump. A aprovação marca primeira incursão institucional significativa de políticos americanos no setor. Dez democratas assinaram projeto de lei para impedir o que chamam de ingerência política corrupta no cripto. A decisão gera controvérsia sobre favorecimento político e adequação regulatória. World Liberty Financial poderá operar como entidade fiduciária licenciada nacionalmente. Cointelegraph" data-title="OCC aprova empresa cripto da família Trump para charter de confiança" data-share-url="https://cointelegraph.com/news/occ-donald-trump-world-liberty-financial-trust-charter?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">18:17</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">OCC aprova empresa cripto da família Trump para charter de confiança</div>
+        <div class="news-summary">Controlador da Moeda dos EUA (OCC) concedeu aprovação condicional para a bid de charter de confiança da World Liberty Financial, empresa cripto ligada à família Trump. A aprovação marca primeira incursão institucional significativa de políticos americanos no setor. Dez democratas assinaram projeto de lei para impedir o que chamam de ingerência política corrupta no cripto. A decisão gera controvérsia sobre favorecimento político e adequação regulatória. World Liberty Financial poderá operar como entidade fiduciária licenciada nacionalmente.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/occ-donald-trump-world-liberty-financial-trust-charter?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Tokenized equities triplicam market share com Ondo, Binance e xStocks dominando Mercado de equities tokenizadas expandiu para 15% de market share cripto (triplicando desde início de ano), com capitalização total alcançando ~$2,8 bilhões. Ondo, Binance e xStocks lideram segmento com ofertas de RWAs (Real World Assets). Crescimento reflete institucionalização e busca por yield em blockchain. Mercado ainda fragmentado mas tendência robusta de adoção. Regulação em evolução em EUA e Europa pode acelerar legalidade. The Block" data-title="Tokenized equities triplicam market share com Ondo, Binance e xStocks dominando" data-share-url="https://www.theblock.co/news/defi/2026-08-17-tokenized-equities-triple-market-share-ondo-binance-xstocks-dominate-411996">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">17:55</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Tokenized equities triplicam market share com Ondo, Binance e xStocks dominando</div>
+        <div class="news-summary">Mercado de equities tokenizadas expandiu para 15% de market share cripto (triplicando desde início de ano), com capitalização total alcançando ~$2,8 bilhões. Ondo, Binance e xStocks lideram segmento com ofertas de RWAs (Real World Assets). Crescimento reflete institucionalização e busca por yield em blockchain. Mercado ainda fragmentado mas tendência robusta de adoção. Regulação em evolução em EUA e Europa pode acelerar legalidade.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/defi/2026-08-17-tokenized-equities-triple-market-share-ondo-binance-xstocks-dominate-411996" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="XRP se segura em linha de preço de 2 anos mas gráficos disparam alerta vermelho XRP mantém defesa de linha de suporte dólar que tem sido mantida desde vitória eleitoral de Trump em 2024 (suporte psicológico importante). Entretanto, gráficos diários e semanais começam a disparar sinais bearish com formações de resistência rejeitadas. Technicals sugerem possível movimento para baixo se suporte romper. Momentum diminuiu notavelmente. Traders monitoram próximos níveis chave enquanto liquidez institucional permanece crucial para defesa de preço. Decrypt" data-title="XRP se segura em linha de preço de 2 anos mas gráficos disparam alerta vermelho" data-share-url="https://decrypt.co/375794/xrp-price-two-year-streak-charts-flash-warning">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">16:01</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">XRP se segura em linha de preço de 2 anos mas gráficos disparam alerta vermelho</div>
+        <div class="news-summary">XRP mantém defesa de linha de suporte dólar que tem sido mantida desde vitória eleitoral de Trump em 2024 (suporte psicológico importante). Entretanto, gráficos diários e semanais começam a disparar sinais bearish com formações de resistência rejeitadas. Technicals sugerem possível movimento para baixo se suporte romper. Momentum diminuiu notavelmente. Traders monitoram próximos níveis chave enquanto liquidez institucional permanece crucial para defesa de preço.</div>
+        <div class="news-link"><a href="https://decrypt.co/375794/xrp-price-two-year-streak-charts-flash-warning" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Binance planeja relançamento no Reino Unido com aplicação de licença FCA Binance reportadamente se move para obter licença do Financial Conduct Authority (FCA) britânico, sinalizando intenção de retomar operações reguladas no Reino Unido após banimento em junho 2021. O relatório sugere negociações avançadas com regulador e preparação de compliance estruture. A relicensing poderia restaurar acesso da exchange a 67 milhões de usuários potenciais do Reino Unido. A movimentação segue desaceleração de crackdown regulatório globalmente. Sucesso dependerá de demonstração de controles de AML/KYC robusto. Cointelegraph" data-title="Binance planeja relançamento no Reino Unido com aplicação de licença FCA" data-share-url="https://cointelegraph.com/news/binance-uk-launch-plans-fca-license?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">15:45</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Binance planeja relançamento no Reino Unido com aplicação de licença FCA</div>
+        <div class="news-summary">Binance reportadamente se move para obter licença do Financial Conduct Authority (FCA) britânico, sinalizando intenção de retomar operações reguladas no Reino Unido após banimento em junho 2021. O relatório sugere negociações avançadas com regulador e preparação de compliance estruture. A relicensing poderia restaurar acesso da exchange a 67 milhões de usuários potenciais do Reino Unido. A movimentação segue desaceleração de crackdown regulatório globalmente. Sucesso dependerá de demonstração de controles de AML/KYC robusto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/binance-uk-launch-plans-fca-license?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="PUMP token do Solana lidera ganhos com gráfico formando golden cross Token PUMP nativo de Solana's Pump.fun avançou 8% enquanto padrão técnico golden cross (cruzamento de médias móveis) começa a formar em gráfico diário. O padrão é considerado bullish por traders. PUMP participa do rally cripto amplo e obtém tração de narrativa de memecoins com utilidade. Volume de trading elevado acompanha movimento. Observadores alertam para possível overextension se rali acelerar. " data-title="PUMP token do Solana lidera ganhos com gráfico formando golden cross" data-share-url="https://decrypt.co/375788/solana-pump-price-crypto-market-golden-cross">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">15:29</span>
+          <span class="news-source"></span>
+        </div>
+        <div class="news-title">PUMP token do Solana lidera ganhos com gráfico formando golden cross</div>
+        <div class="news-summary">Token PUMP nativo de Solana's Pump.fun avançou 8% enquanto padrão técnico golden cross (cruzamento de médias móveis) começa a formar em gráfico diário. O padrão é considerado bullish por traders. PUMP participa do rally cripto amplo e obtém tração de narrativa de memecoins com utilidade. Volume de trading elevado acompanha movimento. Observadores alertam para possível overextension se rali acelerar.</div>
+        <div class="news-link"><a href="https://decrypt.co/375788/solana-pump-price-crypto-market-golden-cross" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Fundador BitMart rejeita chamados por auditoria enquanto usuários relatam fundos bloqueados Sheldon Lee, fundador BitMart, descartou demands de auditoria independente alegando que conta X em chinês que publicou denúncias foi hackeada. Usuários continuam reportando bloqueio de fundos e funcionários não pagos. Lee permanece desafiador contra transparência e disclosure de ativos/passivos. A situação evoca red flags de insolvência potencial ou fraude. Comunidade cripto pressiona por investigação independente. BitMart enfrenta erosão de credibilidade. CoinDesk" data-title="Fundador BitMart rejeita chamados por auditoria enquanto usuários relatam fundos bloqueados" data-share-url="https://www.coindesk.com/business/2026/08/17/bitmart-founder-dismisses-calls-for-audit-as-users-report-blocked-funds-unpaid-employees">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">13:40</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Fundador BitMart rejeita chamados por auditoria enquanto usuários relatam fundos bloqueados</div>
+        <div class="news-summary">Sheldon Lee, fundador BitMart, descartou demands de auditoria independente alegando que conta X em chinês que publicou denúncias foi hackeada. Usuários continuam reportando bloqueio de fundos e funcionários não pagos. Lee permanece desafiador contra transparência e disclosure de ativos/passivos. A situação evoca red flags de insolvência potencial ou fraude. Comunidade cripto pressiona por investigação independente. BitMart enfrenta erosão de credibilidade.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/17/bitmart-founder-dismisses-calls-for-audit-as-users-report-blocked-funds-unpaid-employees" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin bate $64K conforme ouro avança e mercado oscila com retórica Irã-EUA Bitcoin ultrapassou barreira de $64.000 com ganho diário de 2%, enquanto ouro também ganhou força em contexto de volatilidade macroeconômica. Mercado americano oscilaou frente a novas ameaças retóricas de Trump contra Irã/Omã. O movimento mostra correlação crescente entre cripto e ativos de refúgio em períodos de incerteza geopolítica. Ações americanas caíram levemente. Dinâmica sugere liquidez buscando proteção inflacionária e hedge geopolítico. Bitcoin mantém suporte em níveis alto apesar volatilidade de curto prazo. Cointelegraph" data-title="Bitcoin bate $64K conforme ouro avança e mercado oscila com retórica Irã-EUA" data-share-url="https://cointelegraph.com/markets/bitcoin-hits-64k-as-gold-gains-while-oil-shakes-off-trump-oman-threat?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">13:16</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin bate $64K conforme ouro avança e mercado oscila com retórica Irã-EUA</div>
+        <div class="news-summary">Bitcoin ultrapassou barreira de $64.000 com ganho diário de 2%, enquanto ouro também ganhou força em contexto de volatilidade macroeconômica. Mercado americano oscilaou frente a novas ameaças retóricas de Trump contra Irã/Omã. O movimento mostra correlação crescente entre cripto e ativos de refúgio em períodos de incerteza geopolítica. Ações americanas caíram levemente. Dinâmica sugere liquidez buscando proteção inflacionária e hedge geopolítico. Bitcoin mantém suporte em níveis alto apesar volatilidade de curto prazo.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-hits-64k-as-gold-gains-while-oil-shakes-off-trump-oman-threat?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Compound apostas $52 milhões e novo time liderança em transição para foco institucional Protocolo DeFi Compound lançou estratégia de pivot para mercado institucional, investindo $52 milhões e instalando novo time de liderança. Assets locked em protocolo caíram significativamente desde pico 5 anos atrás. Novo foco busca atrair traders e gestores institucionais contra varejo. O repositionamento reconhece saturação de mercado retail DeFi lending. Sucesso dependerá de diferenciais competitivos e conformidade regulatória para clientes institucionais. CoinDesk" data-title="Compound apostas $52 milhões e novo time liderança em transição para foco institucional" data-share-url="https://www.coindesk.com/business/2026/08/17/compound-bets-usd52-million-new-leadership-team-in-switch-to-institutional-focus">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">12:32</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Compound apostas $52 milhões e novo time liderança em transição para foco institucional</div>
+        <div class="news-summary">Protocolo DeFi Compound lançou estratégia de pivot para mercado institucional, investindo $52 milhões e instalando novo time de liderança. Assets locked em protocolo caíram significativamente desde pico 5 anos atrás. Novo foco busca atrair traders e gestores institucionais contra varejo. O repositionamento reconhece saturação de mercado retail DeFi lending. Sucesso dependerá de diferenciais competitivos e conformidade regulatória para clientes institucionais.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/17/compound-bets-usd52-million-new-leadership-team-in-switch-to-institutional-focus" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Harmony planeja rollback completo, apagando 109 mil transações após exploração de ONE Harmony anunciou plano para rollback de cadeia antes de ataque onde explorador falsificou 3 trilhões de tokens ONE. Decisão de reverter 109 mil transações foi tomada após análise de alternativas como queima de token e blacklist de carteiras. Consenso concluiu que rollback era 'mais justo e seguro'. A abordagem controversa levanta questões sobre imutabilidade de blockchain e precedente para validação. Comunidade Harmony debate trade-offs de segurança vs descentralização. The Block" data-title="Harmony planeja rollback completo, apagando 109 mil transações após exploração de ONE" data-share-url="https://www.theblock.co/news/ecosystems/2026-08-17-harmony-plans-pre-attack-rollback-after-exploiter-forged-3-trillion-one-tokens-411976">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">12:06</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Harmony planeja rollback completo, apagando 109 mil transações após exploração de ONE</div>
+        <div class="news-summary">Harmony anunciou plano para rollback de cadeia antes de ataque onde explorador falsificou 3 trilhões de tokens ONE. Decisão de reverter 109 mil transações foi tomada após análise de alternativas como queima de token e blacklist de carteiras. Consenso concluiu que rollback era 'mais justo e seguro'. A abordagem controversa levanta questões sobre imutabilidade de blockchain e precedente para validação. Comunidade Harmony debate trade-offs de segurança vs descentralização.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/ecosystems/2026-08-17-harmony-plans-pre-attack-rollback-after-exploiter-forged-3-trillion-one-tokens-411976" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Tesouro americano propõe regras do GENIUS Act para stablecoins Departamento do Tesouro americano propôs regulações implementando o GENIUS Act (lei sobre stablecoins assinada em 2025), estabelecendo definições centrais e jurisdições. As regras especificam que entidades não podem emitir stablecoins de pagamento nos EUA sem licença federal ou estadual apropriada. O período de comentários públicos abre caminho para feedback de indústria antes da finalização. As regulações entram em vigor em janeiro de 2027. A proposta marca etapa crítica na formalização do framework regulatório cripto americano. CoinDesk" data-title="Tesouro americano propõe regras do GENIUS Act para stablecoins" data-share-url="https://www.coindesk.com/policy/2026/08/17/u-s-treasury-department-proposes-genius-act-stablecoin-rule">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">11:44</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Tesouro americano propõe regras do GENIUS Act para stablecoins</div>
+        <div class="news-summary">Departamento do Tesouro americano propôs regulações implementando o GENIUS Act (lei sobre stablecoins assinada em 2025), estabelecendo definições centrais e jurisdições. As regras especificam que entidades não podem emitir stablecoins de pagamento nos EUA sem licença federal ou estadual apropriada. O período de comentários públicos abre caminho para feedback de indústria antes da finalização. As regulações entram em vigor em janeiro de 2027. A proposta marca etapa crítica na formalização do framework regulatório cripto americano.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/17/u-s-treasury-department-proposes-genius-act-stablecoin-rule" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="O hack Coldcard prova que reputação não é modelo de segurança Análise de CEO da Foundation Zach Herbert sobre bug em código Coldcard que permaneceu desconhecido por 5 anos, levando $100 milhões em fundos hackeados. Comunidade cripto construída em 'don't trust, verify' externalizou julgamento para criador único por meia década. O incidente revela falha de processo de verificação peer e concentração de confiança. Lições incluem necessidade de múltiplas auditorias independentes e diversidade de validação. Coldcard perdeu posição como 'carteira de ouro' da comunidade. CoinDesk" data-title="O hack Coldcard prova que reputação não é modelo de segurança" data-share-url="https://www.coindesk.com/opinion/2026/08/17/the-coldcard-hack-proves-reputation-is-not-a-security-model">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">11:09</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">O hack Coldcard prova que reputação não é modelo de segurança</div>
+        <div class="news-summary">Análise de CEO da Foundation Zach Herbert sobre bug em código Coldcard que permaneceu desconhecido por 5 anos, levando $100 milhões em fundos hackeados. Comunidade cripto construída em 'don't trust, verify' externalizou julgamento para criador único por meia década. O incidente revela falha de processo de verificação peer e concentração de confiança. Lições incluem necessidade de múltiplas auditorias independentes e diversidade de validação. Coldcard perdeu posição como 'carteira de ouro' da comunidade.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/opinion/2026/08/17/the-coldcard-hack-proves-reputation-is-not-a-security-model" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Como bug no código Coldcard passou desapercebido por anos, levando $100 milhões roubados Investigação aprofundada de CoinDesk examina a vulnerabilidade específica no firmware Coldcard que permitiu roubo de $100 milhões. Bug era exploração de validação fraca em transações assinadas. Comunidade de cripto, centrada em verificação de código, confiou cegamente em análise do criador. O hack representa maior falha de segurança em carteira hardware em anos. Iniciou auditoria global de carteiras de hardware similares. Confiança em criadores únicos provada falha. CoinDesk" data-title="Como bug no código Coldcard passou desapercebido por anos, levando $100 milhões roubados" data-share-url="https://www.coindesk.com/tech/2026/08/17/how-a-bug-in-coldcard-s-code-went-unnoticed-for-years-leading-to-usd100-million-in-hacked-funds">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">10:57</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Como bug no código Coldcard passou desapercebido por anos, levando $100 milhões roubados</div>
+        <div class="news-summary">Investigação aprofundada de CoinDesk examina a vulnerabilidade específica no firmware Coldcard que permitiu roubo de $100 milhões. Bug era exploração de validação fraca em transações assinadas. Comunidade de cripto, centrada em verificação de código, confiou cegamente em análise do criador. O hack representa maior falha de segurança em carteira hardware em anos. Iniciou auditoria global de carteiras de hardware similares. Confiança em criadores únicos provada falha.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/08/17/how-a-bug-in-coldcard-s-code-went-unnoticed-for-years-leading-to-usd100-million-in-hacked-funds" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitmine chega a 4,8% do suprimento de Ethereum com compra de 9.926 ETH Empresa de treasury cripto Bitmine, liderada por Tom Lee, comprou mais 9.926 ETH última semana, expandindo posição total para 4,8% de todo o suprimento circulante de Ethereum (5,82 milhões de tokens). Holdings totais somam ~$11 bilhões em valor de mercado. A posição monumental posiciona Bitmine como um dos maiores detentores de ETH globalmente. Compras persistem desde junho 2025 apesar de mercado volátil. A estratégia de acumulação institucional de ETH reforça narrativa bullish de longo prazo. The Block" data-title="Bitmine chega a 4,8% do suprimento de Ethereum com compra de 9.926 ETH" data-share-url="https://www.theblock.co/news/business/2026-08-17-bitmine-adds-9926-eth-taking-total-holdings-to-roughly-11-billion-411968">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">10:53</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Bitmine chega a 4,8% do suprimento de Ethereum com compra de 9.926 ETH</div>
+        <div class="news-summary">Empresa de treasury cripto Bitmine, liderada por Tom Lee, comprou mais 9.926 ETH última semana, expandindo posição total para 4,8% de todo o suprimento circulante de Ethereum (5,82 milhões de tokens). Holdings totais somam ~$11 bilhões em valor de mercado. A posição monumental posiciona Bitmine como um dos maiores detentores de ETH globalmente. Compras persistem desde junho 2025 apesar de mercado volátil. A estratégia de acumulação institucional de ETH reforça narrativa bullish de longo prazo.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-08-17-bitmine-adds-9926-eth-taking-total-holdings-to-roughly-11-billion-411968" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Strategy não compra Bitcoin mas eleva reserva em dólares para $4,8 bilhões Empresa cripto de treasury Strategy, liderada por Michael Saylor, não adicionou Bitcoin holdings na última semana apesar de levantamento de $333,7 milhões via venda de ações. Adicionou $149,1 milhões a reserva em dólares (agora em $4,8 bilhões) e continuou recompras de ações (STRC). Pausa em compras de BTC sugere estratégia de diversificação temporária. Holdings Bitcoin permanecem em nível anterior. Priorização de liquidez em dólares reflete cautela macroeconômica. CoinDesk" data-title="Strategy não compra Bitcoin mas eleva reserva em dólares para $4,8 bilhões" data-share-url="https://www.coindesk.com/markets/2026/08/17/no-change-in-bitcoin-holdings-as-strategy-lifted-dollar-reserve-and-bought-back-more-strc-last-week">
+        <div class="news-meta">
+          <span class="news-date">17 ago 2026</span>
+          <span class="news-time">09:19</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Strategy não compra Bitcoin mas eleva reserva em dólares para $4,8 bilhões</div>
+        <div class="news-summary">Empresa cripto de treasury Strategy, liderada por Michael Saylor, não adicionou Bitcoin holdings na última semana apesar de levantamento de $333,7 milhões via venda de ações. Adicionou $149,1 milhões a reserva em dólares (agora em $4,8 bilhões) e continuou recompras de ações (STRC). Pausa em compras de BTC sugere estratégia de diversificação temporária. Holdings Bitcoin permanecem em nível anterior. Priorização de liquidez em dólares reflete cautela macroeconômica.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/08/17/no-change-in-bitcoin-holdings-as-strategy-lifted-dollar-reserve-and-bought-back-more-strc-last-week" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
