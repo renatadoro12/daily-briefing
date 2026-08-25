@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">25 DE AGOSTO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 25 de agosto marca uma intensificação de tensões geopolíticas enquanto mercados digitais e tradicionais se reequilibram: conflitos comerciais entre EUA e Canadá escalaram para guerra tarifária completa, sanções contra o Irã ganham força diplomática, e a tecnologia blockchain avança em adoção institucional com bancos americanos planejando rede própria. Simultaneamente, Bitcoin recupera-se acima de US$ 80 mil impulsionado por fluxos de ETF e tokenização de ativos reais, enquanto inovações em IA e criptografia transformam infraestruturas financeiras globais.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-08-24/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15">2026-08-15</option><option value="2026-08-16">2026-08-16</option><option value="2026-08-17">2026-08-17</option><option value="2026-08-18">2026-08-18</option><option value="2026-08-19">2026-08-19</option><option value="2026-08-20">2026-08-20</option><option value="2026-08-21">2026-08-21</option><option value="2026-08-22">2026-08-22</option><option value="2026-08-23">2026-08-23</option><option value="2026-08-24">2026-08-24</option><option value="2026-08-25" selected>2026-08-25</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Canadá contra-ataca na guerra comercial com Trump com tarifas de até 50% O Canadá anunciou tarifas retaliatórias de até 50% sobre produtos americanos como papel alumínio, eletrodomésticos e peixes, em resposta à escalada de impostos comerciais de Trump. A medida visa proteger trabalhadores, produtores e fabricantes locais prejudicados pela estratégia protecionista dos EUA. As negociações que duraram horas chegaram ao impasse, com cada lado acusando o outro de rejeitar as melhores ofertas. A guerra tarifária ameaça aumentar custos para consumidores em ambos os países e desestabilizar cadeias de suprimento na América do Norte. O Canadá, liderado pelo premiê Chrystia Freeland, mantém posição firme de que não cederá a pressões unilaterais. Analistas temem que o conflito se estenda a outros setores econômicos críticos. New York Times" data-title="Canadá contra-ataca na guerra comercial com Trump com tarifas de até 50%" data-share-url="https://www.nytimes.com/2026/08/25/world/canada/canada-tariffs-trump-carney-retaliatory.html">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">15:42</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Canadá contra-ataca na guerra comercial com Trump com tarifas de até 50%</div>
+        <div class="news-summary">O Canadá anunciou tarifas retaliatórias de até 50% sobre produtos americanos como papel alumínio, eletrodomésticos e peixes, em resposta à escalada de impostos comerciais de Trump. A medida visa proteger trabalhadores, produtores e fabricantes locais prejudicados pela estratégia protecionista dos EUA. As negociações que duraram horas chegaram ao impasse, com cada lado acusando o outro de rejeitar as melhores ofertas. A guerra tarifária ameaça aumentar custos para consumidores em ambos os países e desestabilizar cadeias de suprimento na América do Norte. O Canadá, liderado pelo premiê Chrystia Freeland, mantém posição firme de que não cederá a pressões unilaterais. Analistas temem que o conflito se estenda a outros setores econômicos críticos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/25/world/canada/canada-tariffs-trump-carney-retaliatory.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Irã pode ter pouco a perder enquanto EUA aperta sua economia O Irã enfrenta nova onda de sanções econômicas dos EUA em estratégia que visa evitar escalada militar, mas especialistas alertam que pode ter efeito oposto. Líderes iranianos prometem retaliação em toda a região do Golfo, rica em petróleo, e a campanha de pressão econômica pode provocar conflitos militares em vez de contê-los. O país já sofre com sanções históricas que impactam seu PIB e acesso ao mercado financeiro global. Analistas apontam que Teerã pode ter menos a perder ao adotar postura agressiva, especialmente se vias diplomáticas falharem. A situação reflete o dilema americano entre deterência econômica e risco de escalada armada. O impasse reforça incerteza geopolítica no Oriente Médio com implicações para preços de energia global. New York Times" data-title="Irã pode ter pouco a perder enquanto EUA aperta sua economia" data-share-url="https://www.nytimes.com/2026/08/25/world/middleeast/iran-us-economy-sanctions.html">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">15:28</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Irã pode ter pouco a perder enquanto EUA aperta sua economia</div>
+        <div class="news-summary">O Irã enfrenta nova onda de sanções econômicas dos EUA em estratégia que visa evitar escalada militar, mas especialistas alertam que pode ter efeito oposto. Líderes iranianos prometem retaliação em toda a região do Golfo, rica em petróleo, e a campanha de pressão econômica pode provocar conflitos militares em vez de contê-los. O país já sofre com sanções históricas que impactam seu PIB e acesso ao mercado financeiro global. Analistas apontam que Teerã pode ter menos a perder ao adotar postura agressiva, especialmente se vias diplomáticas falharem. A situação reflete o dilema americano entre deterência econômica e risco de escalada armada. O impasse reforça incerteza geopolítica no Oriente Médio com implicações para preços de energia global.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/25/world/middleeast/iran-us-economy-sanctions.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="EUA remove Síria de lista de patrocinadores de terrorismo, levantando sanções econômicas A administração Trump removeu formalmente a Síria de sua lista de Estados patrocinadores de terrorismo, levantando sanções econômicas impostas há décadas sobre Damasco. A decisão abre esperança de recuperação econômica do país após sua brutal guerra civil que matou centenas de milhares. A mudança diplomática reflete tentativa de normalizar relações com o novo governo sírio e reintegrar a nação à economia global. Especialistas veem movimento como reconhecimento de mudanças políticas em Damasco e possibilidade de estabilização regional. No entanto, preocupações com direitos humanos permanecem, e adoção de sanções será gradual. A ação marca passo significativo na reconfiguração geopolítica do Oriente Médio pós-conflito. New York Times" data-title="EUA remove Síria de lista de patrocinadores de terrorismo, levantando sanções econômicas" data-share-url="https://www.nytimes.com/2026/08/25/world/middleeast/us-syria-terrorism-list-sanctions.html">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">10:03</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">EUA remove Síria de lista de patrocinadores de terrorismo, levantando sanções econômicas</div>
+        <div class="news-summary">A administração Trump removeu formalmente a Síria de sua lista de Estados patrocinadores de terrorismo, levantando sanções econômicas impostas há décadas sobre Damasco. A decisão abre esperança de recuperação econômica do país após sua brutal guerra civil que matou centenas de milhares. A mudança diplomática reflete tentativa de normalizar relações com o novo governo sírio e reintegrar a nação à economia global. Especialistas veem movimento como reconhecimento de mudanças políticas em Damasco e possibilidade de estabilização regional. No entanto, preocupações com direitos humanos permanecem, e adoção de sanções será gradual. A ação marca passo significativo na reconfiguração geopolítica do Oriente Médio pós-conflito.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/25/world/middleeast/us-syria-terrorism-list-sanctions.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Tanques ocidentais enviados à Ucrânia tornaram-se quase inutilizáveis contra drones A Ucrânia recebeu os caros tanques ocidentais que solicitava, mas drones russos os tornaram praticamente inutilizáveis em combate moderno. Analistas militares documentam sucessivas perdas de sistemas blindados avançados contra tecnologia de drones de baixo custo, revertendo décadas de supremacia de armaduras terrestres. Os tanques alemães Leopard, americanos M1 Abrams e britânicos Challenger enfrentam vulnerabilidades fatais contra ataques aéreos coordenados. A dinâmica de combate demonstra que ativos blindados tradicionais enfrentam obsolescência tática em conflitos onde drones dominam o espaço aéreo. Ucrânia continua pedindo sistemas de defesa aérea mais eficazes, não apenas tanques. O cenário levanta questões sobre futuro da guerra convencional e prepara exércitos mundiais para reavaliações estratégicas profundas. New York Times" data-title="Tanques ocidentais enviados à Ucrânia tornaram-se quase inutilizáveis contra drones" data-share-url="https://www.nytimes.com/2026/08/25/world/europe/ukraine-russia-tanks.html">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">06:01</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Tanques ocidentais enviados à Ucrânia tornaram-se quase inutilizáveis contra drones</div>
+        <div class="news-summary">A Ucrânia recebeu os caros tanques ocidentais que solicitava, mas drones russos os tornaram praticamente inutilizáveis em combate moderno. Analistas militares documentam sucessivas perdas de sistemas blindados avançados contra tecnologia de drones de baixo custo, revertendo décadas de supremacia de armaduras terrestres. Os tanques alemães Leopard, americanos M1 Abrams e britânicos Challenger enfrentam vulnerabilidades fatais contra ataques aéreos coordenados. A dinâmica de combate demonstra que ativos blindados tradicionais enfrentam obsolescência tática em conflitos onde drones dominam o espaço aéreo. Ucrânia continua pedindo sistemas de defesa aérea mais eficazes, não apenas tanques. O cenário levanta questões sobre futuro da guerra convencional e prepara exércitos mundiais para reavaliações estratégicas profundas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/25/world/europe/ukraine-russia-tanks.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Trump aumenta preço do visto H-1B favorito de big techs Departamento de Segurança Interna anunciou taxa de mais de US$ 103 mil sobre vistos H-1B em poucas horas, elevando custos de contratação de especialistas em tecnologia estrangeiros. Medida afeta diretamente estratégias de recrutamento de gigantes como Google, Meta e Microsoft que dependem de talentos internacionais. Aumento dramático de custos forçará empresas a reavaliarem decisões de contratação e potencialmente reduzir vagas para estrangeiros. Setor de tecnologia, historicamente relutante em imigração restrita, enfrenta pressão política crescente sob administração Trump. Implementação de taxa pode desencadear mudanças nas operações globais de big techs e acelerar automação de funções. Efeito cascata poderá impactar inovação e competitividade americana em setores críticos como IA e computação quântica. The Verge" data-title="Trump aumenta preço do visto H-1B favorito de big techs" data-share-url="https://www.theverge.com/policy/984723/trump-h1b-fee-asylum-legal-immigration">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:45</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Trump aumenta preço do visto H-1B favorito de big techs</div>
+        <div class="news-summary">Departamento de Segurança Interna anunciou taxa de mais de US$ 103 mil sobre vistos H-1B em poucas horas, elevando custos de contratação de especialistas em tecnologia estrangeiros. Medida afeta diretamente estratégias de recrutamento de gigantes como Google, Meta e Microsoft que dependem de talentos internacionais. Aumento dramático de custos forçará empresas a reavaliarem decisões de contratação e potencialmente reduzir vagas para estrangeiros. Setor de tecnologia, historicamente relutante em imigração restrita, enfrenta pressão política crescente sob administração Trump. Implementação de taxa pode desencadear mudanças nas operações globais de big techs e acelerar automação de funções. Efeito cascata poderá impactar inovação e competitividade americana em setores críticos como IA e computação quântica.</div>
+        <div class="news-link"><a href="https://www.theverge.com/policy/984723/trump-h1b-fee-asylum-legal-immigration" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Alibaba lança Qwen 3.8-Flash-Next como prévia do Qwen 4 Equipe Qwen da Alibaba revelou antecipadamente Qwen 3.8-Flash-Next como amostra do que esperar de Qwen 4, próximo grande modelo de linguagem da empresa. Especificações mostram arquitetura operando em escala próxima a modelos fronteiriços usando apenas fração da potência computacional necessária. Lançamento antecipado alimenta competição intensa entre fabricantes chineses e americanos de IA generativa. Alibaba posiciona Qwen como alternativa eficiente a Claude e GPT em mercado cada vez mais competitivo. Performance do novo modelo em benchmarks iniciais impressiona analistas e sugere vantagem tecnológica significativa em eficiência. Movimento reflete aceleração da corrida armamentista de IA entre China e EUA com implicações geopolíticas profundas. Decrypt" data-title="Alibaba lança Qwen 3.8-Flash-Next como prévia do Qwen 4" data-share-url="https://decrypt.co/376530/alibaba-qwen-3-8-flash-next-preview-qwen-4">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:16</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Alibaba lança Qwen 3.8-Flash-Next como prévia do Qwen 4</div>
+        <div class="news-summary">Equipe Qwen da Alibaba revelou antecipadamente Qwen 3.8-Flash-Next como amostra do que esperar de Qwen 4, próximo grande modelo de linguagem da empresa. Especificações mostram arquitetura operando em escala próxima a modelos fronteiriços usando apenas fração da potência computacional necessária. Lançamento antecipado alimenta competição intensa entre fabricantes chineses e americanos de IA generativa. Alibaba posiciona Qwen como alternativa eficiente a Claude e GPT em mercado cada vez mais competitivo. Performance do novo modelo em benchmarks iniciais impressiona analistas e sugere vantagem tecnológica significativa em eficiência. Movimento reflete aceleração da corrida armamentista de IA entre China e EUA com implicações geopolíticas profundas.</div>
+        <div class="news-link"><a href="https://decrypt.co/376530/alibaba-qwen-3-8-flash-next-preview-qwen-4" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Seu cérebro sob IA: chatbots causam mudanças cognitivas inesperadas Estudo do MIT Media Lab liderado por Pattie Maes revela que usuários de chatbots baseados em IA para acompanhar notícias sofrem mudanças cognitivas significativas e inesperadas. Pesquisa aponta que dependência de assistentes de IA para curadoria de informações altera padrões de pensamento crítico e retenção de memória dos usuários. O trabalho questiona benefícios aparentes de delegar tarefas de processamento de informação a sistemas de IA. Implicações se estendem a aprendizado, produtividade e desenvolvimento intelectual de longo prazo. Os achados alimentam debate crescente sobre externalização cognitiva e seus custos ocultos. MIT planeja expandir pesquisa para medir impacto em diferentes demográficos e contextos de uso. MIT Technology Review" data-title="Seu cérebro sob IA: chatbots causam mudanças cognitivas inesperadas" data-share-url="https://www.technologyreview.com/2026/08/25/1140958/your-brain-on-ai">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Seu cérebro sob IA: chatbots causam mudanças cognitivas inesperadas</div>
+        <div class="news-summary">Estudo do MIT Media Lab liderado por Pattie Maes revela que usuários de chatbots baseados em IA para acompanhar notícias sofrem mudanças cognitivas significativas e inesperadas. Pesquisa aponta que dependência de assistentes de IA para curadoria de informações altera padrões de pensamento crítico e retenção de memória dos usuários. O trabalho questiona benefícios aparentes de delegar tarefas de processamento de informação a sistemas de IA. Implicações se estendem a aprendizado, produtividade e desenvolvimento intelectual de longo prazo. Os achados alimentam debate crescente sobre externalização cognitiva e seus custos ocultos. MIT planeja expandir pesquisa para medir impacto em diferentes demográficos e contextos de uso.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/25/1140958/your-brain-on-ai" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Tecnologia MIT potencializou transmissões ao vivo da Missão Artemis II Tecnologia de comunicação desenvolvida no MIT permitiu transmissões de alta definição da missão Artemis II, substituindo os sistemas de rádio frequência dos anos 1960-70 que produziam imagens granuladas. O sistema modernizado captura vídeo cristalino de operações lunares e expedições de astronautas em tempo real com qualidade inédita. Inovação compara drasticamente com primeiras missões Apollo, quando imagens transmitidas eram praticamente irreconhecíveis. A tecnologia utiliza compressão avançada e protocolos de transmissão robustos contra interferências. Êxito na Artemis II valida abordagem do MIT e abre caminho para futuras missões tripuladas com capacidades de transmissão superiores. Aplicações potenciais estendem-se a exploração profunda do espaço e pesquisa científica remota. MIT Technology Review" data-title="Tecnologia MIT potencializou transmissões ao vivo da Missão Artemis II" data-share-url="https://www.technologyreview.com/2026/08/25/1140961/mit-tech-powered-the-artemis-ii-livestreams">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Tecnologia MIT potencializou transmissões ao vivo da Missão Artemis II</div>
+        <div class="news-summary">Tecnologia de comunicação desenvolvida no MIT permitiu transmissões de alta definição da missão Artemis II, substituindo os sistemas de rádio frequência dos anos 1960-70 que produziam imagens granuladas. O sistema modernizado captura vídeo cristalino de operações lunares e expedições de astronautas em tempo real com qualidade inédita. Inovação compara drasticamente com primeiras missões Apollo, quando imagens transmitidas eram praticamente irreconhecíveis. A tecnologia utiliza compressão avançada e protocolos de transmissão robustos contra interferências. Êxito na Artemis II valida abordagem do MIT e abre caminho para futuras missões tripuladas com capacidades de transmissão superiores. Aplicações potenciais estendem-se a exploração profunda do espaço e pesquisa científica remota.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/25/1140961/mit-tech-powered-the-artemis-ii-livestreams" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Vacinas que estimulam células T contra tumores mostram promessa em testes clínicos Vacinas imunoterapêuticas que ativam células T para atacar tumores demonstraram resultados promissores em testes clínicos, com alguns candidatos já aprovados pela FDA para certos tipos de câncer. Abordagem revoluciona tratamento oncológico ao treinar sistema imunológico do próprio paciente como arma contra câncer. Vários fabricantes farmacêuticos avançam em pipeline de candidatos com potencial comercial massivo. Tecnologia combina descobertas em biologia molecular com machine learning para personalizar resposta imunológica. Sucesso em testes valida décadas de pesquisa em imunoterapia e abre mercado multibilionário em oncologia de precisão. Perspectiva transforma câncer de doença terminal em condição gerenciável para milhões de pacientes globalmente. MIT Technology Review" data-title="Vacinas que estimulam células T contra tumores mostram promessa em testes clínicos" data-share-url="https://www.technologyreview.com/2026/08/25/1140949/amping-up-t-cells-to-target-cancer">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Vacinas que estimulam células T contra tumores mostram promessa em testes clínicos</div>
+        <div class="news-summary">Vacinas imunoterapêuticas que ativam células T para atacar tumores demonstraram resultados promissores em testes clínicos, com alguns candidatos já aprovados pela FDA para certos tipos de câncer. Abordagem revoluciona tratamento oncológico ao treinar sistema imunológico do próprio paciente como arma contra câncer. Vários fabricantes farmacêuticos avançam em pipeline de candidatos com potencial comercial massivo. Tecnologia combina descobertas em biologia molecular com machine learning para personalizar resposta imunológica. Sucesso em testes valida décadas de pesquisa em imunoterapia e abre mercado multibilionário em oncologia de precisão. Perspectiva transforma câncer de doença terminal em condição gerenciável para milhões de pacientes globalmente.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/25/1140949/amping-up-t-cells-to-target-cancer" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Sensores ingeríveis medem temperatura corporal do interior com precisão antes impossível Novos sensores de temperatura ingeríveis capturam temperatura corporal central com precisão até agora impossível, superando termômetros orais e de testa que frequentemente falham. Tecnologia utiliza micro-eletrônica sem fio para transmitir dados de temperatura em tempo real enquanto passa pelo trato digestivo. Aplicações clínicas incluem monitoramento de febre, hipertermia maligna durante cirurgias e condições crónicas que requerem medição contínua. Alguns modelos já estão em mercado mas enfrentam limitações de custo e aceitação pelo público. Dispositivos podem revolucionar diagnóstico médico ao fornecer dados fisiológicos contínuos e precisos. Tecnologia abre porta para implantes ingeríveis de monitoramento de saúde com potencial transformador em medicina preventiva. MIT Technology Review" data-title="Sensores ingeríveis medem temperatura corporal do interior com precisão antes impossível" data-share-url="https://www.technologyreview.com/2026/08/25/1140952/taking-your-temperature-from-the-inside">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Sensores ingeríveis medem temperatura corporal do interior com precisão antes impossível</div>
+        <div class="news-summary">Novos sensores de temperatura ingeríveis capturam temperatura corporal central com precisão até agora impossível, superando termômetros orais e de testa que frequentemente falham. Tecnologia utiliza micro-eletrônica sem fio para transmitir dados de temperatura em tempo real enquanto passa pelo trato digestivo. Aplicações clínicas incluem monitoramento de febre, hipertermia maligna durante cirurgias e condições crónicas que requerem medição contínua. Alguns modelos já estão em mercado mas enfrentam limitações de custo e aceitação pelo público. Dispositivos podem revolucionar diagnóstico médico ao fornecer dados fisiológicos contínuos e precisos. Tecnologia abre porta para implantes ingeríveis de monitoramento de saúde com potencial transformador em medicina preventiva.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/25/1140952/taking-your-temperature-from-the-inside" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Câmeras submarinas penetram águas turvas usando nova técnica de visão computacional Pesquisadores desenvolveram técnica inovadora que permite veículos operados remotamente capturarem imagens claras mesmo quando levantam nuvens de sedimento no fundo do mar. Visão computacional utiliza múltiplos sensores e processamento em tempo real para reconstruir cenas através de turbidez extrema. Tecnologia revoluciona exploração de oceano profundo, pesquisa marinha e operações de cabo submarino que historicamente sofreram com degradação de imagem. Militares e empresas de energia offshore mostram interesse comercial significativo na tecnologia. Aplicações potenciais estendem-se a arqueologia submarina e biologia marinha com capacidades de documentação nunca antes possível. Inovação reafirma papel da IA em expandir fronteiras do conhecimento humano em ambientes hostis. MIT Technology Review" data-title="Câmeras submarinas penetram águas turvas usando nova técnica de visão computacional" data-share-url="https://www.technologyreview.com/2026/08/25/1140955/seeing-through-murky-waters">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Câmeras submarinas penetram águas turvas usando nova técnica de visão computacional</div>
+        <div class="news-summary">Pesquisadores desenvolveram técnica inovadora que permite veículos operados remotamente capturarem imagens claras mesmo quando levantam nuvens de sedimento no fundo do mar. Visão computacional utiliza múltiplos sensores e processamento em tempo real para reconstruir cenas através de turbidez extrema. Tecnologia revoluciona exploração de oceano profundo, pesquisa marinha e operações de cabo submarino que historicamente sofreram com degradação de imagem. Militares e empresas de energia offshore mostram interesse comercial significativo na tecnologia. Aplicações potenciais estendem-se a arqueologia submarina e biologia marinha com capacidades de documentação nunca antes possível. Inovação reafirma papel da IA em expandir fronteiras do conhecimento humano em ambientes hostis.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/08/25/1140955/seeing-through-murky-waters" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Pesquisadores encolhem modelo de IA e, de alguma forma, o tornam mais inteligente Novo técnica de compressão de IA conseguiu reduzir tamanho de modelo neural enquanto paradoxalmente melhora seu desempenho e capacidade de raciocínio. Resultado desafia convenção de que modelos menores sempre resultam em sistemas menos capazes e mais burros. A inovação permite execução de IA de classe fronteiriça em dispositivos periféricos como smartphones com fração da energia. Pesquisadores utilizaram destilação de conhecimento avançada combinada com quantização adaptativa para atingir compressão extrema sem perda de capacidade. Implicações transformam economia de modelos de IA, tornando processamento on-device viável em larga escala. Tecnologia poderá revolucionar privacidade de dados já que processamento deixa de depender de servidores em nuvem. Decrypt" data-title="Pesquisadores encolhem modelo de IA e, de alguma forma, o tornam mais inteligente" data-share-url="https://decrypt.co/376536/researchers-shrink-ai-model-made-smarter">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">17:46</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Pesquisadores encolhem modelo de IA e, de alguma forma, o tornam mais inteligente</div>
+        <div class="news-summary">Novo técnica de compressão de IA conseguiu reduzir tamanho de modelo neural enquanto paradoxalmente melhora seu desempenho e capacidade de raciocínio. Resultado desafia convenção de que modelos menores sempre resultam em sistemas menos capazes e mais burros. A inovação permite execução de IA de classe fronteiriça em dispositivos periféricos como smartphones com fração da energia. Pesquisadores utilizaram destilação de conhecimento avançada combinada com quantização adaptativa para atingir compressão extrema sem perda de capacidade. Implicações transformam economia de modelos de IA, tornando processamento on-device viável em larga escala. Tecnologia poderá revolucionar privacidade de dados já que processamento deixa de depender de servidores em nuvem.</div>
+        <div class="news-link"><a href="https://decrypt.co/376536/researchers-shrink-ai-model-made-smarter" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Mistral e HUMAIN constroem inteligência artificial soberana na Arábia Saudita Mistral, fabricante europeia de IA, e HUMAIN anunciaram parceria para construir infraestrutura soberana de IA na Arábia Saudita e região com orçamento avaliado em centenas de milhões. Acordo reflete tendência global de países buscar independência tecnológica vis-à-vis hegemonia americana em IA. Saudita investe em capacidade local de processamento de dados e modelos de linguagem alinhados a valores regionais. Iniciativa paralela similar à estratégia europeia e chinesa de criar alternativas autônomas a sistemas americanos. Mistral ganha mercado significativo no Golfo Pérsico com ambições geopolíticas implícitas. Movimento sinaliza fragmentação do espaço de IA global em blocos soberanos, afetando futuro das big techs americanas. Decrypt" data-title="Mistral e HUMAIN constroem inteligência artificial soberana na Arábia Saudita" data-share-url="https://decrypt.co/376514/mistral-humain-sovereign-ai-saudi-arabia">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">15:39</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Mistral e HUMAIN constroem inteligência artificial soberana na Arábia Saudita</div>
+        <div class="news-summary">Mistral, fabricante europeia de IA, e HUMAIN anunciaram parceria para construir infraestrutura soberana de IA na Arábia Saudita e região com orçamento avaliado em centenas de milhões. Acordo reflete tendência global de países buscar independência tecnológica vis-à-vis hegemonia americana em IA. Saudita investe em capacidade local de processamento de dados e modelos de linguagem alinhados a valores regionais. Iniciativa paralela similar à estratégia europeia e chinesa de criar alternativas autônomas a sistemas americanos. Mistral ganha mercado significativo no Golfo Pérsico com ambições geopolíticas implícitas. Movimento sinaliza fragmentação do espaço de IA global em blocos soberanos, afetando futuro das big techs americanas.</div>
+        <div class="news-link"><a href="https://decrypt.co/376514/mistral-humain-sovereign-ai-saudi-arabia" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Instagram lança 'First Draft' para aparar automaticamente seus Reels Instagram anunciou novo recurso de edição de Reels chamado First Draft que aparará automaticamente clipes de vídeo para focar nos momentos principais usando IA. Ferramenta utiliza visão computacional para identificar quadros de maior engajamento e elimina material entediante ou baixo impacto. Funcionalidade reduz tempo de edição de criadores de conteúdo e democratiza acesso a técnicas profissionais de produção. Meta investe pesadamente em IA para retenção de usuários e competição com TikTok em espaço de vídeo curto. First Draft representa aplicação prática de IA generativa em produto de consumo com impacto direto. Expansão de ferramentas de IA no Instagram catalisa criação de conteúdo em maior volume e qualidade. The Verge" data-title="Instagram lança 'First Draft' para aparar automaticamente seus Reels" data-share-url="https://www.theverge.com/tech/984463/instagram-first-draft-edit-reels">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">14:12</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Instagram lança 'First Draft' para aparar automaticamente seus Reels</div>
+        <div class="news-summary">Instagram anunciou novo recurso de edição de Reels chamado First Draft que aparará automaticamente clipes de vídeo para focar nos momentos principais usando IA. Ferramenta utiliza visão computacional para identificar quadros de maior engajamento e elimina material entediante ou baixo impacto. Funcionalidade reduz tempo de edição de criadores de conteúdo e democratiza acesso a técnicas profissionais de produção. Meta investe pesadamente em IA para retenção de usuários e competição com TikTok em espaço de vídeo curto. First Draft representa aplicação prática de IA generativa em produto de consumo com impacto direto. Expansão de ferramentas de IA no Instagram catalisa criação de conteúdo em maior volume e qualidade.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/984463/instagram-first-draft-edit-reels" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Associações bancárias americanas planejam lançar rede blockchain nacional própria Aliança de associações bancárias estaduais dos EUA planeja lançar a BankChain Alliance, rede blockchain nacional, com objetivo de lançamento em 2027. Sistema visa facilitar stablecoins, pagamentos e depósitos tokenizados dentro do sistema bancário regulado tradicional. Movimento representa adoção institucional massiva de blockchain por setor financeiro americano historicamente cético. Iniciativa posiciona bancos como protagonistas de tokenização ao invés de deixar inovação exclusivamente para cripto nativo. BankChain Alliance promete aumentar eficiência de liquidação e reduzir custos operacionais de transações interbancárias. Lançamento em 2027 marca inflexão onde blockchain transita de nicho especulativo para infraestrutura financeira convencional. CoinDesk" data-title="Associações bancárias americanas planejam lançar rede blockchain nacional própria" data-share-url="https://www.coindesk.com/policy/2026/08/25/u-s-state-banking-associations-plan-to-launch-their-own-nationwide-blockchain-network">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">18:56</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Associações bancárias americanas planejam lançar rede blockchain nacional própria</div>
+        <div class="news-summary">Aliança de associações bancárias estaduais dos EUA planeja lançar a BankChain Alliance, rede blockchain nacional, com objetivo de lançamento em 2027. Sistema visa facilitar stablecoins, pagamentos e depósitos tokenizados dentro do sistema bancário regulado tradicional. Movimento representa adoção institucional massiva de blockchain por setor financeiro americano historicamente cético. Iniciativa posiciona bancos como protagonistas de tokenização ao invés de deixar inovação exclusivamente para cripto nativo. BankChain Alliance promete aumentar eficiência de liquidação e reduzir custos operacionais de transações interbancárias. Lançamento em 2027 marca inflexão onde blockchain transita de nicho especulativo para infraestrutura financeira convencional.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/25/u-s-state-banking-associations-plan-to-launch-their-own-nationwide-blockchain-network" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="World Liberty Financial lança USD1 nativamente na Canton Network World Liberty Financial lançou USD1 nativamente na Canton Network, stablecoin americana que é a sexta maior por capitalização de mercado com mais de US$ 4 bilhões. Lançamento expande acesso a stablecoin americana em infraestrutura blockchain regulada orientada para instituições. USD1 on-chain oferece alternativa a USDC e USDT com potencial de capturar volume significativo em trading de ativos tokenizados. Canton Network enfatiza conformidade regulatória e segurança institucional atraindo capital corporativo. Expansão de USD1 reforça tendência de stablecoins como base de moeda digital para economias cripto crescentes. Sucesso de USD1 em Canton poderá catalizar adopção mais ampla entre instituições financeiras. Cointelegraph" data-title="World Liberty Financial lança USD1 nativamente na Canton Network" data-share-url="https://cointelegraph.com/news/world-liberty-financial-launches-usd1-natively-on-canton-network">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">17:35</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">World Liberty Financial lança USD1 nativamente na Canton Network</div>
+        <div class="news-summary">World Liberty Financial lançou USD1 nativamente na Canton Network, stablecoin americana que é a sexta maior por capitalização de mercado com mais de US$ 4 bilhões. Lançamento expande acesso a stablecoin americana em infraestrutura blockchain regulada orientada para instituições. USD1 on-chain oferece alternativa a USDC e USDT com potencial de capturar volume significativo em trading de ativos tokenizados. Canton Network enfatiza conformidade regulatória e segurança institucional atraindo capital corporativo. Expansão de USD1 reforça tendência de stablecoins como base de moeda digital para economias cripto crescentes. Sucesso de USD1 em Canton poderá catalizar adopção mais ampla entre instituições financeiras.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/world-liberty-financial-launches-usd1-natively-on-canton-network" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="POSCO da Coreia do Sul tokeniza recebíveis comerciais na Avalanche Gigante comercial POSCO de US$ 22 bilhões da Coreia do Sul tokenizou recebíveis comerciais usando blockchain Avalanche em transação facilitada por Olea e Intain. Movimento segue piloto anterior com LG CNS em Injective e demonstra adoção de tokenização por corporações Fortune 500 asiáticas. Recebíveis tokenizados permitem financiamento mais eficiente e reduzem ciclos de pagamento em cadeias de suprimento internacionais. Implementação prática de blockchain em operações corporativas reais valida promessas de tecnologia distributed ledger. POSCO posiciona-se como líder em inovação de eficiência operacional via cripto. Movimento incentiva outras megacorporações a explorar tokenização de ativos com impacto potencialmente transformador em finanças corporativas. CoinDesk" data-title="POSCO da Coreia do Sul tokeniza recebíveis comerciais na Avalanche" data-share-url="https://www.coindesk.com/business/2026/08/25/south-korea-trade-giant-posco-brings-trade-receivables-to-avalanche-in-latest-tokenization-move">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">16:40</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">POSCO da Coreia do Sul tokeniza recebíveis comerciais na Avalanche</div>
+        <div class="news-summary">Gigante comercial POSCO de US$ 22 bilhões da Coreia do Sul tokenizou recebíveis comerciais usando blockchain Avalanche em transação facilitada por Olea e Intain. Movimento segue piloto anterior com LG CNS em Injective e demonstra adoção de tokenização por corporações Fortune 500 asiáticas. Recebíveis tokenizados permitem financiamento mais eficiente e reduzem ciclos de pagamento em cadeias de suprimento internacionais. Implementação prática de blockchain em operações corporativas reais valida promessas de tecnologia distributed ledger. POSCO posiciona-se como líder em inovação de eficiência operacional via cripto. Movimento incentiva outras megacorporações a explorar tokenização de ativos com impacto potencialmente transformador em finanças corporativas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/25/south-korea-trade-giant-posco-brings-trade-receivables-to-avalanche-in-latest-tokenization-move" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Meme do índice de medo e ganância cripto vira extremo pela primeira vez desde 2024 Índice de Medo e Ganância Cripto atingiu zona de ganho extremo pela primeira vez desde 2024, refletindo mudança dramática de sentimento de mercado em apenas semanas. Indicador que estava em 36 (medo) há um mês saltou para extremo refletindo recuperação de 24% do Bitcoin. Leitura oferece aviso de sobraquecimento potencial e profit-taking próximo, segundo analistas de mercado. Movimento de medo para ganância extremo em curto prazo amplifica volatilidade e risco de correção. História sugere que ganho extremo frequentemente precede retração maior, apresentando armadilha para traders inexperientes. Contexto fundamentalista com incerteza macroeconômica e geopolítica sugere cautela apesar do otimismo manifesto do mercado. Decrypt" data-title="Meme do índice de medo e ganância cripto vira extremo pela primeira vez desde 2024" data-share-url="https://decrypt.co/376503/crypto-fear-greed-index-extreme-greed">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">16:11</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Meme do índice de medo e ganância cripto vira extremo pela primeira vez desde 2024</div>
+        <div class="news-summary">Índice de Medo e Ganância Cripto atingiu zona de ganho extremo pela primeira vez desde 2024, refletindo mudança dramática de sentimento de mercado em apenas semanas. Indicador que estava em 36 (medo) há um mês saltou para extremo refletindo recuperação de 24% do Bitcoin. Leitura oferece aviso de sobraquecimento potencial e profit-taking próximo, segundo analistas de mercado. Movimento de medo para ganância extremo em curto prazo amplifica volatilidade e risco de correção. História sugere que ganho extremo frequentemente precede retração maior, apresentando armadilha para traders inexperientes. Contexto fundamentalista com incerteza macroeconômica e geopolítica sugere cautela apesar do otimismo manifesto do mercado.</div>
+        <div class="news-link"><a href="https://decrypt.co/376503/crypto-fear-greed-index-extreme-greed" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin entra fase inicial de novo mercado em alta; US$ 83 mil permanece chave CryptoQuant analisa que Bitcoin entrou fase inicial de novo mercado em alta com 24% de recuperação que virou indicadores-chave bullish, mas US$ 83 mil permanece nível crítico para confirmação. Tomada de lucros crescente pode trazer turbulência no curto prazo apesar do momentum positivo. Fluxos de ETF spot Bitcoin sustentam compra institucional e alicerçam base de preço. Analistas apontam que dados onchain indicam acumulação de baleias em níveis deprimidos antes do rally. Confirmação acima de US$ 83 mil sinalizaria novo leg de alta com potencial para alcançar US$ 100 mil. Narrativa bullish, embora otimista, reconhece riscos macroeconômicos e inflação persistente. Cointelegraph" data-title="Bitcoin entra fase inicial de novo mercado em alta; US$ 83 mil permanece chave" data-share-url="https://cointelegraph.com/markets/bitcoin-enters-initial-phase-of-new-bull-market-but-83k-remains-key-cryptoquant">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">15:13</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin entra fase inicial de novo mercado em alta; US$ 83 mil permanece chave</div>
+        <div class="news-summary">CryptoQuant analisa que Bitcoin entrou fase inicial de novo mercado em alta com 24% de recuperação que virou indicadores-chave bullish, mas US$ 83 mil permanece nível crítico para confirmação. Tomada de lucros crescente pode trazer turbulência no curto prazo apesar do momentum positivo. Fluxos de ETF spot Bitcoin sustentam compra institucional e alicerçam base de preço. Analistas apontam que dados onchain indicam acumulação de baleias em níveis deprimidos antes do rally. Confirmação acima de US$ 83 mil sinalizaria novo leg de alta com potencial para alcançar US$ 100 mil. Narrativa bullish, embora otimista, reconhece riscos macroeconômicos e inflação persistente.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-enters-initial-phase-of-new-bull-market-but-83k-remains-key-cryptoquant" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Transações Solana batem recorde de 4,2 bilhões; SOL dispara 40% Rede Solana registrou recorde de 4,2 bilhões de transações diárias enquanto SOL disparou 40%, refletindo crescimento exponencial de atividade e adoção da blockchain. Ativos tokenizados do mundo real na Solana aproximam-se de US$ 4 bilhões, catalisando interesse institucional. Recuperação de preço de SOL valida tese de que Solana oferece vantagem de velocidade e custo em relação a Ethereum. Explosão de volume sugere que narrativa de Solana como blockchain escalável para RWA ganha tração significativa. Crescimento parallelo de transações e valor criptográfico reforça viabilidade técnica e comercial de Solana. Momentum de SOL poderá atrair capital institucional significativo se tendência de transações se sustentar. Cointelegraph" data-title="Transações Solana batem recorde de 4,2 bilhões; SOL dispara 40%" data-share-url="https://cointelegraph.com/news/solana-record-transactions-rwa-sol-price">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">15:08</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Transações Solana batem recorde de 4,2 bilhões; SOL dispara 40%</div>
+        <div class="news-summary">Rede Solana registrou recorde de 4,2 bilhões de transações diárias enquanto SOL disparou 40%, refletindo crescimento exponencial de atividade e adoção da blockchain. Ativos tokenizados do mundo real na Solana aproximam-se de US$ 4 bilhões, catalisando interesse institucional. Recuperação de preço de SOL valida tese de que Solana oferece vantagem de velocidade e custo em relação a Ethereum. Explosão de volume sugere que narrativa de Solana como blockchain escalável para RWA ganha tração significativa. Crescimento parallelo de transações e valor criptográfico reforça viabilidade técnica e comercial de Solana. Momentum de SOL poderá atrair capital institucional significativo se tendência de transações se sustentar.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/solana-record-transactions-rwa-sol-price" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="LayerZero revela infraestrutura de trading para cripto e mercados tokenizados; ZRO salta LayerZero anunciou ATLAS, infraestrutura de trading construída em sua blockchain Zero, respaldada por Citadel Securities com DTCC e ICE explorando aplicações institucionais. Plataforma possibilita negociação de criptomoedas e ativos tokenizados com liquidez agregada e assentamento rápido. Token ZRO disparou em preço após anúncio refletindo otimismo do mercado sobre oportunidades de monetização. ATLAS posiciona LayerZero como intermediária crítica na convergência de mercados tradicionais e cripto. Citadel Securities, instituição financeira de reputação, respaldo credibilidade da plataforma junto a investidores institucionais. Lançamento marca aceleração de infraestrutura cripto institucional com potencial de canalizar trilhões em volume de negociação. CoinDesk" data-title="LayerZero revela infraestrutura de trading para cripto e mercados tokenizados; ZRO salta" data-share-url="https://www.coindesk.com/business/2026/08/25/layerzero-unveils-trading-infrastructure-for-crypto-and-tokenized-markets-zro-surges">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">13:22</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">LayerZero revela infraestrutura de trading para cripto e mercados tokenizados; ZRO salta</div>
+        <div class="news-summary">LayerZero anunciou ATLAS, infraestrutura de trading construída em sua blockchain Zero, respaldada por Citadel Securities com DTCC e ICE explorando aplicações institucionais. Plataforma possibilita negociação de criptomoedas e ativos tokenizados com liquidez agregada e assentamento rápido. Token ZRO disparou em preço após anúncio refletindo otimismo do mercado sobre oportunidades de monetização. ATLAS posiciona LayerZero como intermediária crítica na convergência de mercados tradicionais e cripto. Citadel Securities, instituição financeira de reputação, respaldo credibilidade da plataforma junto a investidores institucionais. Lançamento marca aceleração de infraestrutura cripto institucional com potencial de canalizar trilhões em volume de negociação.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/25/layerzero-unveils-trading-infrastructure-for-crypto-and-tokenized-markets-zro-surges" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Galaxy expande empréstimos cripto varejista com nova linha de crédito BTC, ETH e SOL Galaxy Digital lançou nova linha de crédito em portfolio que permite clientes GalaxyOne emprestar dinheiro contra BTC, ETH e SOL sem vender holdings, expandindo acesso a capital cripto sem realizar ganhos tributáveis. Produto de empréstimo cripto-colateralizado reduz fricção de obtenção de liquidez para investidores cripto. Galaxy posiciona-se como provedor financeiro completo de serviços cripto integrando custódia e empréstimos. Demanda de crédito cripto crescente reflete maturação de mercado onde investidores buscam otimizar carteiras sem alienar posições. Expansão de Galaxy em lending cripto varejista compete com serviços tradicionais de empréstimo bancário. Movimento sugere que cripto está conquistando funções financeiras convencionais com vantagens de velocidade e flexibilidade. The Block" data-title="Galaxy expande empréstimos cripto varejista com nova linha de crédito BTC, ETH e SOL" data-share-url="https://www.theblock.co/news/business/2026-08-25-galaxy-expands-retail-crypto-lending-new-btc-eth-sol-backed-credit-line-412718">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">13:03</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Galaxy expande empréstimos cripto varejista com nova linha de crédito BTC, ETH e SOL</div>
+        <div class="news-summary">Galaxy Digital lançou nova linha de crédito em portfolio que permite clientes GalaxyOne emprestar dinheiro contra BTC, ETH e SOL sem vender holdings, expandindo acesso a capital cripto sem realizar ganhos tributáveis. Produto de empréstimo cripto-colateralizado reduz fricção de obtenção de liquidez para investidores cripto. Galaxy posiciona-se como provedor financeiro completo de serviços cripto integrando custódia e empréstimos. Demanda de crédito cripto crescente reflete maturação de mercado onde investidores buscam otimizar carteiras sem alienar posições. Expansão de Galaxy em lending cripto varejista compete com serviços tradicionais de empréstimo bancário. Movimento sugere que cripto está conquistando funções financeiras convencionais com vantagens de velocidade e flexibilidade.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-08-25-galaxy-expands-retail-crypto-lending-new-btc-eth-sol-backed-credit-line-412718" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin escorrega de US$ 80 mil enquanto ouro esfria com queda de rendimentos de bônus americanos Bitcoin recuou de níveis de US$ 80 mil enquanto ouro perdeu pico recente em meados de maio em ambiente onde rendimentos de bônus americanos caem significativamente. Dinâmica reflete rotação de investidores de ativos seguros para ativos de risco em ciclo econômico aparentemente mais favorável. Queda de rendimentos alivia demanda de ativos defensivos como ouro e cripto-como-almoxarifado de valor. Touros bitcoin batalharam pelo controle da zona de US$ 80 mil indicando resistência psicológica importante. Movimento de preço vinculado a decisões de política monetária reafirma sensibilidade de criptomoedas a cenário macroeconômico. Próximas decisões do Fed sobre taxas de juros permanece catalisador crítico para direção de Bitcoin. Cointelegraph" data-title="Bitcoin escorrega de US$ 80 mil enquanto ouro esfria com queda de rendimentos de bônus americanos" data-share-url="https://cointelegraph.com/markets/bitcoin-slips-from-80k-as-gold-cools-with-falling-us-bond-yields">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">12:15</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin escorrega de US$ 80 mil enquanto ouro esfria com queda de rendimentos de bônus americanos</div>
+        <div class="news-summary">Bitcoin recuou de níveis de US$ 80 mil enquanto ouro perdeu pico recente em meados de maio em ambiente onde rendimentos de bônus americanos caem significativamente. Dinâmica reflete rotação de investidores de ativos seguros para ativos de risco em ciclo econômico aparentemente mais favorável. Queda de rendimentos alivia demanda de ativos defensivos como ouro e cripto-como-almoxarifado de valor. Touros bitcoin batalharam pelo controle da zona de US$ 80 mil indicando resistência psicológica importante. Movimento de preço vinculado a decisões de política monetária reafirma sensibilidade de criptomoedas a cenário macroeconômico. Próximas decisões do Fed sobre taxas de juros permanece catalisador crítico para direção de Bitcoin.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-slips-from-80k-as-gold-cools-with-falling-us-bond-yields" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitwise transforma ações tokenizadas Coinbase em carteiras de IA, robótica e tech Emissora de ETF cripto Bitwise lançou carteiras de ações tokenizadas usando ativos Coinbase rebalanceados automaticamente por IA em temas Mag 7, robótica e inteligência artificial. Produtos permitem exposição sintética a índices de tecnologia mediante blockchain com custos reduzidos. Bitwise aprofunda presença em gestão de ativos onchain enquanto tokenização cria novas possibilidades de construção e gerenciamento de investimentos. Incorporação de IA em rebalanceamento automático reduz necessidade de gestores humanos e melhora eficiência. Movimento representa convergência de criptomoedas, tokenização e IA em produtos de investimento legítimos. Sucesso de ofertas Bitwise catalisa adoção de gestão de patrimônio cripto por investidores convencionais. CoinDesk" data-title="Bitwise transforma ações tokenizadas Coinbase em carteiras de IA, robótica e tech" data-share-url="https://www.coindesk.com/business/2026/08/25/bitwise-turns-coinbase-s-tokenized-stocks-into-automated-ai-robotics-and-tech-portfolios">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">11:50</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitwise transforma ações tokenizadas Coinbase em carteiras de IA, robótica e tech</div>
+        <div class="news-summary">Emissora de ETF cripto Bitwise lançou carteiras de ações tokenizadas usando ativos Coinbase rebalanceados automaticamente por IA em temas Mag 7, robótica e inteligência artificial. Produtos permitem exposição sintética a índices de tecnologia mediante blockchain com custos reduzidos. Bitwise aprofunda presença em gestão de ativos onchain enquanto tokenização cria novas possibilidades de construção e gerenciamento de investimentos. Incorporação de IA em rebalanceamento automático reduz necessidade de gestores humanos e melhora eficiência. Movimento representa convergência de criptomoedas, tokenização e IA em produtos de investimento legítimos. Sucesso de ofertas Bitwise catalisa adoção de gestão de patrimônio cripto por investidores convencionais.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/25/bitwise-turns-coinbase-s-tokenized-stocks-into-automated-ai-robotics-and-tech-portfolios" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Arcus lança posições perp tokenizadas na Robinhood Chain Arcus introduziu tokens pToken transferíveis que representam posições perpetuais individualizadas como ERC-20 na Robinhood Chain permitindo que usuários tokenizem suas apostas alavancadas. Inovação permite transferência e negociação de posições perp sem necessidade de liquidação, abrindo novos modelos de risco. Estrutura permite que ações tokenizadas Coinbase respaldem trades alavancados sem forçar venda de colateral. Robinhood Chain posiciona-se como ecossistema de derivativos descentralizados com infraestrutura robusta. Tokenização de posições perp reduz atrito e permite múltiplos casos de uso de produtos derivativos. Movimento sugere que DeFi avança em sofisticação de produtos oferecidos permitindo trading institucional genuíno. The Block" data-title="Arcus lança posições perp tokenizadas na Robinhood Chain" data-share-url="https://www.theblock.co/news/defi/2026-08-25-robinhood-chain-dex-arcus-ptokens-perps-erc-20s-412696">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">11:00</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Arcus lança posições perp tokenizadas na Robinhood Chain</div>
+        <div class="news-summary">Arcus introduziu tokens pToken transferíveis que representam posições perpetuais individualizadas como ERC-20 na Robinhood Chain permitindo que usuários tokenizem suas apostas alavancadas. Inovação permite transferência e negociação de posições perp sem necessidade de liquidação, abrindo novos modelos de risco. Estrutura permite que ações tokenizadas Coinbase respaldem trades alavancados sem forçar venda de colateral. Robinhood Chain posiciona-se como ecossistema de derivativos descentralizados com infraestrutura robusta. Tokenização de posições perp reduz atrito e permite múltiplos casos de uso de produtos derivativos. Movimento sugere que DeFi avança em sofisticação de produtos oferecidos permitindo trading institucional genuíno.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/defi/2026-08-25-robinhood-chain-dex-arcus-ptokens-perps-erc-20s-412696" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Copper, firma de custódia cripto, atrai potenciais compradores mas ofertas ficam muito abaixo do preço de US$ 500 milhões Copper, provedora de custódia de criptomoedas institucional, atraiu interessados em aquisição mas propostas permanecem significativamente abaixo do preço de venda de US$ 500 milhões buscado pela firma. Queda dramática de avaliação de pico de US$ 2,5 bilhões reflete realidade mais severa de mercado cripto pós-euforia. Banco investidor Cantor Fitzgerald mercadeou Copper desde maio indicando dificuldade de encontrar comprador ao preço desejado. Valuation deprimido reflete incerteza sobre consolidação da custódia cripto e pressão competitiva de gigantes como Fidelity. Ofertas baixas sugerem que potenciais compradores duvudam de viabilidade de premissas de negócio de Copper. Venda em desconto massivo marca desinflação de valores em setor de infraestrutura cripto. CoinDesk" data-title="Copper, firma de custódia cripto, atrai potenciais compradores mas ofertas ficam muito abaixo do preço de US$ 500 milhões" data-share-url="https://www.coindesk.com/business/2026/08/25/crypto-custody-firm-copper-has-potential-buyers-but-offers-are-way-below-its-usd500-million-asking-price">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">10:48</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Copper, firma de custódia cripto, atrai potenciais compradores mas ofertas ficam muito abaixo do preço de US$ 500 milhões</div>
+        <div class="news-summary">Copper, provedora de custódia de criptomoedas institucional, atraiu interessados em aquisição mas propostas permanecem significativamente abaixo do preço de venda de US$ 500 milhões buscado pela firma. Queda dramática de avaliação de pico de US$ 2,5 bilhões reflete realidade mais severa de mercado cripto pós-euforia. Banco investidor Cantor Fitzgerald mercadeou Copper desde maio indicando dificuldade de encontrar comprador ao preço desejado. Valuation deprimido reflete incerteza sobre consolidação da custódia cripto e pressão competitiva de gigantes como Fidelity. Ofertas baixas sugerem que potenciais compradores duvudam de viabilidade de premissas de negócio de Copper. Venda em desconto massivo marca desinflação de valores em setor de infraestrutura cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/25/crypto-custody-firm-copper-has-potential-buyers-but-offers-are-way-below-its-usd500-million-asking-price" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Movimento de 3% de token dispara liquidações de US$ 36 milhões em DeFi Ethereum Movimento de apenas 3% em token yield dispara liquidações em cascata de US$ 36 milhões em protocolos DeFi de Ethereum quando carteira grande comprou pesadamente acumulando efeitos de alavancagem. Evento exemplifica risco sistêmico em DeFi onde liquidez fracionada permite que movimentos pequenos gatilhem perdas massivas. Protocolo de liquidação revelou fragilidade de modelos de empréstimo overcollateralized em cenários de volatilidade. Acontecimento reafirma importância de gerenciamento de risco em criptomoedas e limites de alavancagem. Liquidações causam morte traumática de posições de traders alavancados e reduzem confiança em DeFi. Incidente alimenta narrativa de que DeFi permanece experimental e inadequado para capital institucional em larga escala. CoinDesk" data-title="Movimento de 3% de token dispara liquidações de US$ 36 milhões em DeFi Ethereum" data-share-url="https://www.coindesk.com/tech/2026/08/25/a-3-token-move-just-triggered-usd36-million-in-ethereum-defi-liquidations">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">09:03</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Movimento de 3% de token dispara liquidações de US$ 36 milhões em DeFi Ethereum</div>
+        <div class="news-summary">Movimento de apenas 3% em token yield dispara liquidações em cascata de US$ 36 milhões em protocolos DeFi de Ethereum quando carteira grande comprou pesadamente acumulando efeitos de alavancagem. Evento exemplifica risco sistêmico em DeFi onde liquidez fracionada permite que movimentos pequenos gatilhem perdas massivas. Protocolo de liquidação revelou fragilidade de modelos de empréstimo overcollateralized em cenários de volatilidade. Acontecimento reafirma importância de gerenciamento de risco em criptomoedas e limites de alavancagem. Liquidações causam morte traumática de posições de traders alavancados e reduzem confiança em DeFi. Incidente alimenta narrativa de que DeFi permanece experimental e inadequado para capital institucional em larga escala.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/08/25/a-3-token-move-just-triggered-usd36-million-in-ethereum-defi-liquidations" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Grayscale lança primeiro ETF de Zcash enquanto privacy coin dispara Grayscale lançou o primeiro ETF oferecendo exposição direta a Zcash, moeda de privacidade focada em transações anônimas, enquanto ZEC disparava em preço refletindo novo interesse institucional. Produto marca validação de moedas privacy como classe de ativo legítima para carteiras de investimento convencional. Zcash obtém reconhecimento crescente de que privacidade é direito fundamental em transações financeiras. Lançamento de ETF Grayscale reduz barreira para investidores varejistas e institucionais acessarem ZEC. Momentum positivo de ZEC poderá inspirar lançamento de produtos similares para Monero e outras privacycoins. Movimento sugere que demanda de transações privadas permanece forte apesar de pressão regulatória global contra anonimato. The Block" data-title="Grayscale lança primeiro ETF de Zcash enquanto privacy coin dispara" data-share-url="https://www.theblock.co/news/regulation/2026-08-25-grayscale-debuts-zcash-etf-412654">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Grayscale lança primeiro ETF de Zcash enquanto privacy coin dispara</div>
+        <div class="news-summary">Grayscale lançou o primeiro ETF oferecendo exposição direta a Zcash, moeda de privacidade focada em transações anônimas, enquanto ZEC disparava em preço refletindo novo interesse institucional. Produto marca validação de moedas privacy como classe de ativo legítima para carteiras de investimento convencional. Zcash obtém reconhecimento crescente de que privacidade é direito fundamental em transações financeiras. Lançamento de ETF Grayscale reduz barreira para investidores varejistas e institucionais acessarem ZEC. Momentum positivo de ZEC poderá inspirar lançamento de produtos similares para Monero e outras privacycoins. Movimento sugere que demanda de transações privadas permanece forte apesar de pressão regulatória global contra anonimato.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/regulation/2026-08-25-grayscale-debuts-zcash-etf-412654" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Homem de Las Vegas condenado por esquema Ponzi cripto de US$ 24 milhões enfrenta 280 anos Brent Kovar, empresário de Las Vegas, foi condenado criminalmente por operar esquema Ponzi cripto de US$ 24 milhões que defraudou pelo menos 400 investidores usando narrativa fraudulenta de supercomputador de IA. Júri federal determinou culpa após julgamento revelando sofisticação de fraude e enganação sistemática. Kovar enfrenta até 280 anos de prisão em condenação exemplar para indústria cripto. Caso reafirma aplicação de leis federais antifraudesobre esquemas cripto e consequências severas de ilegalidade. Fraude ressalta importância de due diligence investidor e ceticismo sobre promessas extraordinárias de retorno. Condenação estabelece precedente robusto para prosecutores federais no combate a Ponzi cripto. CoinDesk" data-title="Homem de Las Vegas condenado por esquema Ponzi cripto de US$ 24 milhões enfrenta 280 anos" data-share-url="https://www.coindesk.com/policy/2026/08/25/crypto-supercomputer-ponzi-schemer-convicted-faces-up-to-280-years-in-prison">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">08:46</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Homem de Las Vegas condenado por esquema Ponzi cripto de US$ 24 milhões enfrenta 280 anos</div>
+        <div class="news-summary">Brent Kovar, empresário de Las Vegas, foi condenado criminalmente por operar esquema Ponzi cripto de US$ 24 milhões que defraudou pelo menos 400 investidores usando narrativa fraudulenta de supercomputador de IA. Júri federal determinou culpa após julgamento revelando sofisticação de fraude e enganação sistemática. Kovar enfrenta até 280 anos de prisão em condenação exemplar para indústria cripto. Caso reafirma aplicação de leis federais antifraudesobre esquemas cripto e consequências severas de ilegalidade. Fraude ressalta importância de due diligence investidor e ceticismo sobre promessas extraordinárias de retorno. Condenação estabelece precedente robusto para prosecutores federais no combate a Ponzi cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/25/crypto-supercomputer-ponzi-schemer-convicted-faces-up-to-280-years-in-prison" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin mantém-se acima de US$ 80 mil sustentado por fluxos de ETF; case de mercado em alta é otimista Bitcoin mantém-se consolidado acima de US$ 80 mil nível-chave sustentado por fluxos de ETF spot bitcoin institucional que alicerçam piso de preço. Analistas dividem-se se momento representa início genuíno de mercado em alta ou rally técnico efêmero. Contexto macroeconômico permanece desafiador com inflação pegajosa e incerteza geopolítica pesando em perspectiva. Fluxos de ETF representam adoção institucional robusta e reduzem concentração de risco especulativo. Confirmação acima de US$ 80 mil sinaliza força mas still early para chamar bottom de ciclo. Próximas semanas críticas para validar se suporte de US$ 80 mil aguenta ou enfrenta teste severo. The Block" data-title="Bitcoin mantém-se acima de US$ 80 mil sustentado por fluxos de ETF; case de mercado em alta é otimista" data-share-url="https://www.theblock.co/news/markets/2026-08-25-bitcoin-holds-above-80000-412674">
+        <div class="news-meta">
+          <span class="news-date">25 ago 2026</span>
+          <span class="news-time">03:46</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Bitcoin mantém-se acima de US$ 80 mil sustentado por fluxos de ETF; case de mercado em alta é otimista</div>
+        <div class="news-summary">Bitcoin mantém-se consolidado acima de US$ 80 mil nível-chave sustentado por fluxos de ETF spot bitcoin institucional que alicerçam piso de preço. Analistas dividem-se se momento representa início genuíno de mercado em alta ou rally técnico efêmero. Contexto macroeconômico permanece desafiador com inflação pegajosa e incerteza geopolítica pesando em perspectiva. Fluxos de ETF representam adoção institucional robusta e reduzem concentração de risco especulativo. Confirmação acima de US$ 80 mil sinaliza força mas still early para chamar bottom de ciclo. Próximas semanas críticas para validar se suporte de US$ 80 mil aguenta ou enfrenta teste severo.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/markets/2026-08-25-bitcoin-holds-above-80000-412674" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
