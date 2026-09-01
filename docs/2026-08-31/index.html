@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">31 DE AGOSTO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">A convergência entre geopolítica e tecnologia marca o dia 31 de agosto: enquanto tensões militares se intensificam na Ucrânia e no Oriente Médio, as grandes potências disputam supremacia em IA e criptomoedas como ferramentas de poder econômico e estratégico. A aprovação regulatória de plataformas cripto nos EUA e a entrada de instituições tradicionais no mercado digital refletem uma mudança estrutural na economia global, onde Bitcoin emerge como ativo de proteção em cenário de instabilidade geopolítica e fiscal deteriorada.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-08-30/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15">2026-08-15</option><option value="2026-08-16">2026-08-16</option><option value="2026-08-17">2026-08-17</option><option value="2026-08-18">2026-08-18</option><option value="2026-08-19">2026-08-19</option><option value="2026-08-20">2026-08-20</option><option value="2026-08-21">2026-08-21</option><option value="2026-08-22">2026-08-22</option><option value="2026-08-23">2026-08-23</option><option value="2026-08-24">2026-08-24</option><option value="2026-08-25">2026-08-25</option><option value="2026-08-27">2026-08-27</option><option value="2026-08-28">2026-08-28</option><option value="2026-08-29">2026-08-29</option><option value="2026-08-30">2026-08-30</option><option value="2026-08-31" selected>2026-08-31</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Israel e Grécia fecham acordo de defesa de US$ 3,5 bilhões Israel e Grécia finalizaram um pacto de cooperação militar no valor de US$ 3,5 bilhões, sinalizando que a indústria de defesa israelense continua angariando investimentos significativos apesar do isolamento diplomático crescente do governo. O acordo reforça laços estratégicos entre os dois países e destaca a demanda global por tecnologia militar israelense. A negociação ocorre em momento de intensas críticas internacionais contra políticas de Israel na Cisjordânia. O pacto inclui transferência de tecnologia e exercícios militares conjuntos. Esse movimento demonstra que, apesar das pressões políticas, parceiros estratégicos continuam apostando em cooperação militar com Tel Aviv. NYT - World News" data-title="Israel e Grécia fecham acordo de defesa de US$ 3,5 bilhões" data-share-url="https://www.nytimes.com/2026/08/31/world/middleeast/israel-greece-defense-deal.html">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">17:25</span>
+          <span class="news-source">NYT - World News</span>
+        </div>
+        <div class="news-title">Israel e Grécia fecham acordo de defesa de US$ 3,5 bilhões</div>
+        <div class="news-summary">Israel e Grécia finalizaram um pacto de cooperação militar no valor de US$ 3,5 bilhões, sinalizando que a indústria de defesa israelense continua angariando investimentos significativos apesar do isolamento diplomático crescente do governo. O acordo reforça laços estratégicos entre os dois países e destaca a demanda global por tecnologia militar israelense. A negociação ocorre em momento de intensas críticas internacionais contra políticas de Israel na Cisjordânia. O pacto inclui transferência de tecnologia e exercícios militares conjuntos. Esse movimento demonstra que, apesar das pressões políticas, parceiros estratégicos continuam apostando em cooperação militar com Tel Aviv.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/31/world/middleeast/israel-greece-defense-deal.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Cúpula da Organização de Cooperação de Xangai mostra poder geopolítico de Xi sobre Rússia, Índia e Irã A conferência de dois dias da Organização de Cooperação de Xangai (composta por 10 nações) em Kyrgyzstan demonstra a crescente influência de Xi Jinping no tabuleiro geopolítico global, particularmente sobre Rússia, Índia e Irã. O encontro evidencia os limites da 'guerra econômica' americana e a capacidade da China de construir alianças estratégicas robustas. Discussões focaram em segurança regional, comércio e contraposição a sanções ocidentais. A presença simultânea de rivais históricos (Índia e Paquistão) sob liderança chinesa reforça o protagonismo de Pequim. O evento marca consolidação de um bloco não-alinhado com estrutura e propósitos bem definidos. NYT - World News" data-title="Cúpula da Organização de Cooperação de Xangai mostra poder geopolítico de Xi sobre Rússia, Índia e Irã" data-share-url="https://www.nytimes.com/2026/08/31/world/asia/putin-xi-modi-sco.html">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">17:11</span>
+          <span class="news-source">NYT - World News</span>
+        </div>
+        <div class="news-title">Cúpula da Organização de Cooperação de Xangai mostra poder geopolítico de Xi sobre Rússia, Índia e Irã</div>
+        <div class="news-summary">A conferência de dois dias da Organização de Cooperação de Xangai (composta por 10 nações) em Kyrgyzstan demonstra a crescente influência de Xi Jinping no tabuleiro geopolítico global, particularmente sobre Rússia, Índia e Irã. O encontro evidencia os limites da 'guerra econômica' americana e a capacidade da China de construir alianças estratégicas robustas. Discussões focaram em segurança regional, comércio e contraposição a sanções ocidentais. A presença simultânea de rivais históricos (Índia e Paquistão) sob liderança chinesa reforça o protagonismo de Pequim. O evento marca consolidação de um bloco não-alinhado com estrutura e propósitos bem definidos.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/31/world/asia/putin-xi-modi-sco.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Ataques constantes com drones russos marcam nova fase da guerra na Ucrânia A Rússia intensificou ataques aéreos em Kyiv, mudando de incursões noturnas para bombardeios praticamente contínuos. Os ataques com drones ocorrem agora durante o dia e noite, deixando residentes da capital ucraniana exaustos e em alerta permanente. A mudança de tática marca uma escalada significativa do conflito, com impacto psicológico nas populações civis. As sirenes de alerta soam constantemente, interrompendo atividades cotidianas. Essa intensificação coincide com pressões diplomáticas no cenário global e demonstra a disposição russa de manter ofensiva sem tréguas. NYT - World News" data-title="Ataques constantes com drones russos marcam nova fase da guerra na Ucrânia" data-share-url="https://www.nytimes.com/2026/08/31/world/europe/ukraine-kyiv-drones-russia-sirens.html">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">12:42</span>
+          <span class="news-source">NYT - World News</span>
+        </div>
+        <div class="news-title">Ataques constantes com drones russos marcam nova fase da guerra na Ucrânia</div>
+        <div class="news-summary">A Rússia intensificou ataques aéreos em Kyiv, mudando de incursões noturnas para bombardeios praticamente contínuos. Os ataques com drones ocorrem agora durante o dia e noite, deixando residentes da capital ucraniana exaustos e em alerta permanente. A mudança de tática marca uma escalada significativa do conflito, com impacto psicológico nas populações civis. As sirenes de alerta soam constantemente, interrompendo atividades cotidianas. Essa intensificação coincide com pressões diplomáticas no cenário global e demonstra a disposição russa de manter ofensiva sem tréguas.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/31/world/europe/ukraine-kyiv-drones-russia-sirens.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Generais israelenses alertam sobre 'terrorismo judaico' de colonos na Cisjordânia Número crescente de ex-generais, oficiais de inteligência e ex-primeiros-ministros de Israel acusa colonos da Cisjordânia de cometer crimes de limpeza étnica e atos de terrorismo. Esses veteranos militares, que passaram décadas defendendo a segurança de Israel, agora identificam grupos de colonos como ameaça existencial tão grave quanto inimigos externos. As acusações incluem assassinatos, incêndios de casas e expulsões sistemáticas de palestinos. Esse posicionamento de figuras-chave da segurança israelense representa ruptura significativa no consenso nacional. O debate interno em Israel sobre responsabilidade dos colonos ganha força e credibilidade com o endosso desses militares experientes. NYT - World News" data-title="Generais israelenses alertam sobre 'terrorismo judaico' de colonos na Cisjordânia" data-share-url="https://www.nytimes.com/2026/08/31/world/middleeast/west-bank-israel.html">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">06:00</span>
+          <span class="news-source">NYT - World News</span>
+        </div>
+        <div class="news-title">Generais israelenses alertam sobre 'terrorismo judaico' de colonos na Cisjordânia</div>
+        <div class="news-summary">Número crescente de ex-generais, oficiais de inteligência e ex-primeiros-ministros de Israel acusa colonos da Cisjordânia de cometer crimes de limpeza étnica e atos de terrorismo. Esses veteranos militares, que passaram décadas defendendo a segurança de Israel, agora identificam grupos de colonos como ameaça existencial tão grave quanto inimigos externos. As acusações incluem assassinatos, incêndios de casas e expulsões sistemáticas de palestinos. Esse posicionamento de figuras-chave da segurança israelense representa ruptura significativa no consenso nacional. O debate interno em Israel sobre responsabilidade dos colonos ganha força e credibilidade com o endosso desses militares experientes.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/08/31/world/middleeast/west-bank-israel.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ações da MediaTek disparam 10% após investimento bilionário da Nvidia As ações da MediaTek, fabricante taiwanesa de chips, subiram 10% após a Nvidia anunciar investimento de US$ 3,5 bilhões na empresa — o maior aporte que a gigante americana já fez em um parceiro estratégico. O investimento reforça posicionamento da Nvidia além de GPU, buscando integração vertical em ecossistema de chips. A MediaTek beneficia-se com capital para P&amp;D e validação de sua importância estratégica. O movimento ocorre em contexto de competição EUA-China por supremacia em semiconductores. Esse tipo de investimento sinaliza confiança da Nvidia na resiliência da cadeia global de suprimentos. Bloomberg Technology" data-title="Ações da MediaTek disparam 10% após investimento bilionário da Nvidia" data-share-url="https://www.bloomberg.com/news/articles/2026-09-01/mediatek-shares-soar-10-after-blockbuster-nvidia-investment">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">22:04</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Ações da MediaTek disparam 10% após investimento bilionário da Nvidia</div>
+        <div class="news-summary">As ações da MediaTek, fabricante taiwanesa de chips, subiram 10% após a Nvidia anunciar investimento de US$ 3,5 bilhões na empresa — o maior aporte que a gigante americana já fez em um parceiro estratégico. O investimento reforça posicionamento da Nvidia além de GPU, buscando integração vertical em ecossistema de chips. A MediaTek beneficia-se com capital para P&amp;D e validação de sua importância estratégica. O movimento ocorre em contexto de competição EUA-China por supremacia em semiconductores. Esse tipo de investimento sinaliza confiança da Nvidia na resiliência da cadeia global de suprimentos.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-09-01/mediatek-shares-soar-10-after-blockbuster-nvidia-investment" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Shein estreia em Hong Kong com IPO de US$ 1,7 bilhão A Shein Global Holdings, plataforma de e-commerce de moda rápida, abriu seu capital em Hong Kong arrecadando HK$ 13,6 bilhões (US$ 1,7 bilhão). As ações abriram sem variação significativa no primeiro dia de negociação. O IPO marca entrada da empresa chinesa em mercado de capitais formal após anos de crescimento agressivo global. A avalição da Shein foi vista com cautela por investidores, que monitoram viabilidade de modelo de negócio de fast fashion ultrabarato. A estreia ocorre em contexto de escrutínio regulatório sobre práticas trabalhistas e ambientais da indústria de moda rápida. Bloomberg Technology" data-title="Shein estreia em Hong Kong com IPO de US$ 1,7 bilhão" data-share-url="https://www.bloomberg.com/news/articles/2026-08-31/shein-set-to-debut-in-test-of-investor-demand-for-consumer-plays">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">19:00</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">Shein estreia em Hong Kong com IPO de US$ 1,7 bilhão</div>
+        <div class="news-summary">A Shein Global Holdings, plataforma de e-commerce de moda rápida, abriu seu capital em Hong Kong arrecadando HK$ 13,6 bilhões (US$ 1,7 bilhão). As ações abriram sem variação significativa no primeiro dia de negociação. O IPO marca entrada da empresa chinesa em mercado de capitais formal após anos de crescimento agressivo global. A avalição da Shein foi vista com cautela por investidores, que monitoram viabilidade de modelo de negócio de fast fashion ultrabarato. A estreia ocorre em contexto de escrutínio regulatório sobre práticas trabalhistas e ambientais da indústria de moda rápida.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-08-31/shein-set-to-debut-in-test-of-investor-demand-for-consumer-plays" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="FTC e 22 Estados processam Amazon por práticas abusivas em publicidade A Federal Trade Commission e 22 procuradores-gerais estaduais abriram processo contra a Amazon acusando-a de cobrar 'sobretaxas secretas' em anúncios, forçando mais de um milhão de anunciantes a pagarem mais do que deveriam. Reguladores argumentam que a plataforma utilizou estrutura opaca de preços para inflar custos sem transparência. A Amazon nega as acusações e afirma que seus preços refletem valor justo. O caso representa escalada significativa da ação regulatória contra práticas anticompetitivas da big tech. Investigadores apontam que o sistema de precificação da Amazon diferencia entre anunciantes internos e externos, criando desvantagens competitivas injustas. NYT - Technology / The Verge" data-title="FTC e 22 Estados processam Amazon por práticas abusivas em publicidade" data-share-url="https://www.theverge.com/tech/986982/amazon-advertising-prices-ftc-lawsuit">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">18:41</span>
+          <span class="news-source">NYT - Technology / The Verge</span>
+        </div>
+        <div class="news-title">FTC e 22 Estados processam Amazon por práticas abusivas em publicidade</div>
+        <div class="news-summary">A Federal Trade Commission e 22 procuradores-gerais estaduais abriram processo contra a Amazon acusando-a de cobrar 'sobretaxas secretas' em anúncios, forçando mais de um milhão de anunciantes a pagarem mais do que deveriam. Reguladores argumentam que a plataforma utilizou estrutura opaca de preços para inflar custos sem transparência. A Amazon nega as acusações e afirma que seus preços refletem valor justo. O caso representa escalada significativa da ação regulatória contra práticas anticompetitivas da big tech. Investigadores apontam que o sistema de precificação da Amazon diferencia entre anunciantes internos e externos, criando desvantagens competitivas injustas.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/986982/amazon-advertising-prices-ftc-lawsuit" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Trump pressiona Apple para renomear 'Lake Ontario' como 'Lake America' no Apple Maps O presidente Trump solicitou pessoalmente à Apple que renomeie o Lago Ontario para 'Lake America' no Apple Maps, de acordo com declaração do Secretário do Interior Doug Burgum. O pedido reflete agenda presidencial de rebranding de símbolos geográficos. Apple não se pronunciou publicamente sobre a solicitação. A iniciativa gerou reações mistas: alguns veem como reafirmação de soberania, outros como ativismo político inadequado. O episódio destaca a influência política sobre decisões de gigantes tech e a tensão entre identidade nacional e operações comerciais globais. Axios" data-title="Trump pressiona Apple para renomear 'Lake Ontario' como 'Lake America' no Apple Maps" data-share-url="https://www.axios.com/2026/08/31/trump-lake-america-apple-maps-request">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">16:04</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Trump pressiona Apple para renomear 'Lake Ontario' como 'Lake America' no Apple Maps</div>
+        <div class="news-summary">O presidente Trump solicitou pessoalmente à Apple que renomeie o Lago Ontario para 'Lake America' no Apple Maps, de acordo com declaração do Secretário do Interior Doug Burgum. O pedido reflete agenda presidencial de rebranding de símbolos geográficos. Apple não se pronunciou publicamente sobre a solicitação. A iniciativa gerou reações mistas: alguns veem como reafirmação de soberania, outros como ativismo político inadequado. O episódio destaca a influência política sobre decisões de gigantes tech e a tensão entre identidade nacional e operações comerciais globais.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/31/trump-lake-america-apple-maps-request" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Consumidores de carros desejam tecnologia que possam ignorar, aponta pesquisa Pesquisa da JD Power revela crescente insatisfação entre proprietários de veículos com excesso de tecnologia embarcada, telas gigantes e software instável. Fabricantes continuam adicionando recursos contra essa tendência comprovada de preferência dos clientes. Usuários relatam frustração com sistemas de infoentretenimento que não funcionam corretamente e distram da dirigibilidade. A pesquisa indica que simplicidade e confiabilidade são cada vez mais valorizadas do que inovação tecnológica desnecessária. Esse dado aponta oportunidade competitiva para fabricantes que priorizem experiência simples e robusta. The Verge" data-title="Consumidores de carros desejam tecnologia que possam ignorar, aponta pesquisa" data-share-url="https://www.theverge.com/news/986721/car-tech-survey-jd-power-smart-ignition">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">14:11</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Consumidores de carros desejam tecnologia que possam ignorar, aponta pesquisa</div>
+        <div class="news-summary">Pesquisa da JD Power revela crescente insatisfação entre proprietários de veículos com excesso de tecnologia embarcada, telas gigantes e software instável. Fabricantes continuam adicionando recursos contra essa tendência comprovada de preferência dos clientes. Usuários relatam frustração com sistemas de infoentretenimento que não funcionam corretamente e distram da dirigibilidade. A pesquisa indica que simplicidade e confiabilidade são cada vez mais valorizadas do que inovação tecnológica desnecessária. Esse dado aponta oportunidade competitiva para fabricantes que priorizem experiência simples e robusta.</div>
+        <div class="news-link"><a href="https://www.theverge.com/news/986721/car-tech-survey-jd-power-smart-ignition" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Phil Schiller deixa suas principais funções na Apple Phil Schiller, executivo veterano da Apple há mais de 30 anos, está deixando seus cargos como chefe da App Store e responsável pelos eventos da empresa. Schiller foi figura central no desenvolvimento da estratégia de monetização via App Store e na curadoria de eventos emblemáticos da marca. Sua saída marca reorganização nas estruturas de liderança da Apple em transição pós-Tim Cook. O executivo era conhecido por sua retórica combativa contra críticas ao modelo de negócios da App Store. A mudança ocorre enquanto a Apple enfrenta crescentes pressões regulatórias sobre suas práticas de comissão em apps. The Verge" data-title="Phil Schiller deixa suas principais funções na Apple" data-share-url="https://www.theverge.com/tech/986869/apple-phil-schiller-stepping-down">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">13:54</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Phil Schiller deixa suas principais funções na Apple</div>
+        <div class="news-summary">Phil Schiller, executivo veterano da Apple há mais de 30 anos, está deixando seus cargos como chefe da App Store e responsável pelos eventos da empresa. Schiller foi figura central no desenvolvimento da estratégia de monetização via App Store e na curadoria de eventos emblemáticos da marca. Sua saída marca reorganização nas estruturas de liderança da Apple em transição pós-Tim Cook. O executivo era conhecido por sua retórica combativa contra críticas ao modelo de negócios da App Store. A mudança ocorre enquanto a Apple enfrenta crescentes pressões regulatórias sobre suas práticas de comissão em apps.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/986869/apple-phil-schiller-stepping-down" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="YouTuber Markiplier torna-se maior acionista individual da GoPro Mark Fischbach, conhecido como Markiplier, investiu montante significativo em ações da GoPro, tornando-se seu maior acionista individual com 8,5% da companhia. O criador de conteúdo já era cliente da marca e reconhecido por usar câmeras GoPro em seus vídeos. Esse investimento marca entrada de criadores de conteúdo no capital das grandes empresas de hardware. A movimentação reflete confiança de influenciadores na recuperação da fabricante de câmeras de ação. A ação elevou visibilidade da GoPro entre comunidades de gaming e criação de conteúdo. The Verge" data-title="YouTuber Markiplier torna-se maior acionista individual da GoPro" data-share-url="https://www.theverge.com/tech/986847/markiplier-gopro-investor">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">13:38</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">YouTuber Markiplier torna-se maior acionista individual da GoPro</div>
+        <div class="news-summary">Mark Fischbach, conhecido como Markiplier, investiu montante significativo em ações da GoPro, tornando-se seu maior acionista individual com 8,5% da companhia. O criador de conteúdo já era cliente da marca e reconhecido por usar câmeras GoPro em seus vídeos. Esse investimento marca entrada de criadores de conteúdo no capital das grandes empresas de hardware. A movimentação reflete confiança de influenciadores na recuperação da fabricante de câmeras de ação. A ação elevou visibilidade da GoPro entre comunidades de gaming e criação de conteúdo.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/986847/markiplier-gopro-investor" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Tim Cook envia mensagem final como CEO da Apple Tim Cook divulga sua mensagem de despedida aos funcionários da Apple após 15 anos como CEO, período em que transformou a empresa em gigante de mercado com poucos rivais globais. Na mensagem, Cook reflete sobre legado de Steve Jobs e os desafios enfrentados durante sua gestão. Ele destaca inovações em hardwares, serviços e impacto social da empresa. A transição de liderança marca encerramento de era que consolidou iPhone como produto estratégico. Cook deixa a empresa em posição de força financeira, mas também enfrenta críticas crescentes sobre práticas comerciais e impacto ambiental. The Verge" data-title="Tim Cook envia mensagem final como CEO da Apple" data-share-url="https://www.theverge.com/tech/986832/read-tim-cooks-final-message-as-ceo-to-apple-staff">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">13:30</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Tim Cook envia mensagem final como CEO da Apple</div>
+        <div class="news-summary">Tim Cook divulga sua mensagem de despedida aos funcionários da Apple após 15 anos como CEO, período em que transformou a empresa em gigante de mercado com poucos rivais globais. Na mensagem, Cook reflete sobre legado de Steve Jobs e os desafios enfrentados durante sua gestão. Ele destaca inovações em hardwares, serviços e impacto social da empresa. A transição de liderança marca encerramento de era que consolidou iPhone como produto estratégico. Cook deixa a empresa em posição de força financeira, mas também enfrenta críticas crescentes sobre práticas comerciais e impacto ambiental.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/986832/read-tim-cooks-final-message-as-ceo-to-apple-staff" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Congresso dos EUA debate 'dominância fiscal' sobre política monetária Economistas e banqueiros centrais globais expressam crescente preocupação com erosão das divisões tradicionais entre responsabilidades de política fiscal e monetária. Tema foi destaque em conferência de bancos centrais, com governos cada vez mais interferindo em decisões de juros. Essa 'dominância fiscal' dificulta independência de autoridades monetárias e complica combate à inflação. O fenômeno afeta BCE, Federal Reserve e bancos centrais emergentes de forma desigual. Especialistas alertam que concentração de poder em mãos de governos pode gerar ciclos inflacionários prolongados. Axios" data-title="Congresso dos EUA debate 'dominância fiscal' sobre política monetária" data-share-url="https://www.axios.com/2026/08/31/central-bankers-fiscal-dominance-jackson-hole">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">12:59</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Congresso dos EUA debate 'dominância fiscal' sobre política monetária</div>
+        <div class="news-summary">Economistas e banqueiros centrais globais expressam crescente preocupação com erosão das divisões tradicionais entre responsabilidades de política fiscal e monetária. Tema foi destaque em conferência de bancos centrais, com governos cada vez mais interferindo em decisões de juros. Essa 'dominância fiscal' dificulta independência de autoridades monetárias e complica combate à inflação. O fenômeno afeta BCE, Federal Reserve e bancos centrais emergentes de forma desigual. Especialistas alertam que concentração de poder em mãos de governos pode gerar ciclos inflacionários prolongados.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/08/31/central-bankers-fiscal-dominance-jackson-hole" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Debian votou contra banimento de código gerado por IA em sua distribuição Linux A comunidade Debian decidiu permitir que desenvolvedores usem ferramentas de IA em contribuições ao desenvolvimento, manutenção e documentação da distribuição Linux mais popular do mundo. A votação rejeita propostas de exclusão de código gerado por modelos de linguagem. Debian afirma que IA é agora ferramenta padrão de desenvolvimento e não deve ser discriminada. A decisão beneficia contribuidores que utilizam assistentes de código como GitHub Copilot e similares. Essa aprovação posiciona Debian como mais inclusiva em relação a práticas modernas de engenharia de software. The Verge" data-title="Debian votou contra banimento de código gerado por IA em sua distribuição Linux" data-share-url="https://www.theverge.com/tech/986789/linux-debian-generative-ai-policy">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">12:34</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Debian votou contra banimento de código gerado por IA em sua distribuição Linux</div>
+        <div class="news-summary">A comunidade Debian decidiu permitir que desenvolvedores usem ferramentas de IA em contribuições ao desenvolvimento, manutenção e documentação da distribuição Linux mais popular do mundo. A votação rejeita propostas de exclusão de código gerado por modelos de linguagem. Debian afirma que IA é agora ferramenta padrão de desenvolvimento e não deve ser discriminada. A decisão beneficia contribuidores que utilizam assistentes de código como GitHub Copilot e similares. Essa aprovação posiciona Debian como mais inclusiva em relação a práticas modernas de engenharia de software.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/986789/linux-debian-generative-ai-policy" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Hackers norte-coreanos movem dezenas de milhões em Hyperliquid enquanto Trump pressiona onshore da plataforma Dados de blockchain analisados pela CoinDesk mostram que carteiras ligadas ao Lazarus Group (hackers norte-coreanos) venderam mais de US$ 30 milhões em bitcoin na plataforma Hyperliquid nas últimas semanas. O movimento ocorre enquanto administração Trump pressiona pela regulação e operação doméstica de exchanges descentralizadas. Hyperliquid expandiu volume dramaticamente em 2026, atraindo tanto usuários legítimos quanto atividades suspeitas. A presença de atores ligados à Coreia do Norte na plataforma complica discussões sobre onshore de cripto nos EUA. Reguladores enfrentam dilema: aceitar exchanges descentralizadas localmente mas com risco de lavagem de dinheiro, ou manter proibição. CoinDesk" data-title="Hackers norte-coreanos movem dezenas de milhões em Hyperliquid enquanto Trump pressiona onshore da plataforma" data-share-url="https://www.coindesk.com/business/2026/08/31/north-korean-hackers-are-moving-tens-of-millions-on-hyperliquid-as-trump-pushes-to-onshore-the-crypto-platform">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">17:48</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Hackers norte-coreanos movem dezenas de milhões em Hyperliquid enquanto Trump pressiona onshore da plataforma</div>
+        <div class="news-summary">Dados de blockchain analisados pela CoinDesk mostram que carteiras ligadas ao Lazarus Group (hackers norte-coreanos) venderam mais de US$ 30 milhões em bitcoin na plataforma Hyperliquid nas últimas semanas. O movimento ocorre enquanto administração Trump pressiona pela regulação e operação doméstica de exchanges descentralizadas. Hyperliquid expandiu volume dramaticamente em 2026, atraindo tanto usuários legítimos quanto atividades suspeitas. A presença de atores ligados à Coreia do Norte na plataforma complica discussões sobre onshore de cripto nos EUA. Reguladores enfrentam dilema: aceitar exchanges descentralizadas localmente mas com risco de lavagem de dinheiro, ou manter proibição.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/31/north-korean-hackers-are-moving-tens-of-millions-on-hyperliquid-as-trump-pushes-to-onshore-the-crypto-platform" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="ETFs de XRP mantêm streak de inflows por 9 dias, somando US$ 1,6 bilhão desde lançamento ETFs spot de XRP continuaram atraindo inflows por nove dias consecutivos, acumulando US$ 1,6 bilhão em entradas líquidas desde lançamento recente. O momentum positivo de XRP ETFs ocorre mesmo com preço do token em consolidação, indicando interesse institucional estrutural no ativo. Os inflows sugerem que investidores percebem oportunidade de exposição a XRP via veículo regulado. A persistência de inflows contra price action plana reflete demanda de longo prazo, não especulação. Esse padrão é similar ao observado com ETFs de Bitcoin e Ethereum em fases iniciais. Decrypt" data-title="ETFs de XRP mantêm streak de inflows por 9 dias, somando US$ 1,6 bilhão desde lançamento" data-share-url="https://decrypt.co/376973/xrp-etfs-inflow-streak-9-days">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">16:31</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">ETFs de XRP mantêm streak de inflows por 9 dias, somando US$ 1,6 bilhão desde lançamento</div>
+        <div class="news-summary">ETFs spot de XRP continuaram atraindo inflows por nove dias consecutivos, acumulando US$ 1,6 bilhão em entradas líquidas desde lançamento recente. O momentum positivo de XRP ETFs ocorre mesmo com preço do token em consolidação, indicando interesse institucional estrutural no ativo. Os inflows sugerem que investidores percebem oportunidade de exposição a XRP via veículo regulado. A persistência de inflows contra price action plana reflete demanda de longo prazo, não especulação. Esse padrão é similar ao observado com ETFs de Bitcoin e Ethereum em fases iniciais.</div>
+        <div class="news-link"><a href="https://decrypt.co/376973/xrp-etfs-inflow-streak-9-days" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="OpenSea adiciona suporte a trading de NFTs na Solana após 4 anos de beta OpenSea, maior marketplace de NFTs globalmente, ativou suporte completo para trading de NFTs na Solana após mais de 4 anos em fase beta. Usuários podem agora comprar, vender e trocar collectibles Solana directamente na plataforma. Integração completa de Solana no OpenSea era esperada há tempo e marca consolidação de Solana como blockchain relevante para NFTs. Movimento potencialmente restaura interesse em NFTs em Solana, que havia perdido momentum vs. outras cadeias. OpenSea reafirma posição de agregador multi-chain de mercados de collectibles. The Block" data-title="OpenSea adiciona suporte a trading de NFTs na Solana após 4 anos de beta" data-share-url="https://www.theblock.co/news/markets/2026-08-31-opensea-solana-nft-trading-413128">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">15:11</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">OpenSea adiciona suporte a trading de NFTs na Solana após 4 anos de beta</div>
+        <div class="news-summary">OpenSea, maior marketplace de NFTs globalmente, ativou suporte completo para trading de NFTs na Solana após mais de 4 anos em fase beta. Usuários podem agora comprar, vender e trocar collectibles Solana directamente na plataforma. Integração completa de Solana no OpenSea era esperada há tempo e marca consolidação de Solana como blockchain relevante para NFTs. Movimento potencialmente restaura interesse em NFTs em Solana, que havia perdido momentum vs. outras cadeias. OpenSea reafirma posição de agregador multi-chain de mercados de collectibles.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/markets/2026-08-31-opensea-solana-nft-trading-413128" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Hyperliquid em conversas com Kraken para trazer derivativos cripto regulados aos EUA Hyperliquid, exchange descentralizada de derivativos cripto, está em negociações com Payward (empresa-mãe do Kraken) para rotear operações de futuros perpétuos através de Bitnomial — entidade regulada nos EUA. Acordo marcaria primeira incursão de Hyperliquid no mercado americano legal, permitindo trades para usuários domésticos. Payward teria apresentado outline da estrutura proposta à CFTC, mas aprovação regulatória ainda é pendente. Movimento reflete pressão regulatória por trazer exchanges descentralizadas para framework legal americano. Sucesso dessa abordagem pode modelar como DEXs operam em mercados regulados. Decrypt / The Block" data-title="Hyperliquid em conversas com Kraken para trazer derivativos cripto regulados aos EUA" data-share-url="https://decrypt.co/376963/hyperliquid-crypto-perps-us-kraken-parent">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">14:54</span>
+          <span class="news-source">Decrypt / The Block</span>
+        </div>
+        <div class="news-title">Hyperliquid em conversas com Kraken para trazer derivativos cripto regulados aos EUA</div>
+        <div class="news-summary">Hyperliquid, exchange descentralizada de derivativos cripto, está em negociações com Payward (empresa-mãe do Kraken) para rotear operações de futuros perpétuos através de Bitnomial — entidade regulada nos EUA. Acordo marcaria primeira incursão de Hyperliquid no mercado americano legal, permitindo trades para usuários domésticos. Payward teria apresentado outline da estrutura proposta à CFTC, mas aprovação regulatória ainda é pendente. Movimento reflete pressão regulatória por trazer exchanges descentralizadas para framework legal americano. Sucesso dessa abordagem pode modelar como DEXs operam em mercados regulados.</div>
+        <div class="news-link"><a href="https://decrypt.co/376963/hyperliquid-crypto-perps-us-kraken-parent" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Webull expande trading de cripto no Canadá via parceria com Coinbase Webull, plataforma de brokerage, anunciou expansão de serviços de trading de cripto no Canadá em colaboração com Coinbase. Nova oferta integra ativos digitais aos serviços tradicionais de ações, ETFs e opções. Movimento ocorre enquanto propriedade de cripto cresce no Canadá e reguladores caminham para framework mais claro. Parceria com Coinbase (exchange consolidada) valida oferecimento de cripto pelo Webull. Essa integração simplifica acesso de investidores canadenses a cripto através de plataforma multi-ativo conhecida. Cointelegraph" data-title="Webull expande trading de cripto no Canadá via parceria com Coinbase" data-share-url="https://cointelegraph.com/news/webull-canada-crypto-trading-coinbase?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">14:28</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Webull expande trading de cripto no Canadá via parceria com Coinbase</div>
+        <div class="news-summary">Webull, plataforma de brokerage, anunciou expansão de serviços de trading de cripto no Canadá em colaboração com Coinbase. Nova oferta integra ativos digitais aos serviços tradicionais de ações, ETFs e opções. Movimento ocorre enquanto propriedade de cripto cresce no Canadá e reguladores caminham para framework mais claro. Parceria com Coinbase (exchange consolidada) valida oferecimento de cripto pelo Webull. Essa integração simplifica acesso de investidores canadenses a cripto através de plataforma multi-ativo conhecida.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/webull-canada-crypto-trading-coinbase?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Reguladores Ex-SEC e CFTC pressionam por regulação menos severa para derivatives cripto Oficiais que anteriormente atuaram na SEC e CFTC publicaram argumentação em favor de regulação mais leve para trazer trading de derivatives cripto para jurisdição americana. Enquanto Clarity Act permanece paralisado no recesso congressual, agências avançam por conta própria em crypto derivatives e custody. Oficiais alertam que regulação excessivamente rigorosa afastará atividade cripto para jurisdições offshore. Pressão de ex-reguladores com credibilidade junto ao mercado pode influenciar decisões de agências. Debate reflete crescente reconhecimento de que proibição é insustentável; questão é como regular sem sufocação. Decrypt" data-title="Reguladores Ex-SEC e CFTC pressionam por regulação menos severa para derivatives cripto" data-share-url="https://decrypt.co/376936/sec-cftc-crypto-perps-trading-onshore">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">14:06</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Reguladores Ex-SEC e CFTC pressionam por regulação menos severa para derivatives cripto</div>
+        <div class="news-summary">Oficiais que anteriormente atuaram na SEC e CFTC publicaram argumentação em favor de regulação mais leve para trazer trading de derivatives cripto para jurisdição americana. Enquanto Clarity Act permanece paralisado no recesso congressual, agências avançam por conta própria em crypto derivatives e custody. Oficiais alertam que regulação excessivamente rigorosa afastará atividade cripto para jurisdições offshore. Pressão de ex-reguladores com credibilidade junto ao mercado pode influenciar decisões de agências. Debate reflete crescente reconhecimento de que proibição é insustentável; questão é como regular sem sufocação.</div>
+        <div class="news-link"><a href="https://decrypt.co/376936/sec-cftc-crypto-perps-trading-onshore" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="George Santos recebe banimento permanente da Kalshi por manipulação de mercado A plataforma de mercados de previsão Kalshi emitiu seu primeiro banimento permanente, atingindo o ex-congressista George Santos por manipulação de mercado. Santos foi descoberto colocando grandes apostas sobre sua própria presença no State of the Union, depois fazendo declarações falsas para mover os preços a seu favor. A Kalshi afirmou que esse comportamento violava suas regras contra manipulação. O banimento marca posicionamento da indústria cripto em demonstrar compliance rigoroso com reguladores. Santos enfrenta crescente escrutínio regulatório e legal por atividades em múltiplas frentes. CoinDesk / Decrypt" data-title="George Santos recebe banimento permanente da Kalshi por manipulação de mercado" data-share-url="https://www.coindesk.com/policy/2026/08/31/kalshi-lays-down-first-lifetime-ban-for-ex-member-of-congress-george-santos">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">12:33</span>
+          <span class="news-source">CoinDesk / Decrypt</span>
+        </div>
+        <div class="news-title">George Santos recebe banimento permanente da Kalshi por manipulação de mercado</div>
+        <div class="news-summary">A plataforma de mercados de previsão Kalshi emitiu seu primeiro banimento permanente, atingindo o ex-congressista George Santos por manipulação de mercado. Santos foi descoberto colocando grandes apostas sobre sua própria presença no State of the Union, depois fazendo declarações falsas para mover os preços a seu favor. A Kalshi afirmou que esse comportamento violava suas regras contra manipulação. O banimento marca posicionamento da indústria cripto em demonstrar compliance rigoroso com reguladores. Santos enfrenta crescente escrutínio regulatório e legal por atividades em múltiplas frentes.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/08/31/kalshi-lays-down-first-lifetime-ban-for-ex-member-of-congress-george-santos" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Strive torna-se quinta maior tesouro corporativo de Bitcoin com compra de US$ 143 milhões Strive, gestora de ativos listada na Nasdaq, adquiriu 1.800 BTC (US$ 143 milhões) a preço médio de US$ 79.431 por coin, elevando suas participações totais a 23.156 BTC. A compra posiciona Strive como quinta maior tesouro corporativo público de Bitcoin, ultrapassando outras gestoras. TD Cowen elevou preço-alvo de Strive após movimento, projetando acumulação de 27.156 BTC até fim de 2026. O momentum de recompras corporativas de Bitcoin reflete confiança renovada em ciclos cripto. Esses dados de acumulação reforçam argumentação taurina sobre adoção institucional contínua. Cointelegraph / Decrypt / The Block" data-title="Strive torna-se quinta maior tesouro corporativo de Bitcoin com compra de US$ 143 milhões" data-share-url="https://www.theblock.co/news/business/2026-08-31-strive-becomes-fifth-largest-public-bitcoin-treasury-after-1800-btc-buy-td-cowen-lifts-asst-price-target-413112">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">12:08</span>
+          <span class="news-source">Cointelegraph / Decrypt / The Block</span>
+        </div>
+        <div class="news-title">Strive torna-se quinta maior tesouro corporativo de Bitcoin com compra de US$ 143 milhões</div>
+        <div class="news-summary">Strive, gestora de ativos listada na Nasdaq, adquiriu 1.800 BTC (US$ 143 milhões) a preço médio de US$ 79.431 por coin, elevando suas participações totais a 23.156 BTC. A compra posiciona Strive como quinta maior tesouro corporativo público de Bitcoin, ultrapassando outras gestoras. TD Cowen elevou preço-alvo de Strive após movimento, projetando acumulação de 27.156 BTC até fim de 2026. O momentum de recompras corporativas de Bitcoin reflete confiança renovada em ciclos cripto. Esses dados de acumulação reforçam argumentação taurina sobre adoção institucional contínua.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-08-31-strive-becomes-fifth-largest-public-bitcoin-treasury-after-1800-btc-buy-td-cowen-lifts-asst-price-target-413112" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Russia estima US$ 46 bilhões em volume de trading cripto no primeiro ano pós-legalização Relatório de instituição russa projeta que exchanges de criptomoedas reguladas podem processar mais de US$ 46 bilhões em volume de trading durante o primeiro ano após legalização formal. Estimativa é baseada em demanda reprimida de usuários russos durante anos de restrições regulatórias. Banco Central e governo russo adotam postura de abertura cautelosa ao cripto como fonte de receita cambial. Legalização esperada para 2027 pode transformar Rússia em mercado cripto significativo. Essa oportunidade atrai exchanges internacionais e desenvolvedoras de serviços cripto para jurisdição russa. Cointelegraph / Decrypt" data-title="Russia estima US$ 46 bilhões em volume de trading cripto no primeiro ano pós-legalização" data-share-url="https://www.theblock.co/news/business/2026-08-31-strive-becomes-fifth-largest-public-bitcoin-treasury-after-1800-btc-buy-td-cowen-lifts-asst-price-target-413112">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">11:50</span>
+          <span class="news-source">Cointelegraph / Decrypt</span>
+        </div>
+        <div class="news-title">Russia estima US$ 46 bilhões em volume de trading cripto no primeiro ano pós-legalização</div>
+        <div class="news-summary">Relatório de instituição russa projeta que exchanges de criptomoedas reguladas podem processar mais de US$ 46 bilhões em volume de trading durante o primeiro ano após legalização formal. Estimativa é baseada em demanda reprimida de usuários russos durante anos de restrições regulatórias. Banco Central e governo russo adotam postura de abertura cautelosa ao cripto como fonte de receita cambial. Legalização esperada para 2027 pode transformar Rússia em mercado cripto significativo. Essa oportunidade atrai exchanges internacionais e desenvolvedoras de serviços cripto para jurisdição russa.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-08-31-strive-becomes-fifth-largest-public-bitcoin-treasury-after-1800-btc-buy-td-cowen-lifts-asst-price-target-413112" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Proprietário da NYSE (ICE) investe em tZERO para plataforma de títulos tokenizados Intercontinental Exchange (ICE), dona da Bolsa de Valores de Nova York, anunciou investimento e parceria com tZERO para desenvolver mercado de títulos tokenizados. O acordo integra infraestrutura de transfer-agent e settlement ao plano da ICE para criar mercado NYSE-afiliado de ações representadas em blockchain. A movimentação sinaliza confiança de gigante de infraestrutura financeira em viabilidade de securities tokenizadas. tZERO receberá injeção de capital e ganho de escala ao acessar rede da ICE. Esse tipo de parceria institucional valida narrativa de tokenização como próxima fronteira dos mercados de capitais. CoinDesk" data-title="Proprietário da NYSE (ICE) investe em tZERO para plataforma de títulos tokenizados" data-share-url="https://www.coindesk.com/business/2026/08/31/nyse-owner-ice-taps-tzero-for-tokenized-securities-push-takes-stake-in-firm">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">11:44</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Proprietário da NYSE (ICE) investe em tZERO para plataforma de títulos tokenizados</div>
+        <div class="news-summary">Intercontinental Exchange (ICE), dona da Bolsa de Valores de Nova York, anunciou investimento e parceria com tZERO para desenvolver mercado de títulos tokenizados. O acordo integra infraestrutura de transfer-agent e settlement ao plano da ICE para criar mercado NYSE-afiliado de ações representadas em blockchain. A movimentação sinaliza confiança de gigante de infraestrutura financeira em viabilidade de securities tokenizadas. tZERO receberá injeção de capital e ganho de escala ao acessar rede da ICE. Esse tipo de parceria institucional valida narrativa de tokenização como próxima fronteira dos mercados de capitais.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/31/nyse-owner-ice-taps-tzero-for-tokenized-securities-push-takes-stake-in-firm" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Irlanda exclui criptomoedas de contas de investimento com vantagens fiscais Irlanda anunciou que novas contas de investimento com benefícios fiscais excludentes (equivalent ao ISA britânico) não permitirão alocação em criptoativos ou derivativos. Contas aceitarão ações, títulos e ETFs apenas. Reguladores irlandeses classificam cripto como ativo de risco elevado inadequado para veículos de poupança popular. A decisão afeta usuários que desejavam alocar recursos em cripto com eficiência fiscal. Irlanda segue precedente europeu de cautela com criptoativos no varejo. Essa exclusão pode desestimular adoção de cripto entre poupadores conservadores em jurisdição tradicionalmente crypto-friendly. CoinDesk / Cointelegraph" data-title="Irlanda exclui criptomoedas de contas de investimento com vantagens fiscais" data-share-url="https://www.coindesk.com/business/2026/08/31/ireland-bars-crypto-from-new-tax-advantaged-investment-accounts">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">10:29</span>
+          <span class="news-source">CoinDesk / Cointelegraph</span>
+        </div>
+        <div class="news-title">Irlanda exclui criptomoedas de contas de investimento com vantagens fiscais</div>
+        <div class="news-summary">Irlanda anunciou que novas contas de investimento com benefícios fiscais excludentes (equivalent ao ISA britânico) não permitirão alocação em criptoativos ou derivativos. Contas aceitarão ações, títulos e ETFs apenas. Reguladores irlandeses classificam cripto como ativo de risco elevado inadequado para veículos de poupança popular. A decisão afeta usuários que desejavam alocar recursos em cripto com eficiência fiscal. Irlanda segue precedente europeu de cautela com criptoativos no varejo. Essa exclusão pode desestimular adoção de cripto entre poupadores conservadores em jurisdição tradicionalmente crypto-friendly.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/31/ireland-bars-crypto-from-new-tax-advantaged-investment-accounts" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Regulador japonês busca isenção fiscal para stablecoins baseadas em trust em reforma 2027 Financial Services Agency (FSA) do Japão solicitou isenção de requisitos de declaração fiscal obrigatória para stablecoins estruturados como trusts (estrutura de trust-type stablecoins) a partir de 2027. FSA argumenta que isenção melhoraria usabilidade e adoção de stablecoins trustless no país. A iniciativa reflete estratégia japonesa de encorajar inovação cripto através de frameworks fiscais favoráveis. Simplificação tributária pode acelerar migração de usuários para stablecoins reguladas no Japão. Esse tipo de acomodação regulatória posiciona Japão como jurisdição progressista para cripto-fintech. Cointelegraph" data-title="Regulador japonês busca isenção fiscal para stablecoins baseadas em trust em reforma 2027" data-share-url="https://cointelegraph.com/news/japanese-regulator-tax-exemption-trust-type-stablecoins-2027?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">10:20</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Regulador japonês busca isenção fiscal para stablecoins baseadas em trust em reforma 2027</div>
+        <div class="news-summary">Financial Services Agency (FSA) do Japão solicitou isenção de requisitos de declaração fiscal obrigatória para stablecoins estruturados como trusts (estrutura de trust-type stablecoins) a partir de 2027. FSA argumenta que isenção melhoraria usabilidade e adoção de stablecoins trustless no país. A iniciativa reflete estratégia japonesa de encorajar inovação cripto através de frameworks fiscais favoráveis. Simplificação tributária pode acelerar migração de usuários para stablecoins reguladas no Japão. Esse tipo de acomodação regulatória posiciona Japão como jurisdição progressista para cripto-fintech.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/japanese-regulator-tax-exemption-trust-type-stablecoins-2027?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Metaplanet move 4.800 BTC (US$ 377 M) para Coinbase, liquidando 29% de holdings Metaplanet, empresa japonesa de treasury de Bitcoin, transferiu 4.800 BTC (avaliados em US$ 377 milhões) para Coinbase Prime nessa semana — equivalente a mais de 29% de suas posições totais reportadas. Movimento levanta questões sobre motivo da liquidação parcial: possível necessidade de liquidez, reposicionamento estratégico ou resposta a pressões de mercado. Metaplanet é uma das maiores empresas de acumulação de Bitcoin corporativo fora do eixo EUA. A transferência para custody terceirizado (Coinbase) sinaliza mudança em modelo de tenência própria que caracterizava a estratégia anterior. Cointelegraph" data-title="Metaplanet move 4.800 BTC (US$ 377 M) para Coinbase, liquidando 29% de holdings" data-share-url="https://cointelegraph.com/news/mutiny-metaplanet-moves-4800-btc-worth-377m-to-coinbase?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">10:19</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Metaplanet move 4.800 BTC (US$ 377 M) para Coinbase, liquidando 29% de holdings</div>
+        <div class="news-summary">Metaplanet, empresa japonesa de treasury de Bitcoin, transferiu 4.800 BTC (avaliados em US$ 377 milhões) para Coinbase Prime nessa semana — equivalente a mais de 29% de suas posições totais reportadas. Movimento levanta questões sobre motivo da liquidação parcial: possível necessidade de liquidez, reposicionamento estratégico ou resposta a pressões de mercado. Metaplanet é uma das maiores empresas de acumulação de Bitcoin corporativo fora do eixo EUA. A transferência para custody terceirizado (Coinbase) sinaliza mudança em modelo de tenência própria que caracterizava a estratégia anterior.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/mutiny-metaplanet-moves-4800-btc-worth-377m-to-coinbase?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitmine faz maior compra de ETH desde junho, acumula 4,9% do suprimento total Bitmine, gestora de ativos criptográficos dirigida por Tom Lee, comprou 53.500 ETH (aproximadamente US$ 131 milhões), sua maior aquisição de Ethereum desde junho. A movimentação eleva participação da Bitmine para 4,9% do suprimento circulante global de ETH — posição de baleia institucional significativa. Lee apontou forte performance de cripto no Q3 como indicativo de entrada institucional renovada. A compra marca continuum de acumulação estratégica apesar de volatilidade anterior. Tom Lee reafirma confiança de longo prazo em Ethereum como ativo institucional viável. CoinDesk / Decrypt" data-title="Bitmine faz maior compra de ETH desde junho, acumula 4,9% do suprimento total" data-share-url="https://www.coindesk.com/business/2026/08/31/bitmine-makes-largest-ether-purchase-since-june-as-tom-lee-points-to-crypto-s-strong-q3">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">09:53</span>
+          <span class="news-source">CoinDesk / Decrypt</span>
+        </div>
+        <div class="news-title">Bitmine faz maior compra de ETH desde junho, acumula 4,9% do suprimento total</div>
+        <div class="news-summary">Bitmine, gestora de ativos criptográficos dirigida por Tom Lee, comprou 53.500 ETH (aproximadamente US$ 131 milhões), sua maior aquisição de Ethereum desde junho. A movimentação eleva participação da Bitmine para 4,9% do suprimento circulante global de ETH — posição de baleia institucional significativa. Lee apontou forte performance de cripto no Q3 como indicativo de entrada institucional renovada. A compra marca continuum de acumulação estratégica apesar de volatilidade anterior. Tom Lee reafirma confiança de longo prazo em Ethereum como ativo institucional viável.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/08/31/bitmine-makes-largest-ether-purchase-since-june-as-tom-lee-points-to-crypto-s-strong-q3" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="MicroStrategy retorna a compras de Bitcoin com US$ 370 milhões em BTC na semana MicroStrategy, empresa de business intelligence liderada por Michael Saylor, retomou política agressiva de compras de Bitcoin, adquirindo US$ 370 milhões em BTC na semana passada. Trata-se da primeira semana de compras por parte da empresa em aproximadamente dois meses, sinalizando retorno de confiança na trajetória de Bitcoin. MicroStrategy tornou-se embaixadora corporativa de Bitcoin entre empresas S&amp;P 500 por sua política de acumulação contínua. A compra alinha-se com narrativa de Bitcoin como ativo de reserva institucional. Saylor continua apostando na apreciação de longo prazo apesar das flutuações de curto prazo. CoinDesk" data-title="MicroStrategy retorna a compras de Bitcoin com US$ 370 milhões em BTC na semana" data-share-url="https://www.coindesk.com/markets/2026/08/31/strategy-returns-to-bitcoin-buys-adding-usd370-million-worth-last-week">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">09:11</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">MicroStrategy retorna a compras de Bitcoin com US$ 370 milhões em BTC na semana</div>
+        <div class="news-summary">MicroStrategy, empresa de business intelligence liderada por Michael Saylor, retomou política agressiva de compras de Bitcoin, adquirindo US$ 370 milhões em BTC na semana passada. Trata-se da primeira semana de compras por parte da empresa em aproximadamente dois meses, sinalizando retorno de confiança na trajetória de Bitcoin. MicroStrategy tornou-se embaixadora corporativa de Bitcoin entre empresas S&amp;P 500 por sua política de acumulação contínua. A compra alinha-se com narrativa de Bitcoin como ativo de reserva institucional. Saylor continua apostando na apreciação de longo prazo apesar das flutuações de curto prazo.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/08/31/strategy-returns-to-bitcoin-buys-adding-usd370-million-worth-last-week" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Robinhood Chain ultrapassa Ethereum em receita diária enquanto trading de memecoins explode Robinhood Chain, blockchain de 2 meses lançada pela corretora Robinhood, processou 5,52 milhões de transações em 30 de agosto — recorde da rede — e gerou mais receita que a Ethereum no mesmo dia. A explosão foi impulsionada por lançamento de 22.600 novos tokens, predominantemente memecoins. Ferramentas de trading de memecoins no Robinhood Chain tornaram-se populares entre usuários de varejo. O momento marca shift de narrativa de altcoins 'úteis' para especulação viral em memecoins. A rede comemora crescimento explosivo, mas levanta questões sobre sustentabilidade de uso baseado em especulação. CoinDesk / The Block" data-title="Robinhood Chain ultrapassa Ethereum em receita diária enquanto trading de memecoins explode" data-share-url="https://www.coindesk.com/markets/2026/08/31/robinhood-chain-beats-ethereum-in-daily-revenue-as-memecoin-trading-takes-over">
+        <div class="news-meta">
+          <span class="news-date">31 ago 2026</span>
+          <span class="news-time">08:53</span>
+          <span class="news-source">CoinDesk / The Block</span>
+        </div>
+        <div class="news-title">Robinhood Chain ultrapassa Ethereum em receita diária enquanto trading de memecoins explode</div>
+        <div class="news-summary">Robinhood Chain, blockchain de 2 meses lançada pela corretora Robinhood, processou 5,52 milhões de transações em 30 de agosto — recorde da rede — e gerou mais receita que a Ethereum no mesmo dia. A explosão foi impulsionada por lançamento de 22.600 novos tokens, predominantemente memecoins. Ferramentas de trading de memecoins no Robinhood Chain tornaram-se populares entre usuários de varejo. O momento marca shift de narrativa de altcoins 'úteis' para especulação viral em memecoins. A rede comemora crescimento explosivo, mas levanta questões sobre sustentabilidade de uso baseado em especulação.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/08/31/robinhood-chain-beats-ethereum-in-daily-revenue-as-memecoin-trading-takes-over" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
