@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">15 DE SETEMBRO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia é marcado por um colapso regulatório para a indústria de criptomoedas, com a falha da Clarity Act no Senado americano gerando ondas de choque nos mercados e disparando negociações de última hora sobre ética e conflitos de interesse. Simultaneamente, tensões geopolíticas se intensificam com escaladas no Iêmen, Ucrânia e Golfo Pérsico, enquanto preços de combustíveis globais alimentam protestos em múltiplas regiões. Na IA, pesquisas sobre riscos existenciais ganham proeminência junto a notícias sobre regulação e impopularidade de data centers, refletindo um momento de inflexão onde economia, geopolítica e tecnologia se entrelaçam em conflitos políticos que definirão os próximos anos.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-09-14/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15">2026-08-15</option><option value="2026-08-16">2026-08-16</option><option value="2026-08-17">2026-08-17</option><option value="2026-08-18">2026-08-18</option><option value="2026-08-19">2026-08-19</option><option value="2026-08-20">2026-08-20</option><option value="2026-08-21">2026-08-21</option><option value="2026-08-22">2026-08-22</option><option value="2026-08-23">2026-08-23</option><option value="2026-08-24">2026-08-24</option><option value="2026-08-25">2026-08-25</option><option value="2026-08-27">2026-08-27</option><option value="2026-08-28">2026-08-28</option><option value="2026-08-29">2026-08-29</option><option value="2026-08-30">2026-08-30</option><option value="2026-08-31">2026-08-31</option><option value="2026-09-01">2026-09-01</option><option value="2026-09-02">2026-09-02</option><option value="2026-09-03">2026-09-03</option><option value="2026-09-04">2026-09-04</option><option value="2026-09-05">2026-09-05</option><option value="2026-09-06">2026-09-06</option><option value="2026-09-07">2026-09-07</option><option value="2026-09-08">2026-09-08</option><option value="2026-09-09">2026-09-09</option><option value="2026-09-10">2026-09-10</option><option value="2026-09-11">2026-09-11</option><option value="2026-09-12">2026-09-12</option><option value="2026-09-13">2026-09-13</option><option value="2026-09-14">2026-09-14</option><option value="2026-09-15" selected>2026-09-15</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Ucrânia e Rússia negam trégua energética apesar de promessas de Trump Tanto Moscou quanto Kiev desmentiriam qualquer acordo de trégua energética divulgado pelo presidente Trump, sinalizando que as negociações diplomáticas seguem estagnadas. O Kremlin argumenta que tal acordo teria pouco efeito prático nos mercados de combustível. A falta de consenso sobre cessação do fogo energético reflete a profundidade das desconfianças entre as partes. As promessas de Trump de resolver o conflito colidem com a realidade de posições irreconciliáveis. A escalada continua impactando mercados globais de energia, gerando incerteza nos preços e oferta. O impasse também complica esforços diplomáticos de mediação internacional. NYT &gt; World News" data-title="Ucrânia e Rússia negam trégua energética apesar de promessas de Trump" data-share-url="https://www.nytimes.com/2026/09/15/world/europe/trump-energy-truce-ukraine-russia.html">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">15:44</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Ucrânia e Rússia negam trégua energética apesar de promessas de Trump</div>
+        <div class="news-summary">Tanto Moscou quanto Kiev desmentiriam qualquer acordo de trégua energética divulgado pelo presidente Trump, sinalizando que as negociações diplomáticas seguem estagnadas. O Kremlin argumenta que tal acordo teria pouco efeito prático nos mercados de combustível. A falta de consenso sobre cessação do fogo energético reflete a profundidade das desconfianças entre as partes. As promessas de Trump de resolver o conflito colidem com a realidade de posições irreconciliáveis. A escalada continua impactando mercados globais de energia, gerando incerteza nos preços e oferta. O impasse também complica esforços diplomáticos de mediação internacional.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/09/15/world/europe/trump-energy-truce-ukraine-russia.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Houthis mostram sofisticação crescente em armamentos com uso de inteligência artificial Os Houthis do Iêmen estão desenvolvendo capacidades militares avançadas de forma independente, utilizando inteligência artificial e outras tecnologias para reduzir sua dependência do Irã. O grupo demonstra cada vez mais autonomia em design e produção de armamentos sofisticados. Esta escalada representa um ponto de virada na dinâmica do conflito iemenita, tornando os Houthis adversários mais imprevisíveis e tecnologicamente capazes. O desenvolvimento autossuficiente de armas implica em maior capacidade de sustentação do conflito. A mudança também altera o equilíbrio de poder regional no Golfo Pérsico, onde os EUA têm bases militares. O cenário aumenta a instabilidade e complexidade das operações militares na região. NYT &gt; World News" data-title="Houthis mostram sofisticação crescente em armamentos com uso de inteligência artificial" data-share-url="https://www.nytimes.com/2026/09/15/world/middleeast/yemen-houthis-weapons.html">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">11:03</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Houthis mostram sofisticação crescente em armamentos com uso de inteligência artificial</div>
+        <div class="news-summary">Os Houthis do Iêmen estão desenvolvendo capacidades militares avançadas de forma independente, utilizando inteligência artificial e outras tecnologias para reduzir sua dependência do Irã. O grupo demonstra cada vez mais autonomia em design e produção de armamentos sofisticados. Esta escalada representa um ponto de virada na dinâmica do conflito iemenita, tornando os Houthis adversários mais imprevisíveis e tecnologicamente capazes. O desenvolvimento autossuficiente de armas implica em maior capacidade de sustentação do conflito. A mudança também altera o equilíbrio de poder regional no Golfo Pérsico, onde os EUA têm bases militares. O cenário aumenta a instabilidade e complexidade das operações militares na região.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/09/15/world/middleeast/yemen-houthis-weapons.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Golfo Pérsico busca alternativas após bases americanas falharem em deter Irã Países do Golfo, incluindo EAU, Bahrein e Arábia Saudita, exploram novas estratégias após constatar que a presença militar dos EUA não os protegeu de represálias iranianas durante a guerra. A constatação força reconsideração fundamental das alianças e segurança regional. Governantes buscam iniciativas de diálogo direto com o Irã como alternativa à escalada militar. O cenário revela fragilidades na política de segurança americana na região. Conversas bilaterais ganham relevância como caminho para estabilidade. A mudança nas estratégias dos aliados do Golfo pode redefinir a geopolítica do Oriente Médio. NYT &gt; World News" data-title="Golfo Pérsico busca alternativas após bases americanas falharem em deter Irã" data-share-url="https://www.nytimes.com/2026/09/15/world/middleeast/gulf-us-iran-uae-bahrain-saudi-arabia.html">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">09:27</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Golfo Pérsico busca alternativas após bases americanas falharem em deter Irã</div>
+        <div class="news-summary">Países do Golfo, incluindo EAU, Bahrein e Arábia Saudita, exploram novas estratégias após constatar que a presença militar dos EUA não os protegeu de represálias iranianas durante a guerra. A constatação força reconsideração fundamental das alianças e segurança regional. Governantes buscam iniciativas de diálogo direto com o Irã como alternativa à escalada militar. O cenário revela fragilidades na política de segurança americana na região. Conversas bilaterais ganham relevância como caminho para estabilidade. A mudança nas estratégias dos aliados do Golfo pode redefinir a geopolítica do Oriente Médio.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/09/15/world/middleeast/gulf-us-iran-uae-bahrain-saudi-arabia.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Economia de Quirguistão cresce 11% impulsionada por comércio durante guerra na Ucrânia A nação da Ásia Central experimenta boom econômico de 11% de crescimento anual, beneficiando-se parcialmente de seu papel como condutor chave de bens que entram na Rússia. O país lucra com o papel de intermediário comercial em um cenário de sanções ocidentais. O crescimento reflete a capacidade de economias menores em se posicionar estrategicamente em conflitos geopolíticos. Quirguistão torna-se ponto de convergência para comércio contrabandista de tecnologia e outros produtos. A dependência econômica de dinâmicas de conflito regional cria vulnerabilidades futuras. O cenário exemplifica interdependências geopolítico-econômicas complexas na Eurásia. NYT &gt; World News" data-title="Economia de Quirguistão cresce 11% impulsionada por comércio durante guerra na Ucrânia" data-share-url="https://www.nytimes.com/2026/09/15/world/asia/kyrgyzstan-economy-russia-war.html">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">06:13</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Economia de Quirguistão cresce 11% impulsionada por comércio durante guerra na Ucrânia</div>
+        <div class="news-summary">A nação da Ásia Central experimenta boom econômico de 11% de crescimento anual, beneficiando-se parcialmente de seu papel como condutor chave de bens que entram na Rússia. O país lucra com o papel de intermediário comercial em um cenário de sanções ocidentais. O crescimento reflete a capacidade de economias menores em se posicionar estrategicamente em conflitos geopolíticos. Quirguistão torna-se ponto de convergência para comércio contrabandista de tecnologia e outros produtos. A dependência econômica de dinâmicas de conflito regional cria vulnerabilidades futuras. O cenário exemplifica interdependências geopolítico-econômicas complexas na Eurásia.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/09/15/world/asia/kyrgyzstan-economy-russia-war.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="IA e data centers enfrentam rejeição maciça em pesquisas de opinião pública Pesquisas do New York Times e Universidade de Siena revelam que eleitores rejeitam massivamente projetos de data centers e infraestrutura de IA. Políticos respondem ao descontentamento popular limitando aprovações de centros de dados. A impopularidade transcende linhas partidárias e demográficas. Comunidades locais manifestam preocupações sobre consumo de energia, impactos ambientais e especulação imobiliária. A rejeição pública coloca pressão sobre legisladores para regulação mais restritiva. O fenômeno representa desconexão entre prioridades da indústria tech e da população. The Verge" data-title="IA e data centers enfrentam rejeição maciça em pesquisas de opinião pública" data-share-url="https://www.theverge.com/ai-artificial-intelligence/995917/data-center-nyt-midterm-poll-september">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">20:34</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">IA e data centers enfrentam rejeição maciça em pesquisas de opinião pública</div>
+        <div class="news-summary">Pesquisas do New York Times e Universidade de Siena revelam que eleitores rejeitam massivamente projetos de data centers e infraestrutura de IA. Políticos respondem ao descontentamento popular limitando aprovações de centros de dados. A impopularidade transcende linhas partidárias e demográficas. Comunidades locais manifestam preocupações sobre consumo de energia, impactos ambientais e especulação imobiliária. A rejeição pública coloca pressão sobre legisladores para regulação mais restritiva. O fenômeno representa desconexão entre prioridades da indústria tech e da população.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/995917/data-center-nyt-midterm-poll-september" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Momento de pânico bipartidário sobre IA dispara interesse em regulação no Congresso Legisladores de ambos os partidos demonstram senso de urgência raro sobre regulação de IA, em meio a preocupações compartilhadas sobre riscos existenciais. Conversas acontecem nos bastidores do Congresso sobre frameworks regulatórios potenciais. O pânico institucional contrasta com bloqueios até poucos meses. Momento pode ser janela para legislação significativa antes do recesso parlamentar. Consenso bipartidário sobre IA é exceção em cenário político altamente polarizado. A urgência reflete pressão acumulada de cientistas, empresas e público. Axios" data-title="Momento de pânico bipartidário sobre IA dispara interesse em regulação no Congresso" data-share-url="https://www.axios.com/2026/09/15/ai-congress-regulation-bill-trump-bipartisan">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">20:08</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Momento de pânico bipartidário sobre IA dispara interesse em regulação no Congresso</div>
+        <div class="news-summary">Legisladores de ambos os partidos demonstram senso de urgência raro sobre regulação de IA, em meio a preocupações compartilhadas sobre riscos existenciais. Conversas acontecem nos bastidores do Congresso sobre frameworks regulatórios potenciais. O pânico institucional contrasta com bloqueios até poucos meses. Momento pode ser janela para legislação significativa antes do recesso parlamentar. Consenso bipartidário sobre IA é exceção em cenário político altamente polarizado. A urgência reflete pressão acumulada de cientistas, empresas e público.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/09/15/ai-congress-regulation-bill-trump-bipartisan" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Microsoft anuncia evento Windows e Surface para 7 de outubro Microsoft convida para evento principal em São Francisco onde divulgará estratégia futura para Windows e dispositivos Surface. É o primeiro grande evento da plataforma em mais de dois anos. O anúncio gera expectativas sobre integração de IA em sistema operacional. Executivos da Microsoft prometem revelações sobre futuro da computação pessoal. O evento coincide com pressão competitiva da OpenAI e Google em IA. Mercado aguarda anúncios de novos modelos ou parcerias. The Verge" data-title="Microsoft anuncia evento Windows e Surface para 7 de outubro" data-share-url="https://www.theverge.com/news/994714/microsoft-windows-surface-event-october-7-san-francisco">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">17:36</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Microsoft anuncia evento Windows e Surface para 7 de outubro</div>
+        <div class="news-summary">Microsoft convida para evento principal em São Francisco onde divulgará estratégia futura para Windows e dispositivos Surface. É o primeiro grande evento da plataforma em mais de dois anos. O anúncio gera expectativas sobre integração de IA em sistema operacional. Executivos da Microsoft prometem revelações sobre futuro da computação pessoal. O evento coincide com pressão competitiva da OpenAI e Google em IA. Mercado aguarda anúncios de novos modelos ou parcerias.</div>
+        <div class="news-link"><a href="https://www.theverge.com/news/994714/microsoft-windows-surface-event-october-7-san-francisco" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Debate sobre redes sociais e saúde mental de crianças questiona narrativa dominante Publicação explora pesquisa questionando se redes sociais realmente causam dano à saúde mental infantil, desafiando consenso estabelecido por psicólogo Jonathan Haidt. Estudos adicionais oferecem evidências conflitantes sobre causalidade versus correlação. O debate ressoa com críticos de pânicos morais recorrentes sobre novas tecnologias. Pesquisadores como Peter Gray argumentam pela restauração de autonomia infantil independente de tecnologia. A discussão sobre causação e evidência ganha relevância em contexto de regulação. O tema conecta IA, redes sociais e políticas de proteção infantil. The Verge" data-title="Debate sobre redes sociais e saúde mental de crianças questiona narrativa dominante" data-share-url="https://www.theverge.com/policy/995704/peter-gray-restoring-childhood-jonathan-haidt">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">17:13</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Debate sobre redes sociais e saúde mental de crianças questiona narrativa dominante</div>
+        <div class="news-summary">Publicação explora pesquisa questionando se redes sociais realmente causam dano à saúde mental infantil, desafiando consenso estabelecido por psicólogo Jonathan Haidt. Estudos adicionais oferecem evidências conflitantes sobre causalidade versus correlação. O debate ressoa com críticos de pânicos morais recorrentes sobre novas tecnologias. Pesquisadores como Peter Gray argumentam pela restauração de autonomia infantil independente de tecnologia. A discussão sobre causação e evidência ganha relevância em contexto de regulação. O tema conecta IA, redes sociais e políticas de proteção infantil.</div>
+        <div class="news-link"><a href="https://www.theverge.com/policy/995704/peter-gray-restoring-childhood-jonathan-haidt" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Consultores republicanos elaboram guia de defesa contra críticas a data centers de IA O pollster de Trump e consultores do GOP desenvolvem manual estratégico para candidatos republicanos contra-argumentarem críticas democratas sobre data centers de IA. O guia fornece talking points para neutralizar questões sobre impacto ambiental e consumo energético. A existência do manual demonstra importância crescente da questão em campanhas eleitorais. Republicanos reconhecem vulnerabilidade da posição pró-data center em distritos periféricos. A estratégia reflete cálculo político sobre votação intermediária de 2026. Ambos os partidos mobilizam recursos sobre tema que era ignorado dois anos atrás. Axios" data-title="Consultores republicanos elaboram guia de defesa contra críticas a data centers de IA" data-share-url="https://www.axios.com/2026/09/15/trump-pollster-data-center-republicans-midterm-election">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">16:02</span>
+          <span class="news-source">Axios</span>
+        </div>
+        <div class="news-title">Consultores republicanos elaboram guia de defesa contra críticas a data centers de IA</div>
+        <div class="news-summary">O pollster de Trump e consultores do GOP desenvolvem manual estratégico para candidatos republicanos contra-argumentarem críticas democratas sobre data centers de IA. O guia fornece talking points para neutralizar questões sobre impacto ambiental e consumo energético. A existência do manual demonstra importância crescente da questão em campanhas eleitorais. Republicanos reconhecem vulnerabilidade da posição pró-data center em distritos periféricos. A estratégia reflete cálculo político sobre votação intermediária de 2026. Ambos os partidos mobilizam recursos sobre tema que era ignorado dois anos atrás.</div>
+        <div class="news-link"><a href="https://www.axios.com/2026/09/15/trump-pollster-data-center-republicans-midterm-election" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Pesquisadores de IA advertem sobre possibilidade real de destruição em massa por sistemas avançados Funcionários dos principais laboratórios de IA do mundo manifestam preocupação genuína sobre a possibilidade de que inteligência artificial avançada possa destruir a humanidade. A questão de riscos existenciais ganha credibilidade institucional entre desenvolvedores. Mesas-redondas reúnem especialistas para debater cenários catastróficos. A discussão aberta sobre doomsday scenarios reflete mudança cultural na indústria. Pesquisas em segurança de IA ganham financiamento e atenção. O reconhecimento interno dos riscos colide com narrativas comerciais de benefícios ilimitados. MIT Technology Review" data-title="Pesquisadores de IA advertem sobre possibilidade real de destruição em massa por sistemas avançados" data-share-url="https://www.technologyreview.com/2026/09/15/1143936/roundtables-will-ai-really-kill-us-all/">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">14:47</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Pesquisadores de IA advertem sobre possibilidade real de destruição em massa por sistemas avançados</div>
+        <div class="news-summary">Funcionários dos principais laboratórios de IA do mundo manifestam preocupação genuína sobre a possibilidade de que inteligência artificial avançada possa destruir a humanidade. A questão de riscos existenciais ganha credibilidade institucional entre desenvolvedores. Mesas-redondas reúnem especialistas para debater cenários catastróficos. A discussão aberta sobre doomsday scenarios reflete mudança cultural na indústria. Pesquisas em segurança de IA ganham financiamento e atenção. O reconhecimento interno dos riscos colide com narrativas comerciais de benefícios ilimitados.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/09/15/1143936/roundtables-will-ai-really-kill-us-all/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Meta lança assinaturas One incluindo aplicativos de IA e redes sociais em bundle Meta apresenta pacotes de subscrição One que agregam acesso a apps de redes sociais com assistente de IA Muse. A estratégia monetiza usuários através de modelos de assinatura recorrente. Os bundles incluem múltiplos serviços de Meta com desconto agregado. A iniciativa reflete esforço de diversificação de receitas além de publicidade. A precificação de IA como serviço distinct marca mudança no modelo de negócio. Meta posiciona IA como diferenciador de valor para usuários premium. The Verge" data-title="Meta lança assinaturas One incluindo aplicativos de IA e redes sociais em bundle" data-share-url="https://www.theverge.com/tech/995453/meta-one-subscriptions-ai">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">12:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Meta lança assinaturas One incluindo aplicativos de IA e redes sociais em bundle</div>
+        <div class="news-summary">Meta apresenta pacotes de subscrição One que agregam acesso a apps de redes sociais com assistente de IA Muse. A estratégia monetiza usuários através de modelos de assinatura recorrente. Os bundles incluem múltiplos serviços de Meta com desconto agregado. A iniciativa reflete esforço de diversificação de receitas além de publicidade. A precificação de IA como serviço distinct marca mudança no modelo de negócio. Meta posiciona IA como diferenciador de valor para usuários premium.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/995453/meta-one-subscriptions-ai" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Notícias de IA integram crises executivas, inovações e tensões geopolíticas do dia Compilação diária reflete amplitude de temas envolvendo IA: desde debates sobre riscos existenciais até aplicações comerciais, impactos regulatórios e conflitos políticos. As notícias cobrem ciclo completo de desenvolvimento de tecnologia: pesquisa, financiamento, regulação e impacto social. O panorama do dia demonstra centralidade crescente de IA em decisões estratégicas globais. Tecnologia permeia debates sobre eleições, segurança nacional, saúde e trabalho. A multiplicidade de ângulos reflete fase de inflexão onde IA deixa laboratórios e entra em economias reais. The Verge" data-title="Notícias de IA integram crises executivas, inovações e tensões geopolíticas do dia" data-share-url="https://www.theverge.com/gadgets/995518/elegoo-3d-printer-switch-joy-con-deal-sale">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">12:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Notícias de IA integram crises executivas, inovações e tensões geopolíticas do dia</div>
+        <div class="news-summary">Compilação diária reflete amplitude de temas envolvendo IA: desde debates sobre riscos existenciais até aplicações comerciais, impactos regulatórios e conflitos políticos. As notícias cobrem ciclo completo de desenvolvimento de tecnologia: pesquisa, financiamento, regulação e impacto social. O panorama do dia demonstra centralidade crescente de IA em decisões estratégicas globais. Tecnologia permeia debates sobre eleições, segurança nacional, saúde e trabalho. A multiplicidade de ângulos reflete fase de inflexão onde IA deixa laboratórios e entra em economias reais.</div>
+        <div class="news-link"><a href="https://www.theverge.com/gadgets/995518/elegoo-3d-printer-switch-joy-con-deal-sale" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="OpenAI investe em coleta de dados biológicos para fortalecer modelos de IA médica A OpenAI está financiando a criação de novos conjuntos de dados biológicos para melhorar a capacidade de seus modelos de IA em aplicações médicas. A estratégia inclui uso de dados de testes clínicos que falharam, que são normalmente descartados. O investimento reconhece que modelos de IA carecem de dados biológicos suficientes para treinamento robusto. A abordagem inovadora pode transformar como dados médicos são utilizados em pesquisa. O financiamento da OpenAI sinaliza priorização de IA em saúde como área estratégica. A iniciativa pode acelerar desenvolvimento de diagnósticos e terapias baseadas em IA. MIT Technology Review" data-title="OpenAI investe em coleta de dados biológicos para fortalecer modelos de IA médica" data-share-url="https://www.technologyreview.com/2026/09/15/1144129/ai-models-need-more-data-about-biology-and-openai-is-paying-to-create-it/">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">09:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">OpenAI investe em coleta de dados biológicos para fortalecer modelos de IA médica</div>
+        <div class="news-summary">A OpenAI está financiando a criação de novos conjuntos de dados biológicos para melhorar a capacidade de seus modelos de IA em aplicações médicas. A estratégia inclui uso de dados de testes clínicos que falharam, que são normalmente descartados. O investimento reconhece que modelos de IA carecem de dados biológicos suficientes para treinamento robusto. A abordagem inovadora pode transformar como dados médicos são utilizados em pesquisa. O financiamento da OpenAI sinaliza priorização de IA em saúde como área estratégica. A iniciativa pode acelerar desenvolvimento de diagnósticos e terapias baseadas em IA.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/09/15/1144129/ai-models-need-more-data-about-biology-and-openai-is-paying-to-create-it/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Trilhões de dólares em investimento em IA enfrentam riscos de bolha especulativa Análise de especialistas em finanças questiona a sustentabilidade econômica de investimentos trilionários em infraestrutura de IA. Pesquisadores da Wharton School avaliam impactos macroeconômicos de gastos massivos em data centers e computação. Os números de investimento não encontram contrapartida clara em retornos ou produtividade mensuráveis. O cenário ressoa com padrões históricos de bolhas especulativas de tecnologia. Reguladores e investidores começam a questionar a viabilidade financeira de projetos mega-escala. A volatilidade de expectativas ameaça correções abruptas nos mercados de IA. MIT Technology Review" data-title="Trilhões de dólares em investimento em IA enfrentam riscos de bolha especulativa" data-share-url="https://www.technologyreview.com/2026/09/15/1144028/ai-infrastructure-boom-investment-bubble-risk/">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">07:00</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Trilhões de dólares em investimento em IA enfrentam riscos de bolha especulativa</div>
+        <div class="news-summary">Análise de especialistas em finanças questiona a sustentabilidade econômica de investimentos trilionários em infraestrutura de IA. Pesquisadores da Wharton School avaliam impactos macroeconômicos de gastos massivos em data centers e computação. Os números de investimento não encontram contrapartida clara em retornos ou produtividade mensuráveis. O cenário ressoa com padrões históricos de bolhas especulativas de tecnologia. Reguladores e investidores começam a questionar a viabilidade financeira de projetos mega-escala. A volatilidade de expectativas ameaça correções abruptas nos mercados de IA.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/09/15/1144028/ai-infrastructure-boom-investment-bubble-risk/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Wall Street aposta em aumento de taxa do Fed; impacta Bitcoin e Bonds Praticamente todos os grandes bancos agora esperam que Federal Reserve aumente taxas de juros pela primeira vez em três anos. Mercados precificaram maioria das expectativas, mas dinâmica política criada por aumento é incerta. Trump previamente opôs-se a aumentos de taxa. Elevação de taxa criaria headwinds para cripto e ativos de risco. Bonds ofereceriam retorno maior sem risco cripto. A mudança em estimativas de taxa reflete dados econômicos mais fortes. Implicações políticas podem complica decisão do Fed. Decrypt" data-title="Wall Street aposta em aumento de taxa do Fed; impacta Bitcoin e Bonds" data-share-url="https://decrypt.co/378306/wall-street-fed-rate-hike-bitcoin-bonds-trump">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">18:46</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Wall Street aposta em aumento de taxa do Fed; impacta Bitcoin e Bonds</div>
+        <div class="news-summary">Praticamente todos os grandes bancos agora esperam que Federal Reserve aumente taxas de juros pela primeira vez em três anos. Mercados precificaram maioria das expectativas, mas dinâmica política criada por aumento é incerta. Trump previamente opôs-se a aumentos de taxa. Elevação de taxa criaria headwinds para cripto e ativos de risco. Bonds ofereceriam retorno maior sem risco cripto. A mudança em estimativas de taxa reflete dados econômicos mais fortes. Implicações políticas podem complica decisão do Fed.</div>
+        <div class="news-link"><a href="https://decrypt.co/378306/wall-street-fed-rate-hike-bitcoin-bonds-trump" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Estudo BIS encontra lacunas maiores em estimativas de transferências Bitcoin on-chain Pesquisa do Banco de Compensações Internacionais revela desvios significativos em métricas amplamente utilizadas de atividade econômica em blockchain. Estudo encontra problemas de mensuração que obscurecem atividade real em Bitcoin, Ethereum e stablecoins. BIS questiona confiabilidade de estatísticas comumente citadas. Os gaps sugerem que análises convencionais subestimam ou superestimam fluxos. O trabalho ressalta importância de metodologia transparente em mensuração on-chain. Estudo importa para reguladores tentando quantificar adoção cripto. Incerteza de dados complica compreensão de mercado. Cointelegraph" data-title="Estudo BIS encontra lacunas maiores em estimativas de transferências Bitcoin on-chain" data-share-url="https://cointelegraph.com/news/bis-paper-finds-major-gap-in-bitcoin-onchain-transfer-estimates?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">18:23</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Estudo BIS encontra lacunas maiores em estimativas de transferências Bitcoin on-chain</div>
+        <div class="news-summary">Pesquisa do Banco de Compensações Internacionais revela desvios significativos em métricas amplamente utilizadas de atividade econômica em blockchain. Estudo encontra problemas de mensuração que obscurecem atividade real em Bitcoin, Ethereum e stablecoins. BIS questiona confiabilidade de estatísticas comumente citadas. Os gaps sugerem que análises convencionais subestimam ou superestimam fluxos. O trabalho ressalta importância de metodologia transparente em mensuração on-chain. Estudo importa para reguladores tentando quantificar adoção cripto. Incerteza de dados complica compreensão de mercado.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/bis-paper-finds-major-gap-in-bitcoin-onchain-transfer-estimates?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Grupo Stand With Crypto promete represálias em eleições intermediárias após falha de Clarity Act Organização respaldada por Coinbase anuncia adição de votos de senadores ao scorecards de campanha após rejeição da Clarity Act. Stand With Crypto mobiliza votantes cripto para enfrentar legisladores que bloquearam projeto. A estratégia busca punir senadores em eleições de novembro. O grupo investe em campanhas educacionais sobre importância cripto. A mobilização representa tentativa da indústria de criar poder político duradouro. Represálias eleitorais podem desencorajar senadores de bloqueios futuros. Decrypt" data-title="Grupo Stand With Crypto promete represálias em eleições intermediárias após falha de Clarity Act" data-share-url="https://decrypt.co/378303/coinbase-crypto-group-midterms-vote-clarity-act">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">18:10</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Grupo Stand With Crypto promete represálias em eleições intermediárias após falha de Clarity Act</div>
+        <div class="news-summary">Organização respaldada por Coinbase anuncia adição de votos de senadores ao scorecards de campanha após rejeição da Clarity Act. Stand With Crypto mobiliza votantes cripto para enfrentar legisladores que bloquearam projeto. A estratégia busca punir senadores em eleições de novembro. O grupo investe em campanhas educacionais sobre importância cripto. A mobilização representa tentativa da indústria de criar poder político duradouro. Represálias eleitorais podem desencorajar senadores de bloqueios futuros.</div>
+        <div class="news-link"><a href="https://decrypt.co/378303/coinbase-crypto-group-midterms-vote-clarity-act" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Clarity Act falha em votação procedural do Senado; indústria de cripto em colapso O Clarity Act, legislação de mercado estruturado que a indústria de criptografia planejava há anos, falhou espetacularmente ao não obter os 60 votos necessários para avançar no Senado. A votação procedural foi derrotada após meses de negociações intensas e breakdowns de última hora. Coinbase, Circle e outras cripto-empresas viram ações caírem 10%. O fracasso deixa a indústria sem marcos regulatórios esperados. Negociações sobre ética e cláusulas sobre riqueza cripto de Trump bloquearam consenso. O resultado frustra esperanças de clareza regulatória antes das eleições intermediárias. CoinDesk" data-title="Clarity Act falha em votação procedural do Senado; indústria de cripto em colapso" data-share-url="https://www.coindesk.com/policy/2026/09/15/crypto-clarity-act-flames-out-in-failed-u-s-senate-vote">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">15:50</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Clarity Act falha em votação procedural do Senado; indústria de cripto em colapso</div>
+        <div class="news-summary">O Clarity Act, legislação de mercado estruturado que a indústria de criptografia planejava há anos, falhou espetacularmente ao não obter os 60 votos necessários para avançar no Senado. A votação procedural foi derrotada após meses de negociações intensas e breakdowns de última hora. Coinbase, Circle e outras cripto-empresas viram ações caírem 10%. O fracasso deixa a indústria sem marcos regulatórios esperados. Negociações sobre ética e cláusulas sobre riqueza cripto de Trump bloquearam consenso. O resultado frustra esperanças de clareza regulatória antes das eleições intermediárias.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/09/15/crypto-clarity-act-flames-out-in-failed-u-s-senate-vote" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Lender Kamino contrata CEO de Wall Street para expansão maciça nos EUA DeFi lender Solana Kamino anuncia Michael Weisz, co-fundador de Yieldstreet, como novo CEO com base em Nova York. O movimento sinaliza ambição de Kamino de expandir em ativos tokenizados e finanças tradicionais. Weisz traz experiência de fintech e relações Wall Street. A mudança posiciona Kamino como gateway cripto para investidores institucionais. Nova estrutura em NYC reflete foco em clientes americanos sofisticados. O CEO change marca transição de cripto-nativo para hybrid traditional-crypto. CoinDesk" data-title="Lender Kamino contrata CEO de Wall Street para expansão maciça nos EUA" data-share-url="https://www.coindesk.com/business/2026/09/15/solana-lender-kamino-taps-yieldstreet-co-founder-as-ceo-in-wall-street-expansion">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">15:02</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Lender Kamino contrata CEO de Wall Street para expansão maciça nos EUA</div>
+        <div class="news-summary">DeFi lender Solana Kamino anuncia Michael Weisz, co-fundador de Yieldstreet, como novo CEO com base em Nova York. O movimento sinaliza ambição de Kamino de expandir em ativos tokenizados e finanças tradicionais. Weisz traz experiência de fintech e relações Wall Street. A mudança posiciona Kamino como gateway cripto para investidores institucionais. Nova estrutura em NYC reflete foco em clientes americanos sofisticados. O CEO change marca transição de cripto-nativo para hybrid traditional-crypto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/business/2026/09/15/solana-lender-kamino-taps-yieldstreet-co-founder-as-ceo-in-wall-street-expansion" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Stablecoins poderiam fortalecer dominância do dólar, indica oficial do Banco da Inglaterra Policy maker do Bank of England argumenta que crescimento de stablecoins poderia expandir acesso ao dólar americano enquanto aumenta demanda por treasuries do EUA. O oficial sugere que emissores de stablecoins se tornarem maiores compradores de títulos governamentais. A análise posiciona stablecoins como extensão de supremacia monetária americana. Crescimento de moedas estáveis digitais criaria feedback loop positivo para demanda de ativos americanos. O mecanismo ofereceria aos EUA benefício de seignioragem digital. A dinâmica pode fortalecer hegemonia financeira americana. Cointelegraph" data-title="Stablecoins poderiam fortalecer dominância do dólar, indica oficial do Banco da Inglaterra" data-share-url="https://cointelegraph.com/news/stablecoins-us-dollar-dominance-treasury-demand-boe?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">14:53</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Stablecoins poderiam fortalecer dominância do dólar, indica oficial do Banco da Inglaterra</div>
+        <div class="news-summary">Policy maker do Bank of England argumenta que crescimento de stablecoins poderia expandir acesso ao dólar americano enquanto aumenta demanda por treasuries do EUA. O oficial sugere que emissores de stablecoins se tornarem maiores compradores de títulos governamentais. A análise posiciona stablecoins como extensão de supremacia monetária americana. Crescimento de moedas estáveis digitais criaria feedback loop positivo para demanda de ativos americanos. O mecanismo ofereceria aos EUA benefício de seignioragem digital. A dinâmica pode fortalecer hegemonia financeira americana.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/stablecoins-us-dollar-dominance-treasury-demand-boe?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Engenheiros da Robinhood acusados de operações afrente ao mercado em Hyperliquid DOJ apresenta acusações contra dois engenheiros ex-Robinhood por afrente ao mercado usando dados de listagens de tokens. Os acusados teriam ganho mais de $50 mil cada ao negociar futuros perpétuos de Hyperliquid antes de anúncios públicos. Os crimes ocorreram entre 2025 e 2026. O caso destaca brechas em compliance e segregação de informação em grandes plataformas. Robinhood admite investigação interna. As acusações prejudicam reputação de compliance da plataforma. O padrão de insider trading recorrente levanta questões sobre supervisão. The Block" data-title="Engenheiros da Robinhood acusados de operações afrente ao mercado em Hyperliquid" data-share-url="https://www.theblock.co/news/regulation/2026-09-15-doj-charges-robinhood-engineers-front-running-crypto-listings-hyperliquid-414865">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">14:50</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Engenheiros da Robinhood acusados de operações afrente ao mercado em Hyperliquid</div>
+        <div class="news-summary">DOJ apresenta acusações contra dois engenheiros ex-Robinhood por afrente ao mercado usando dados de listagens de tokens. Os acusados teriam ganho mais de $50 mil cada ao negociar futuros perpétuos de Hyperliquid antes de anúncios públicos. Os crimes ocorreram entre 2025 e 2026. O caso destaca brechas em compliance e segregação de informação em grandes plataformas. Robinhood admite investigação interna. As acusações prejudicam reputação de compliance da plataforma. O padrão de insider trading recorrente levanta questões sobre supervisão.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/regulation/2026-09-15-doj-charges-robinhood-engineers-front-running-crypto-listings-hyperliquid-414865" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Senadora Elizabeth Warren: quer cripto bill, mas não este Clarity Act Warren reafirma compromisso com regulação de criptografia mas rejeita Clarity Act como instrumento apropriado. Senadora mantém posição crítica que projeto beneficia indústria excessivamente. Warren permanece determinada a obter legislação cripto assinada em lei eventualmente. A oposição democrata ao projeto reflete preocupações legítimas sobre proteção consumidor. Warren continua explorar alternativas legislativas. Seu posicionamento influencia democratas moderados. A persistência de Warren pode bloquear legislação cripto indefinidamente. The Block" data-title="Senadora Elizabeth Warren: quer cripto bill, mas não este Clarity Act" data-share-url="https://www.theblock.co/news/regulation/2026-09-15-sen-elizabeth-warren-says-she-wants-a-crypto-bill-but-the-clarity-act-just-isnt-it-414869">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">14:49</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Senadora Elizabeth Warren: quer cripto bill, mas não este Clarity Act</div>
+        <div class="news-summary">Warren reafirma compromisso com regulação de criptografia mas rejeita Clarity Act como instrumento apropriado. Senadora mantém posição crítica que projeto beneficia indústria excessivamente. Warren permanece determinada a obter legislação cripto assinada em lei eventualmente. A oposição democrata ao projeto reflete preocupações legítimas sobre proteção consumidor. Warren continua explorar alternativas legislativas. Seu posicionamento influencia democratas moderados. A persistência de Warren pode bloquear legislação cripto indefinidamente.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/regulation/2026-09-15-sen-elizabeth-warren-says-she-wants-a-crypto-bill-but-the-clarity-act-just-isnt-it-414869" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Senadora Cynthia Lummis: agora ou nunca para Clarity Act Bitcoin Senator Cynthia Lummis declara que votação de hoje representa chance final de passar Clarity Act após anos de negociações. Lummis alega que republicanos concederam mais de 120 demandas democratas no texto final. A senadora destaca inclusão de regras de ética amplas em projeto. Lummis pressiona colegas a votarem a favor apesar de concessões. A ênfase em urgência reflete realidade de que oportunidades legislativas são raras. A falha de hoje pode deixar cripto sem marcos regulatórios indefinidamente. Lummis posiciona voto como decisão histórica. Decrypt" data-title="Senadora Cynthia Lummis: agora ou nunca para Clarity Act" data-share-url="https://decrypt.co/378268/now-or-never-clarity-act-bitcoin-cynthia-lummis">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">14:43</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Senadora Cynthia Lummis: agora ou nunca para Clarity Act</div>
+        <div class="news-summary">Bitcoin Senator Cynthia Lummis declara que votação de hoje representa chance final de passar Clarity Act após anos de negociações. Lummis alega que republicanos concederam mais de 120 demandas democratas no texto final. A senadora destaca inclusão de regras de ética amplas em projeto. Lummis pressiona colegas a votarem a favor apesar de concessões. A ênfase em urgência reflete realidade de que oportunidades legislativas são raras. A falha de hoje pode deixar cripto sem marcos regulatórios indefinidamente. Lummis posiciona voto como decisão histórica.</div>
+        <div class="news-link"><a href="https://decrypt.co/378268/now-or-never-clarity-act-bitcoin-cynthia-lummis" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Binance adiciona 11 ETFs americanos listados a oferta de wealth management Exchange cripto Binance expande ofertas de finanças tradicionais adicionando 11 ETFs listados nos EUA focados em treasuries americanas e bonds de grau investimento. A adição reflete estratégia de Binance em convergir finanças tradicionais e cripto. Usuários podem agora acessar produtos tradicionais sem sair da plataforma. A mudança posiciona Binance como super-app de finanças. Oferecimento de produtos de renda fixa complementa exposição cripto especulativa. O movimento reflete crescente demanda por acesso aos produtos tradicionais via plataformas cripto. Cointelegraph" data-title="Binance adiciona 11 ETFs americanos listados a oferta de wealth management" data-share-url="https://cointelegraph.com/news/binance-adds-11-us-listed-etfs-to-wealth-management-offering?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">14:22</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Binance adiciona 11 ETFs americanos listados a oferta de wealth management</div>
+        <div class="news-summary">Exchange cripto Binance expande ofertas de finanças tradicionais adicionando 11 ETFs listados nos EUA focados em treasuries americanas e bonds de grau investimento. A adição reflete estratégia de Binance em convergir finanças tradicionais e cripto. Usuários podem agora acessar produtos tradicionais sem sair da plataforma. A mudança posiciona Binance como super-app de finanças. Oferecimento de produtos de renda fixa complementa exposição cripto especulativa. O movimento reflete crescente demanda por acesso aos produtos tradicionais via plataformas cripto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/binance-adds-11-us-listed-etfs-to-wealth-management-offering?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="EUA buscam confisco de $61 milhões em cripto ligados a esquema de petróleo iraniano Procurador federal persegue forfeito de $61 milhões em criptomoedas após alegar que duas empresas chinesas usaram contas Binance para lavagem de dinheiro de petróleo iraniano. O esquema teria beneficiado governo e militar do Irã. As transferências por cripto facilitaram circumvenção de sanções americanas. Binance coopera com investigação. O caso exemplifica uso de cripto para contornar controles sancionatórios. O montante representa operação sofisticada de lavagem. A ação reforça enforcement de sanções contra Irã. Decrypt" data-title="EUA buscam confisco de $61 milhões em cripto ligados a esquema de petróleo iraniano" data-share-url="https://decrypt.co/378261/us-forfeiture-61-million-crypto-iranian-oil-scheme">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">14:06</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">EUA buscam confisco de $61 milhões em cripto ligados a esquema de petróleo iraniano</div>
+        <div class="news-summary">Procurador federal persegue forfeito de $61 milhões em criptomoedas após alegar que duas empresas chinesas usaram contas Binance para lavagem de dinheiro de petróleo iraniano. O esquema teria beneficiado governo e militar do Irã. As transferências por cripto facilitaram circumvenção de sanções americanas. Binance coopera com investigação. O caso exemplifica uso de cripto para contornar controles sancionatórios. O montante representa operação sofisticada de lavagem. A ação reforça enforcement de sanções contra Irã.</div>
+        <div class="news-link"><a href="https://decrypt.co/378261/us-forfeiture-61-million-crypto-iranian-oil-scheme" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Imposto de cripto minimalista 'De Minimis' ganha markup na Câmara esta semana Legislação que ofereceria tratamento fiscal favorecido para small crypto transactions enfrenta votação de comissão na Câmara. A proposta buscaria transformar regime tributário federal de ativos digitais. De minimis break teria permitido transações até certo limite sem reportagem. A medida tem apoio bipartidário limitado. O markup na Câmara representa primeira oportunidade legislativa concreta. Aprovação na Câmara ainda exigiria avanço no Senado competitivo. O tema tax reflete prioridade mais técnica que politics de Clarity Act. Decrypt" data-title="Imposto de cripto minimalista 'De Minimis' ganha markup na Câmara esta semana" data-share-url="https://decrypt.co/378260/house-crypto-tax-bill-de-minimis-captail-gains">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">13:34</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Imposto de cripto minimalista 'De Minimis' ganha markup na Câmara esta semana</div>
+        <div class="news-summary">Legislação que ofereceria tratamento fiscal favorecido para small crypto transactions enfrenta votação de comissão na Câmara. A proposta buscaria transformar regime tributário federal de ativos digitais. De minimis break teria permitido transações até certo limite sem reportagem. A medida tem apoio bipartidário limitado. O markup na Câmara representa primeira oportunidade legislativa concreta. Aprovação na Câmara ainda exigiria avanço no Senado competitivo. O tema tax reflete prioridade mais técnica que politics de Clarity Act.</div>
+        <div class="news-link"><a href="https://decrypt.co/378260/house-crypto-tax-bill-de-minimis-captail-gains" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Preço Bitcoin cai para mínima de setembro em $75,6K enquanto títulos globais atingem máximas décadas Bitcoin recua para $75.600, mínima do mês, em meio a nervosismo do mercado antes da votação do Clarity Act no Senado. Títulos globais explodem a máximas de várias décadas, redirecionando capital de ativos de risco. Yields crescentes em treasuries de EUA e outros países criam ambiente hostil para cripto. A pressão sobre Bitcoin reflete dinâmica macro onde ativos seguros ganham atração. Perda de momentum técnico sugere possível retest de suportes ainda menores. O cenário de taxa alta afeta toda classe de ativos de risco simultaneamente. Cointelegraph" data-title="Preço Bitcoin cai para mínima de setembro em $75,6K enquanto títulos globais atingem máximas décadas" data-share-url="https://cointelegraph.com/markets/bitcoin-price-falls-to-756k-september-low-as-global-bonds-hit-multidecade-highs?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">13:02</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Preço Bitcoin cai para mínima de setembro em $75,6K enquanto títulos globais atingem máximas décadas</div>
+        <div class="news-summary">Bitcoin recua para $75.600, mínima do mês, em meio a nervosismo do mercado antes da votação do Clarity Act no Senado. Títulos globais explodem a máximas de várias décadas, redirecionando capital de ativos de risco. Yields crescentes em treasuries de EUA e outros países criam ambiente hostil para cripto. A pressão sobre Bitcoin reflete dinâmica macro onde ativos seguros ganham atração. Perda de momentum técnico sugere possível retest de suportes ainda menores. O cenário de taxa alta afeta toda classe de ativos de risco simultaneamente.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-price-falls-to-756k-september-low-as-global-bonds-hit-multidecade-highs?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bot MEV captura $7,7 milhões em rsETH de exploit de carteira Ethereum enquanto Kelp congela Um bot de MEV conhecido como Yoink front-correu um hacker tentando explorar módulo customizado em Safe Ethereum wallet, capturando $7,7 milhões em rsETH. O incidente destaca competição de microsegundos em espaço DeFi. Kelp congelou endereço temporariamente para conter danos. O cenário inverte narrativa típica onde hacker sai vitorioso. Protocolos DeFi enfrentam dilema de segurança versus descentralização. O evento demonstra sofisticação de defesas MEV. Comunidade continua buscando soluções para exploit-prevention. Cointelegraph" data-title="Bot MEV captura $7,7 milhões em rsETH de exploit de carteira Ethereum enquanto Kelp congela" data-share-url="https://cointelegraph.com/news/mev-bot-intercepts-77m-in-rseth-from-ethereum-wallet-exploit?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">12:21</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bot MEV captura $7,7 milhões em rsETH de exploit de carteira Ethereum enquanto Kelp congela</div>
+        <div class="news-summary">Um bot de MEV conhecido como Yoink front-correu um hacker tentando explorar módulo customizado em Safe Ethereum wallet, capturando $7,7 milhões em rsETH. O incidente destaca competição de microsegundos em espaço DeFi. Kelp congelou endereço temporariamente para conter danos. O cenário inverte narrativa típica onde hacker sai vitorioso. Protocolos DeFi enfrentam dilema de segurança versus descentralização. O evento demonstra sofisticação de defesas MEV. Comunidade continua buscando soluções para exploit-prevention.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/mev-bot-intercepts-77m-in-rseth-from-ethereum-wallet-exploit?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Banco Central Europeu convida comerciantes para piloto de euro digital BCE anuncia teste de 12 meses com versão beta de euro digital envolvendo varejistas em pagamentos online, mobile, presencial e P2P. O piloto visa validar viabilidade técnica e aceitação comercial. O euro digital representa estratégia europeia de competir com stablecoins privadas. O teste inclui múltiplos canais de pagamento refletindo realidade de transações. BCE observará como varejistas e consumidores respondem. O resultado informará decisão de lançamento completo. O piloto posiciona Europa na vanguarda de CBDCs em economias desenvolvidas. CoinDesk" data-title="Banco Central Europeu convida comerciantes para piloto de euro digital" data-share-url="https://www.coindesk.com/policy/2026/09/15/european-central-bank-calls-for-merchants-to-participate-in-digital-euro-pilot">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">11:15</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Banco Central Europeu convida comerciantes para piloto de euro digital</div>
+        <div class="news-summary">BCE anuncia teste de 12 meses com versão beta de euro digital envolvendo varejistas em pagamentos online, mobile, presencial e P2P. O piloto visa validar viabilidade técnica e aceitação comercial. O euro digital representa estratégia europeia de competir com stablecoins privadas. O teste inclui múltiplos canais de pagamento refletindo realidade de transações. BCE observará como varejistas e consumidores respondem. O resultado informará decisão de lançamento completo. O piloto posiciona Europa na vanguarda de CBDCs em economias desenvolvidas.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/09/15/european-central-bank-calls-for-merchants-to-participate-in-digital-euro-pilot" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Hackers convertem 25 centavos em 46 bilhões de tokens BTC falsos em ponte DeFi Um hacker explorou dois bugs de software em uma ponte DeFi Symbiosis para criar mais de 46 bilhões de tokens syBTC sem lastro em minutos. O ataque converteu investimento inicial mínimo em ganho exponencial. Perdas preliminares são estimadas em centenas de milhões. O exploit destaca vulnerabilidades estruturais em pontes entre blockchains. Symbiosis congelou a ponte e iniciou investigação. O incidente ressalta riscos persistentes em infraestrutura DeFi descentralizada. O drama ilustra fragilidades técnicas apesar de anos de desenvolvimento. CoinDesk" data-title="Hackers convertem 25 centavos em 46 bilhões de tokens BTC falsos em ponte DeFi" data-share-url="https://www.coindesk.com/tech/2026/09/15/a-hacker-turned-25-cents-of-bitcoin-into-46-billion-fake-btc-tokens-on-a-defi-bridge">
+        <div class="news-meta">
+          <span class="news-date">15 set 2026</span>
+          <span class="news-time">10:43</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Hackers convertem 25 centavos em 46 bilhões de tokens BTC falsos em ponte DeFi</div>
+        <div class="news-summary">Um hacker explorou dois bugs de software em uma ponte DeFi Symbiosis para criar mais de 46 bilhões de tokens syBTC sem lastro em minutos. O ataque converteu investimento inicial mínimo em ganho exponencial. Perdas preliminares são estimadas em centenas de milhões. O exploit destaca vulnerabilidades estruturais em pontes entre blockchains. Symbiosis congelou a ponte e iniciou investigação. O incidente ressalta riscos persistentes em infraestrutura DeFi descentralizada. O drama ilustra fragilidades técnicas apesar de anos de desenvolvimento.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/09/15/a-hacker-turned-25-cents-of-bitcoin-into-46-billion-fake-btc-tokens-on-a-defi-bridge" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
