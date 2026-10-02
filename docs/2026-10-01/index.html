@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">1 DE OUTUBRO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O dia 1º de outubro marca uma encruzilhada geopolítica e regulatória: enquanto incidentes de segurança aérea (FlyDubai, RAF Fairford) reacendem tensões no Oriente Médio e com o Irã, a Rússia aperta o cerco financeiro em sua guerra na Ucrânia, e a Ucrânia enfrenta cortes de financiamento americano. Simultaneamente, reguladores dos EUA (SEC) avançam em frameworks de custódia para criptomoedas e IA, sinalizando uma tentativa de formalizar mercados emergentes enquanto a indústria cripto absorve hacks de US$ 1,26 bilhão no trimestre.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-09-30/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15">2026-08-15</option><option value="2026-08-16">2026-08-16</option><option value="2026-08-17">2026-08-17</option><option value="2026-08-18">2026-08-18</option><option value="2026-08-19">2026-08-19</option><option value="2026-08-20">2026-08-20</option><option value="2026-08-21">2026-08-21</option><option value="2026-08-22">2026-08-22</option><option value="2026-08-23">2026-08-23</option><option value="2026-08-24">2026-08-24</option><option value="2026-08-25">2026-08-25</option><option value="2026-08-27">2026-08-27</option><option value="2026-08-28">2026-08-28</option><option value="2026-08-29">2026-08-29</option><option value="2026-08-30">2026-08-30</option><option value="2026-08-31">2026-08-31</option><option value="2026-09-01">2026-09-01</option><option value="2026-09-02">2026-09-02</option><option value="2026-09-03">2026-09-03</option><option value="2026-09-04">2026-09-04</option><option value="2026-09-05">2026-09-05</option><option value="2026-09-06">2026-09-06</option><option value="2026-09-07">2026-09-07</option><option value="2026-09-08">2026-09-08</option><option value="2026-09-09">2026-09-09</option><option value="2026-09-10">2026-09-10</option><option value="2026-09-11">2026-09-11</option><option value="2026-09-12">2026-09-12</option><option value="2026-09-13">2026-09-13</option><option value="2026-09-14">2026-09-14</option><option value="2026-09-15">2026-09-15</option><option value="2026-09-16">2026-09-16</option><option value="2026-09-17">2026-09-17</option><option value="2026-09-18">2026-09-18</option><option value="2026-09-19">2026-09-19</option><option value="2026-09-20">2026-09-20</option><option value="2026-09-21">2026-09-21</option><option value="2026-09-22">2026-09-22</option><option value="2026-09-23">2026-09-23</option><option value="2026-09-24">2026-09-24</option><option value="2026-09-25">2026-09-25</option><option value="2026-09-26">2026-09-26</option><option value="2026-09-27">2026-09-27</option><option value="2026-09-28">2026-09-28</option><option value="2026-09-29">2026-09-29</option><option value="2026-09-30">2026-09-30</option><option value="2026-10-01" selected>2026-10-01</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Investigadores buscam estabelecer motivo em ataque da FlyDubai O incidente com a aeronave FlyDubai que voava dos Emirados Árabes Unidos para Israel, onde um copiloto tentou sequestrar a aeronave, agora é alvo de investigação liderada pelos EAU com foco em possíveis ligações terroristas. O primeiro-ministro Benjamin Netanyahu de Israel e autoridades locais estão coordenando respostas. O copiloto, um cidadão omani, passou por radicalização islâmica, segundo Netanyahu. O incidente deixa 170 pessoas a bordo e revela tensões crescentes no tráfego aéreo da região, com implicações para segurança regional. NYT &gt; World News" data-title="Investigadores buscam estabelecer motivo em ataque da FlyDubai" data-share-url="https://www.nytimes.com/live/2026/10/01/world/flydubai-flight-israel-plane-pilots">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">21:06</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Investigadores buscam estabelecer motivo em ataque da FlyDubai</div>
+        <div class="news-summary">O incidente com a aeronave FlyDubai que voava dos Emirados Árabes Unidos para Israel, onde um copiloto tentou sequestrar a aeronave, agora é alvo de investigação liderada pelos EAU com foco em possíveis ligações terroristas. O primeiro-ministro Benjamin Netanyahu de Israel e autoridades locais estão coordenando respostas. O copiloto, um cidadão omani, passou por radicalização islâmica, segundo Netanyahu. O incidente deixa 170 pessoas a bordo e revela tensões crescentes no tráfego aéreo da região, com implicações para segurança regional.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/10/01/world/flydubai-flight-israel-plane-pilots" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Britânico-iraniano preso em conexão com incidente na Base Aérea RAF Fairford Autoridades britânicas prenderam um cidadão britânico-iraniano de 25 anos sob suspeita de preparação para atos terroristas relacionados a um incidente ocorrido na base aérea RAF Fairford. Investigadores britânicos acreditam que o Irã teve participação no evento. A prisão ocorre em contexto de elevadas tensões entre Reino Unido e Irã, com implicações para segurança nacional e cooperação internacional de defesa na OTAN. NYT &gt; World News" data-title="Britânico-iraniano preso em conexão com incidente na Base Aérea RAF Fairford" data-share-url="https://www.nytimes.com/2026/10/01/world/europe/uk-iran-terrorism-raf-fairford.html">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">16:42</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Britânico-iraniano preso em conexão com incidente na Base Aérea RAF Fairford</div>
+        <div class="news-summary">Autoridades britânicas prenderam um cidadão britânico-iraniano de 25 anos sob suspeita de preparação para atos terroristas relacionados a um incidente ocorrido na base aérea RAF Fairford. Investigadores britânicos acreditam que o Irã teve participação no evento. A prisão ocorre em contexto de elevadas tensões entre Reino Unido e Irã, com implicações para segurança nacional e cooperação internacional de defesa na OTAN.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/10/01/world/europe/uk-iran-terrorism-raf-fairford.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Universidade Americana do Afeganistão corre risco de fechamento por corte de financiamento O Departamento de Estado dos EUA negou financiamento para os próximos dois anos da American University of Afghanistan, instituição que educava centenas de estudantes mulheres afegãs. O corte ameaça encerrar operações e deixar a população estudantil vulnerável sob regime talibã. A decisão representa recuo americano em educação e direitos das mulheres no Afeganistão, com ramificações para soft power e imagem dos EUA na região. NYT &gt; World News" data-title="Universidade Americana do Afeganistão corre risco de fechamento por corte de financiamento" data-share-url="https://www.nytimes.com/2026/10/01/world/asia/american-university-kabul-usaid.html">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">16:29</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Universidade Americana do Afeganistão corre risco de fechamento por corte de financiamento</div>
+        <div class="news-summary">O Departamento de Estado dos EUA negou financiamento para os próximos dois anos da American University of Afghanistan, instituição que educava centenas de estudantes mulheres afegãs. O corte ameaça encerrar operações e deixar a população estudantil vulnerável sob regime talibã. A decisão representa recuo americano em educação e direitos das mulheres no Afeganistão, com ramificações para soft power e imagem dos EUA na região.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/10/01/world/asia/american-university-kabul-usaid.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Rússia aumenta drasticamente gastos de guerra e corta programas sociais O orçamento russo de 2027 prevê aumento significativo de gastos militares para financiar a guerra na Ucrânia, acompanhado de cortes em programas sociais, maior endividamento e elevação de impostos. Ambos os lados enfrentam dificuldades crescentes para financiar o conflito. A decisão reflete o esgotamento financeiro russo e sinalizador importante para a sustentabilidade da guerra, com impactos econômicos domésticos profundos na população civil. NYT &gt; World News" data-title="Rússia aumenta drasticamente gastos de guerra e corta programas sociais" data-share-url="https://www.nytimes.com/2026/10/01/world/europe/russia-war-budget.html">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">13:00</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Rússia aumenta drasticamente gastos de guerra e corta programas sociais</div>
+        <div class="news-summary">O orçamento russo de 2027 prevê aumento significativo de gastos militares para financiar a guerra na Ucrânia, acompanhado de cortes em programas sociais, maior endividamento e elevação de impostos. Ambos os lados enfrentam dificuldades crescentes para financiar o conflito. A decisão reflete o esgotamento financeiro russo e sinalizador importante para a sustentabilidade da guerra, com impactos econômicos domésticos profundos na população civil.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/10/01/world/europe/russia-war-budget.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="A câmera de casa inteligente da Apple não grava vídeo Apple está desenvolvendo uma câmera de segurança para casa inteligente que não grava vídeo, substituindo-o por descrições de eventos em texto geradas por IA. A abordagem traz privacidade aprimorada aos usuários, alinhando-se com a estratégia de privacidade de ponta da Apple, embora limite capacidades de vigilância tradicionais. O movimento reflete tendência crescente de integração de IA para reduzir dados sensíveis armazenados na nuvem. The Verge" data-title="A câmera de casa inteligente da Apple não grava vídeo" data-share-url="https://www.theverge.com/tech/1003877/apple-security-camera-no-video">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">19:51</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">A câmera de casa inteligente da Apple não grava vídeo</div>
+        <div class="news-summary">Apple está desenvolvendo uma câmera de segurança para casa inteligente que não grava vídeo, substituindo-o por descrições de eventos em texto geradas por IA. A abordagem traz privacidade aprimorada aos usuários, alinhando-se com a estratégia de privacidade de ponta da Apple, embora limite capacidades de vigilância tradicionais. O movimento reflete tendência crescente de integração de IA para reduzir dados sensíveis armazenados na nuvem.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/1003877/apple-security-camera-no-video" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Recurso Guided Vision do Google ajuda você a ler letras miúdas O Google lança Guided Vision no Gemini Live para dispositivos Android compatíveis, usando IA para fornecer descrições de áudio em tempo real de tudo que apontam para a câmera. A ferramenta é particularmente útil para leitura de documentos, etiquetas e informações finas, melhorando acessibilidade. O recurso expande capacidades de assistência visual baseadas em IA, integrando modelos de visão multimodal a aplicativos de uso cotidiano. The Verge" data-title="Recurso Guided Vision do Google ajuda você a ler letras miúdas" data-share-url="https://www.theverge.com/ai-artificial-intelligence/1003756/google-gemini-live-guided-vision">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">16:47</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Recurso Guided Vision do Google ajuda você a ler letras miúdas</div>
+        <div class="news-summary">O Google lança Guided Vision no Gemini Live para dispositivos Android compatíveis, usando IA para fornecer descrições de áudio em tempo real de tudo que apontam para a câmera. A ferramenta é particularmente útil para leitura de documentos, etiquetas e informações finas, melhorando acessibilidade. O recurso expande capacidades de assistência visual baseadas em IA, integrando modelos de visão multimodal a aplicativos de uso cotidiano.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/1003756/google-gemini-live-guided-vision" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Android Central demite staff mas continua apesar do fechamento Android Central, site especializado no ecossistema Android, demitiu seu staff, mas a proprietária Future confirmou que o site continuará operando. O fechamento reflete pressões econômicas em publicações de tecnologia especializadas, potencialmente com pivot para conteúdo gerado por IA ou equipes menores. O evento ilustra desafios enfrentados por mídia de nicho em era de IA e consolidação digital. The Verge" data-title="Android Central demite staff mas continua apesar do fechamento" data-share-url="https://www.theverge.com/tech/1003735/android-central-layoffs">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">16:20</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Android Central demite staff mas continua apesar do fechamento</div>
+        <div class="news-summary">Android Central, site especializado no ecossistema Android, demitiu seu staff, mas a proprietária Future confirmou que o site continuará operando. O fechamento reflete pressões econômicas em publicações de tecnologia especializadas, potencialmente com pivot para conteúdo gerado por IA ou equipes menores. O evento ilustra desafios enfrentados por mídia de nicho em era de IA e consolidação digital.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/1003735/android-central-layoffs" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Juiz rejeita ações antitruste contra Google AI Overviews Um juiz federal rejeitou duas ações judiciais antitruste contra o Google AI Overviews, movidas por Chegg e Penske Media Corporation. As ações alegavam que as resumos de IA do Google prejudicavam seus respectivos negócios ao roubar tráfego. A decisão limita potencial litigioso contra recursos de IA generativa, com implicações para futuras ações regulatórias sobre práticas antitruste em IA. The Verge" data-title="Juiz rejeita ações antitruste contra Google AI Overviews" data-share-url="https://www.theverge.com/tech/1003589/google-ai-overviews-chegg-penske-lawsuits-dismissed">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">14:12</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Juiz rejeita ações antitruste contra Google AI Overviews</div>
+        <div class="news-summary">Um juiz federal rejeitou duas ações judiciais antitruste contra o Google AI Overviews, movidas por Chegg e Penske Media Corporation. As ações alegavam que as resumos de IA do Google prejudicavam seus respectivos negócios ao roubar tráfego. A decisão limita potencial litigioso contra recursos de IA generativa, com implicações para futuras ações regulatórias sobre práticas antitruste em IA.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/1003589/google-ai-overviews-chegg-penske-lawsuits-dismissed" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Sony lança IA de upscaling gráfico para o PS5 regular Sony lançou Quick Spectral Super Resolution (QSSR), uma tecnologia de upscaling de gráficos com IA especificamente para o PS5 regular. A tecnologia melhora qualidade visual de jogos sem sacrificar performance significativamente. Este movimento democratiza acesso a upscaling de IA em consoles convencionais, reduzindo a lacuna visual entre gerações de hardware e mostrando adoção mainstream de IA em entretenimento. The Verge" data-title="Sony lança IA de upscaling gráfico para o PS5 regular" data-share-url="https://www.theverge.com/games/1003549/sony-ps5-quick-spectral-super-resolution-qssr">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">13:53</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Sony lança IA de upscaling gráfico para o PS5 regular</div>
+        <div class="news-summary">Sony lançou Quick Spectral Super Resolution (QSSR), uma tecnologia de upscaling de gráficos com IA especificamente para o PS5 regular. A tecnologia melhora qualidade visual de jogos sem sacrificar performance significativamente. Este movimento democratiza acesso a upscaling de IA em consoles convencionais, reduzindo a lacuna visual entre gerações de hardware e mostrando adoção mainstream de IA em entretenimento.</div>
+        <div class="news-link"><a href="https://www.theverge.com/games/1003549/sony-ps5-quick-spectral-super-resolution-qssr" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Óculos VR do Meta conseguem salvar VR? Meta lançou VR Glasses por US$ 1.299, tentando revitalizar mercado de realidade virtual em declínio. O dispositivo traz design mais portátil e acessível do que gerações anteriores, mas preço continua elevado. A iniciativa testa viabilidade de VR como categoria mainstream e desafia assunção de que AR será necessariamente sucedânea de VR, com implicações para futuro de computação espacial. The Verge" data-title="Óculos VR do Meta conseguem salvar VR?" data-share-url="https://www.theverge.com/tech/1003034/meta-vr-glasses-vs-augmented-reality">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">13:10</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Óculos VR do Meta conseguem salvar VR?</div>
+        <div class="news-summary">Meta lançou VR Glasses por US$ 1.299, tentando revitalizar mercado de realidade virtual em declínio. O dispositivo traz design mais portátil e acessível do que gerações anteriores, mas preço continua elevado. A iniciativa testa viabilidade de VR como categoria mainstream e desafia assunção de que AR será necessariamente sucedânea de VR, com implicações para futuro de computação espacial.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/1003034/meta-vr-glasses-vs-augmented-reality" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="CEO de Office e Teams da Microsoft sai da empresa Ryan Roslansky, que ocupou o cargo de CEO do LinkedIn e depois liderou a divisão de Office e Teams da Microsoft, está deixando a empresa após quase 18 anos. A saída ocorre em contexto de reorganizações maiores dentro da Microsoft em torno de estratégias de IA corporativa. O movimento sinaliza mudanças estruturais na divisão de produtividade corporativa, potencialmente acelerando integração de ferramentas de IA. The Verge" data-title="CEO de Office e Teams da Microsoft sai da empresa" data-share-url="https://www.theverge.com/news/1003515/microsoft-ryan-roslansky-office-teams-linkedin-leaving">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">13:02</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">CEO de Office e Teams da Microsoft sai da empresa</div>
+        <div class="news-summary">Ryan Roslansky, que ocupou o cargo de CEO do LinkedIn e depois liderou a divisão de Office e Teams da Microsoft, está deixando a empresa após quase 18 anos. A saída ocorre em contexto de reorganizações maiores dentro da Microsoft em torno de estratégias de IA corporativa. O movimento sinaliza mudanças estruturais na divisão de produtividade corporativa, potencialmente acelerando integração de ferramentas de IA.</div>
+        <div class="news-link"><a href="https://www.theverge.com/news/1003515/microsoft-ryan-roslansky-office-teams-linkedin-leaving" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Repensamento estratégico do Copilot da Microsoft A Microsoft está reexaminando sua estratégia de Copilot após reunião restrita do CEO Satya Nadella com líderes de clientes corporativos chave. A empresa busca reformular Copilot como 'SO para trabalho' em vez de assistente genérico, integrando-o mais profundamente a aplicativos como Notepad. O movimento reflete pressão do mercado corporativo por ferramentas de IA mais especializadas e integradas, ao invés de abordagens de IA genérica. The Verge" data-title="Repensamento estratégico do Copilot da Microsoft" data-share-url="https://www.theverge.com/tech/1003365/microsoft-copilot-os-for-work-notepad">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">13:00</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Repensamento estratégico do Copilot da Microsoft</div>
+        <div class="news-summary">A Microsoft está reexaminando sua estratégia de Copilot após reunião restrita do CEO Satya Nadella com líderes de clientes corporativos chave. A empresa busca reformular Copilot como 'SO para trabalho' em vez de assistente genérico, integrando-o mais profundamente a aplicativos como Notepad. O movimento reflete pressão do mercado corporativo por ferramentas de IA mais especializadas e integradas, ao invés de abordagens de IA genérica.</div>
+        <div class="news-link"><a href="https://www.theverge.com/tech/1003365/microsoft-copilot-os-for-work-notepad" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="NYC é primeira cidade americana que proíbe assinaturas questionáveis Nova York aprovou regra que obriga empresas a oferecer botão 'cancelar com um clique' tão fácil quanto se inscrever, terminando com práticas de assinatura recorrente questionáveis. A lei marca primeira cidade americana a implementar restrições tão robustas. O movimento estabelece precedente regulatório que força mudanças em modelos de negócio digital e é esperado influenciar outras jurisdições, com implicações para indústria de software e serviços. The Verge" data-title="NYC é primeira cidade americana que proíbe assinaturas questionáveis" data-share-url="https://www.theverge.com/policy/1003426/nyc-click-to-cancel-subscriptions-rule">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">11:49</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">NYC é primeira cidade americana que proíbe assinaturas questionáveis</div>
+        <div class="news-summary">Nova York aprovou regra que obriga empresas a oferecer botão 'cancelar com um clique' tão fácil quanto se inscrever, terminando com práticas de assinatura recorrente questionáveis. A lei marca primeira cidade americana a implementar restrições tão robustas. O movimento estabelece precedente regulatório que força mudanças em modelos de negócio digital e é esperado influenciar outras jurisdições, com implicações para indústria de software e serviços.</div>
+        <div class="news-link"><a href="https://www.theverge.com/policy/1003426/nyc-click-to-cancel-subscriptions-rule" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Ferramenta de IA 'leitura de mente' consegue reconstruir o que você está vendo a partir de escans cerebrais Pesquisadores desenvolverem uma ferramenta de IA que consegue adivinhar o que uma pessoa está observando apenas analisando escans cerebrais e reconstruir a imagem com precisão notável. A tecnologia também funciona de forma reversa, conseguindo descodificar o que o cérebro está pensando. Este avanço levanta questões importantes sobre privacidade neurológica e aplicações futuras em neurotecnologia, com implicações éticas significativas para consentimento informado e vigilância. MIT Technology Review" data-title="Ferramenta de IA 'leitura de mente' consegue reconstruir o que você está vendo a partir de escans cerebrais" data-share-url="https://www.technologyreview.com/2026/10/01/1145588/ai-mind-reading-reconstructs-what-youre-looking-at/">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">07:32</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Ferramenta de IA 'leitura de mente' consegue reconstruir o que você está vendo a partir de escans cerebrais</div>
+        <div class="news-summary">Pesquisadores desenvolverem uma ferramenta de IA que consegue adivinhar o que uma pessoa está observando apenas analisando escans cerebrais e reconstruir a imagem com precisão notável. A tecnologia também funciona de forma reversa, conseguindo descodificar o que o cérebro está pensando. Este avanço levanta questões importantes sobre privacidade neurológica e aplicações futuras em neurotecnologia, com implicações éticas significativas para consentimento informado e vigilância.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/10/01/1145588/ai-mind-reading-reconstructs-what-youre-looking-at/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ethereum Foundation lança zkAPI para usuários pagarem modelos de IA sem revelar identidade A Ethereum Foundation lançou zkAPI, permitindo que usuários paguem por modelos de IA sem revelar sua identidade usando zero-knowledge proofs. Usuários depositam fundos em um cofre Ethereum e autorizam gastos sem que o provedor de API consiga ligar requisições a um pagador específico. A inovação une IA e criptografia, oferecendo privacidade aprimorada em transações de IA e mostrando aplicação concreta de cripto em modelos de IA. The Block" data-title="Ethereum Foundation lança zkAPI para usuários pagarem modelos de IA sem revelar identidade" data-share-url="https://www.theblock.co/news/defi/2026-10-01-ethereum-foundation-launches-zkapi-417504">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">21:22</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Ethereum Foundation lança zkAPI para usuários pagarem modelos de IA sem revelar identidade</div>
+        <div class="news-summary">A Ethereum Foundation lançou zkAPI, permitindo que usuários paguem por modelos de IA sem revelar sua identidade usando zero-knowledge proofs. Usuários depositam fundos em um cofre Ethereum e autorizam gastos sem que o provedor de API consiga ligar requisições a um pagador específico. A inovação une IA e criptografia, oferecendo privacidade aprimorada em transações de IA e mostrando aplicação concreta de cripto em modelos de IA.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/defi/2026-10-01-ethereum-foundation-launches-zkapi-417504" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="China avisa espiões estrangeiros sobre cripto, Singapura domina Ásia Ministério de espionagem chinês alertou possíveis espiões estrangeiros que criptografia está sob vigilância, apontando cripto como ferramenta suspeita de movimentação de fundos. Simultaneamente, economia cripto de Singapura cresceu 55%, consolidando posição de hub financeiro digital da Ásia. A tensão entre vigilância estatal e adoção cripto reflete dinâmica geopolítica maior em torno de regulação de tecnologia. Cointelegraph" data-title="China avisa espiões estrangeiros sobre cripto, Singapura domina Ásia" data-share-url="https://cointelegraph.com/magazine/china-claims-crypto-used-by-spies-singapore-dominates-asian-crypto-asia-express?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">20:17</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">China avisa espiões estrangeiros sobre cripto, Singapura domina Ásia</div>
+        <div class="news-summary">Ministério de espionagem chinês alertou possíveis espiões estrangeiros que criptografia está sob vigilância, apontando cripto como ferramenta suspeita de movimentação de fundos. Simultaneamente, economia cripto de Singapura cresceu 55%, consolidando posição de hub financeiro digital da Ásia. A tensão entre vigilância estatal e adoção cripto reflete dinâmica geopolítica maior em torno de regulação de tecnologia.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/magazine/china-claims-crypto-used-by-spies-singapore-dominates-asian-crypto-asia-express?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Zcash cai 21% de alta recente—razão pela qual o rali pode não ter terminado Zcash (ZEC) caiu 21% de seu pico recente de US$ 1.698 após saídas de ETF e suspeita de que roubo ligado à Coreia do Norte direcionou fundos através de seu pool blindado. Analistas debatem se o rali terminou ou continuará apesar da volatilidade. O movimento reflete preocupações sobre privacidade de cripto, vigilância de hacks estatais e dinâmica de ETF em tokens de privacidade. Decrypt" data-title="Zcash cai 21% de alta recente—razão pela qual o rali pode não ter terminado" data-share-url="https://decrypt.co/379901/zcash-price-drops-etf-flows-rally">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">18:31</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Zcash cai 21% de alta recente—razão pela qual o rali pode não ter terminado</div>
+        <div class="news-summary">Zcash (ZEC) caiu 21% de seu pico recente de US$ 1.698 após saídas de ETF e suspeita de que roubo ligado à Coreia do Norte direcionou fundos através de seu pool blindado. Analistas debatem se o rali terminou ou continuará apesar da volatilidade. O movimento reflete preocupações sobre privacidade de cripto, vigilância de hacks estatais e dinâmica de ETF em tokens de privacidade.</div>
+        <div class="news-link"><a href="https://decrypt.co/379901/zcash-price-drops-etf-flows-rally" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Evernorth limpa votação de acionistas antes do debut no Nasdaq com tesouro de 473M XRP Acionistas da Armada Acquisition Corp. II aprovaram a fusão com Evernorth, limpando caminho para a empresa começar a negociar no Nasdaq sob ticker XRPN. Evernorth espera manter aproximadamente 473 milhões XRP em seu tesouro, avaliados em cerca de US$ 710 milhões aos preços atuais. O evento marca maior tesouro puro de XRP indo público e sinaliza apetite institucional por exposição direta a criptomoedas através de estruturas públicas tradicionais. Cointelegraph" data-title="Evernorth limpa votação de acionistas antes do debut no Nasdaq com tesouro de 473M XRP" data-share-url="https://cointelegraph.com/news/evernorth-clears-shareholder-vote-ahead-of-nasdaq-debut-473m-xrp-treasury?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">18:07</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Evernorth limpa votação de acionistas antes do debut no Nasdaq com tesouro de 473M XRP</div>
+        <div class="news-summary">Acionistas da Armada Acquisition Corp. II aprovaram a fusão com Evernorth, limpando caminho para a empresa começar a negociar no Nasdaq sob ticker XRPN. Evernorth espera manter aproximadamente 473 milhões XRP em seu tesouro, avaliados em cerca de US$ 710 milhões aos preços atuais. O evento marca maior tesouro puro de XRP indo público e sinaliza apetite institucional por exposição direta a criptomoedas através de estruturas públicas tradicionais.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/evernorth-clears-shareholder-vote-ahead-of-nasdaq-debut-473m-xrp-treasury?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Trump divulga 3º jantar exclusivo de memecoin para maiores investidores Presidente Trump agendou terceiro jantar exclusivo de memecoin para 22 de novembro em seu clube de golfe em Washington DC, para seus 185 maiores detentores de tokens. A empresa gerenciando o memecoin o chama de 'jantar mais exclusivo do mundo'. O evento levanta questões sobre conflito de interesse e potencial corrupção, com implicações para regulação de memecoins e tokenomics presidencial. Cointelegraph" data-title="Trump divulga 3º jantar exclusivo de memecoin para maiores investidores" data-share-url="https://cointelegraph.com/news/donald-trump-memecoin-dinner-corruption-claims?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">18:00</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Trump divulga 3º jantar exclusivo de memecoin para maiores investidores</div>
+        <div class="news-summary">Presidente Trump agendou terceiro jantar exclusivo de memecoin para 22 de novembro em seu clube de golfe em Washington DC, para seus 185 maiores detentores de tokens. A empresa gerenciando o memecoin o chama de 'jantar mais exclusivo do mundo'. O evento levanta questões sobre conflito de interesse e potencial corrupção, com implicações para regulação de memecoins e tokenomics presidencial.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/donald-trump-memecoin-dinner-corruption-claims?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="SEC propõe novas regras de custódia de cripto para consultores de investimento e fundos A SEC emitiu proposta de regra sobre custódia de criptomoedas, permitindo que consultores de investimento e fundos usem companhias fiduciárias de estados como custódias e permita autocustódia em certas condições. A proposta marca passo importante na agenda de ativos digitais da SEC e representa o 'último canto de cisne' do chefe da Crypto Task Force, Comissária Hester Peirce. A medida busca remover obstáculos regulatórios que impediam consultores de oferecer cripto a clientes. CoinDesk" data-title="SEC propõe novas regras de custódia de cripto para consultores de investimento e fundos" data-share-url="https://www.coindesk.com/policy/2026/10/01/u-s-sec-maps-out-crypto-custody-in-new-proposal-that-furthers-its-digital-assets-agenda">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">17:20</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">SEC propõe novas regras de custódia de cripto para consultores de investimento e fundos</div>
+        <div class="news-summary">A SEC emitiu proposta de regra sobre custódia de criptomoedas, permitindo que consultores de investimento e fundos usem companhias fiduciárias de estados como custódias e permita autocustódia em certas condições. A proposta marca passo importante na agenda de ativos digitais da SEC e representa o 'último canto de cisne' do chefe da Crypto Task Force, Comissária Hester Peirce. A medida busca remover obstáculos regulatórios que impediam consultores de oferecer cripto a clientes.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/10/01/u-s-sec-maps-out-crypto-custody-in-new-proposal-that-furthers-its-digital-assets-agenda" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Hyperliquid e Circle pressionam UE sobre perps e reservas de stablecoin em revisão MiCA Hyperliquid Policy Center e Circle fizeram submissões à Comissão Europeia durante revisão do MiCA, buscando mudanças em regulação de derivados perpétuos e requisitos de reservas para stablecoins. Hyperliquid quer perps sob MiFID II, enquanto Circle ataca piso de depósito bancário do MiCA. O esforço de lobbying mostra indústria cripto tentando moldar regulação europeia antes da finalização. The Block" data-title="Hyperliquid e Circle pressionam UE sobre perps e reservas de stablecoin em revisão MiCA" data-share-url="https://www.theblock.co/news/regulation/2026-10-01-hyperliquid-circle-mica-review-417452">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">16:10</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Hyperliquid e Circle pressionam UE sobre perps e reservas de stablecoin em revisão MiCA</div>
+        <div class="news-summary">Hyperliquid Policy Center e Circle fizeram submissões à Comissão Europeia durante revisão do MiCA, buscando mudanças em regulação de derivados perpétuos e requisitos de reservas para stablecoins. Hyperliquid quer perps sob MiFID II, enquanto Circle ataca piso de depósito bancário do MiCA. O esforço de lobbying mostra indústria cripto tentando moldar regulação europeia antes da finalização.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/regulation/2026-10-01-hyperliquid-circle-mica-review-417452" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="50 mil europeus pedem à UE para afrouxar restrições de recompensas de stablecoin em revisão MiCA Campanha de 50 mil cartas pressiona Bruxelas a repensar restrições de recompensas em stablecoins durante revisão do MiCA (Markets in Crypto-Assets Regulation). Bancos centrais europeus também buscam mudanças mais amplas nas regras de stablecoins do MiCA. O movimento mostra pressão regulatória crescente em protocolo europeu de cripto, com stakeholders pedindo flexibilização em itens específicos. Cointelegraph" data-title="50 mil europeus pedem à UE para afrouxar restrições de recompensas de stablecoin em revisão MiCA" data-share-url="https://cointelegraph.com/news/50000-europeans-call-on-eu-to-ease-stablecoin-rewards-restrictions-in-mica-review?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">15:45</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">50 mil europeus pedem à UE para afrouxar restrições de recompensas de stablecoin em revisão MiCA</div>
+        <div class="news-summary">Campanha de 50 mil cartas pressiona Bruxelas a repensar restrições de recompensas em stablecoins durante revisão do MiCA (Markets in Crypto-Assets Regulation). Bancos centrais europeus também buscam mudanças mais amplas nas regras de stablecoins do MiCA. O movimento mostra pressão regulatória crescente em protocolo europeu de cripto, com stakeholders pedindo flexibilização em itens específicos.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/50000-europeans-call-on-eu-to-ease-stablecoin-rewards-restrictions-in-mica-review?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="É o início de Uptober. Bitcoin vai corresponder? Bitcoin entra em seu mês historicamente mais forte após setembro em ritmo recorde, mas aumento do Fed e rendimentos de 5,3% do Treasury testam os touros. Outubro é tradicionalmente 'Uptober' para cripto, mas dinâmica macroeconômica atual oferece ventos contrários significativos. O mês decorrerá com atenção em como bitcoin navega entre pressões de taxas e demanda institucional. Decrypt" data-title="É o início de Uptober. Bitcoin vai corresponder?" data-share-url="https://decrypt.co/379833/uptober-will-bitcoin-live-up-to-it">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">14:11</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">É o início de Uptober. Bitcoin vai corresponder?</div>
+        <div class="news-summary">Bitcoin entra em seu mês historicamente mais forte após setembro em ritmo recorde, mas aumento do Fed e rendimentos de 5,3% do Treasury testam os touros. Outubro é tradicionalmente 'Uptober' para cripto, mas dinâmica macroeconômica atual oferece ventos contrários significativos. O mês decorrerá com atenção em como bitcoin navega entre pressões de taxas e demanda institucional.</div>
+        <div class="news-link"><a href="https://decrypt.co/379833/uptober-will-bitcoin-live-up-to-it" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Proposta de queima de recompensas de staking do Ethereum EIP-8363 retirada do upgrade Hegota Proposta EIP-8363, que buscava queimar recompensas de staking do Ethereum em lugar de redistribuir, foi retirada do upgrade Hegota. Co-autor Jérôme de Tychey disse que participantes da indústria e contribuidores principais o convenceram de que escopar processo estava errado. O movimento reflete dinâmica política em torno de emissão de Ethereum e tokenomics, com comunidade bloqueando mudanças controversas. The Block" data-title="Proposta de queima de recompensas de staking do Ethereum EIP-8363 retirada do upgrade Hegota" data-share-url="https://www.theblock.co/news/ecosystems/2026-10-01-ethereum-staking-reward-burn-proposal-eip-8363-pulled-hegota-upgrade-417419">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">13:17</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Proposta de queima de recompensas de staking do Ethereum EIP-8363 retirada do upgrade Hegota</div>
+        <div class="news-summary">Proposta EIP-8363, que buscava queimar recompensas de staking do Ethereum em lugar de redistribuir, foi retirada do upgrade Hegota. Co-autor Jérôme de Tychey disse que participantes da indústria e contribuidores principais o convenceram de que escopar processo estava errado. O movimento reflete dinâmica política em torno de emissão de Ethereum e tokenomics, com comunidade bloqueando mudanças controversas.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/ecosystems/2026-10-01-ethereum-staking-reward-burn-proposal-eip-8363-pulled-hegota-upgrade-417419" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Reguladores de Nova York e Wyoming assinam pacto para coordenar supervisão cripto Reguladores de criptografia de Nova York e Wyoming assinaram acordo permitindo compartilhamento de informações supervisórias, racionalização de revisões de licenciamento e coordenação de exames e execução. O pacto marca passo importante em harmonização regulatória entre estados americanos em cripto, reduzindo arbitragem regulatória e criando padrão mais consistente. Cointelegraph" data-title="Reguladores de Nova York e Wyoming assinam pacto para coordenar supervisão cripto" data-share-url="https://cointelegraph.com/news/new-york-wyoming-regulators-sign-pact-coordinate-crypto-oversight?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">13:12</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Reguladores de Nova York e Wyoming assinam pacto para coordenar supervisão cripto</div>
+        <div class="news-summary">Reguladores de criptografia de Nova York e Wyoming assinaram acordo permitindo compartilhamento de informações supervisórias, racionalização de revisões de licenciamento e coordenação de exames e execução. O pacto marca passo importante em harmonização regulatória entre estados americanos em cripto, reduzindo arbitragem regulatória e criando padrão mais consistente.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/new-york-wyoming-regulators-sign-pact-coordinate-crypto-oversight?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin e ETH lutam por tendência local enquanto rendimentos de títulos caem de máximas de 24 anos Bitcoin luta para manter tendência de alta local com lows mais altos enquanto rendimentos de títulos americanos caem de máximas de 24 anos registradas dias atrás. A dinâmica de taxas de juros permanece fundamental para dinâmica de preço cripto, com inversores avaliando impacto de política monetária em demanda por ativos alternativos. Cointelegraph" data-title="Bitcoin e ETH lutam por tendência local enquanto rendimentos de títulos caem de máximas de 24 anos" data-share-url="https://cointelegraph.com/markets/bitcoin-fights-local-uptrend-us-bond-yields-drop-from-new-24-year-highs?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">12:55</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Bitcoin e ETH lutam por tendência local enquanto rendimentos de títulos caem de máximas de 24 anos</div>
+        <div class="news-summary">Bitcoin luta para manter tendência de alta local com lows mais altos enquanto rendimentos de títulos americanos caem de máximas de 24 anos registradas dias atrás. A dinâmica de taxas de juros permanece fundamental para dinâmica de preço cripto, com inversores avaliando impacto de política monetária em demanda por ativos alternativos.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/bitcoin-fights-local-uptrend-us-bond-yields-drop-from-new-24-year-highs?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="NEAR Intents sofre exploit de US$ 3,8 milhões enquanto ano violento de hacks continua NEAR Intents, popular sistema de trading cross-chain, foi hackeado por um exploit de US$ 3,8 milhões que afetou depósitos e saques através de várias redes. A plataforma se comprometeu em reembolsar todas as perdas de usuários. O incidente ocorre após mês de ataques de criptomoedas que chegaram a US$ 1,26 bilhão em perdas no trimestre, refletindo vulnerabilidades persistentes em protocolos de bridge e trading. CoinDesk" data-title="NEAR Intents sofre exploit de US$ 3,8 milhões enquanto ano violento de hacks continua" data-share-url="https://www.coindesk.com/tech/2026/10/01/near-intents-hit-by-usd3-8-million-exploit-as-crypto-s-rough-year-of-hacks-continues">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">11:18</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">NEAR Intents sofre exploit de US$ 3,8 milhões enquanto ano violento de hacks continua</div>
+        <div class="news-summary">NEAR Intents, popular sistema de trading cross-chain, foi hackeado por um exploit de US$ 3,8 milhões que afetou depósitos e saques através de várias redes. A plataforma se comprometeu em reembolsar todas as perdas de usuários. O incidente ocorre após mês de ataques de criptomoedas que chegaram a US$ 1,26 bilhão em perdas no trimestre, refletindo vulnerabilidades persistentes em protocolos de bridge e trading.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/tech/2026/10/01/near-intents-hit-by-usd3-8-million-exploit-as-crypto-s-rough-year-of-hacks-continues" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Illinois concorda com atraso de seis meses no imposto cripto sob pressão judicial Oficiais de Illinois e grupos cripto concordaram mutuamente que o imposto de 0,2% sobre ativos digitais seja adiado de janeiro para julho de 2027, enquanto batalha legal sobre a constitucionalidade da lei continua. Ambos os lados pedem aprovação do tribunal para o acordo. A pausa oferece respiro à indústria cripto enquanto desafios legais prosseguem, refletindo resistência significativa a impostos específicos em cripto. CoinDesk" data-title="Illinois concorda com atraso de seis meses no imposto cripto sob pressão judicial" data-share-url="https://www.coindesk.com/policy/2026/09/30/illinois-agrees-to-six-month-delay-of-crypto-tax-as-industry-continues-court-battle">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">08:58</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Illinois concorda com atraso de seis meses no imposto cripto sob pressão judicial</div>
+        <div class="news-summary">Oficiais de Illinois e grupos cripto concordaram mutuamente que o imposto de 0,2% sobre ativos digitais seja adiado de janeiro para julho de 2027, enquanto batalha legal sobre a constitucionalidade da lei continua. Ambos os lados pedem aprovação do tribunal para o acordo. A pausa oferece respiro à indústria cripto enquanto desafios legais prosseguem, refletindo resistência significativa a impostos específicos em cripto.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/policy/2026/09/30/illinois-agrees-to-six-month-delay-of-crypto-tax-as-industry-continues-court-battle" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Bitcoin inicia novo trimestre na faixa tradicional de US$ 82 mil-US$ 85 mil Bitcoin começou outubro mantendo seu intervalo histórico de preços entre US$ 82 mil-US$ 85 mil, brevemente tocando US$ 85 mil após dados de inflação mais fracos resfriarem expectativas de aumentos de taxas do Fed. Porém, os touros não conseguiram manter os ganhos. O movimento reflete dinâmica de pressão de taxas de juros versus demanda institucional, com quarto trimestre geralmente forte historicamente para bitcoin. CoinDesk" data-title="Bitcoin inicia novo trimestre na faixa tradicional de US$ 82 mil-US$ 85 mil" data-share-url="https://www.coindesk.com/markets/2026/10/01/bitcoin-kicks-off-new-quarter-in-the-old-usd82-000-usd85-000-price-range">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">07:38</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Bitcoin inicia novo trimestre na faixa tradicional de US$ 82 mil-US$ 85 mil</div>
+        <div class="news-summary">Bitcoin começou outubro mantendo seu intervalo histórico de preços entre US$ 82 mil-US$ 85 mil, brevemente tocando US$ 85 mil após dados de inflação mais fracos resfriarem expectativas de aumentos de taxas do Fed. Porém, os touros não conseguiram manter os ganhos. O movimento reflete dinâmica de pressão de taxas de juros versus demanda institucional, com quarto trimestre geralmente forte historicamente para bitcoin.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/10/01/bitcoin-kicks-off-new-quarter-in-the-old-usd82-000-usd85-000-price-range" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Citigroup eleva alvo de bitcoin em 12 meses para US$ 113 mil com retorno de inflows de ETF Citigroup aumentou sua meta de preço para bitcoin em 12 meses de níveis anteriores para US$ 113 mil, refletindo confiança renovada em entrada institucional através de ETFs. A instituição também elevou alvo para ether de US$ 2.240 para US$ 3.028. O movimento de um grande banco de investimento sinaliza otimismo institucional crescente, com entrada contínua de capital via produtos de ETF atraindo baleias e fundos. CoinDesk" data-title="Citigroup eleva alvo de bitcoin em 12 meses para US$ 113 mil com retorno de inflows de ETF" data-share-url="https://www.coindesk.com/markets/2026/10/01/citigroup-raises-12-month-bitcoin-target-to-usd113-000-as-etf-inflows-resume">
+        <div class="news-meta">
+          <span class="news-date">01 out 2026</span>
+          <span class="news-time">06:59</span>
+          <span class="news-source">CoinDesk</span>
+        </div>
+        <div class="news-title">Citigroup eleva alvo de bitcoin em 12 meses para US$ 113 mil com retorno de inflows de ETF</div>
+        <div class="news-summary">Citigroup aumentou sua meta de preço para bitcoin em 12 meses de níveis anteriores para US$ 113 mil, refletindo confiança renovada em entrada institucional através de ETFs. A instituição também elevou alvo para ether de US$ 2.240 para US$ 3.028. O movimento de um grande banco de investimento sinaliza otimismo institucional crescente, com entrada contínua de capital via produtos de ETF atraindo baleias e fundos.</div>
+        <div class="news-link"><a href="https://www.coindesk.com/markets/2026/10/01/citigroup-raises-12-month-bitcoin-target-to-usd113-000-as-etf-inflows-resume" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
