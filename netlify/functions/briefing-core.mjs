@@ -1,10 +1,50 @@
 import crypto from 'node:crypto';
+import { readFileSync, existsSync } from 'node:fs';
 import Anthropic from '@anthropic-ai/sdk';
 import Parser from 'rss-parser';
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 
 const FEEDS = {
+  economia: [
+    // Brasil
+    'https://pox.globo.com/rss/valor/brasil/',
+    'https://www.estadao.com.br/arc/outboundfeeds/feeds/rss/sections/economia/',
+    'https://www.gazetadopovo.com.br/feed/rss/economia.xml',
+    'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml',
+    'https://www.moneytimes.com.br/economia/feed/',
+    'https://veja.abril.com.br/economia/feed/',
+    'https://www.bcb.gov.br/api/feed/sitebcb/sitefeeds/noticias',
+    'https://www.bloomberglinea.com.br/arc/outboundfeeds/rss/?outputType=xml',
+    'https://www.metropoles.com/negocios/feed',
+    // Internacional
+    'https://www.cnbc.com/id/20910258/device/rss/rss.html',
+    'https://www.theguardian.com/business/economics/rss',
+    'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml',
+    'https://feeds.bloomberg.com/economics/news.rss',
+    'http://feeds.bbci.co.uk/news/business/rss.xml',
+  ],
+  financas: [
+    // Brasil
+    'https://pox.globo.com/rss/valor/financas/',
+    'https://pox.globo.com/rss/valor/empresas/',
+    'https://pox.globo.com/rss/valorinveste/',
+    'https://www.infomoney.com.br/feed/',
+    'https://www.moneytimes.com.br/mercados/feed/',
+    'https://www.seudinheiro.com/feed/',
+    'https://exame.com/invest/feed/',
+    'https://borainvestir.b3.com.br/feed/',
+    'https://www.suno.com.br/noticias/feed/',
+    'https://braziljournal.com/feed/',
+    'https://investnews.com.br/feed/',
+    'https://forbes.com.br/forbes-money/feed/',
+    'https://monitordomercado.com.br/feed/',
+    // Internacional
+    'https://www.cnbc.com/id/10000664/device/rss/rss.html',
+    'https://www.cnbc.com/id/15839069/device/rss/rss.html',
+    'https://feeds.content.dowjones.io/public/rss/mw_topstories',
+    'https://feeds.bloomberg.com/markets/news.rss',
+  ],
   geopolitica: [
     'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
     'https://www.theguardian.com/world/rss',
@@ -14,7 +54,6 @@ const FEEDS = {
   ia: [
     'https://www.technologyreview.com/feed/',
     'https://www.theverge.com/rss/index.xml',
-    'https://venturebeat.com/category/ai/feed/',
     'https://api.axios.com/feed/',
     'https://cointelegraph.com/rss/tag/ai',
     'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml',
@@ -27,7 +66,6 @@ const FEEDS = {
     'https://www.coindesk.com/arc/outboundfeeds/rss/',
     'https://cointelegraph.com/rss',
     'https://decrypt.co/feed',
-    'https://bitcoinmagazine.com/.rss/full/',
     'https://www.theblock.co/rss.xml',
     'https://cryptobriefing.com/feed/',
     'https://ambcrypto.com/feed/',
@@ -38,25 +76,102 @@ const FEEDS = {
   ],
 };
 
+// Feeds de veículos brasileiros — definem a origem (Brasil x internacional)
+// usada na cota exata de Economia e Finanças.
+const BR_FEEDS = new Set([
+  'https://pox.globo.com/rss/valor/brasil/',
+  'https://www.estadao.com.br/arc/outboundfeeds/feeds/rss/sections/economia/',
+  'https://www.gazetadopovo.com.br/feed/rss/economia.xml',
+  'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml',
+  'https://www.moneytimes.com.br/economia/feed/',
+  'https://pox.globo.com/rss/valor/financas/',
+  'https://pox.globo.com/rss/valor/empresas/',
+  'https://pox.globo.com/rss/valorinveste/',
+  'https://www.infomoney.com.br/feed/',
+  'https://www.moneytimes.com.br/mercados/feed/',
+  'https://www.seudinheiro.com/feed/',
+  'https://exame.com/invest/feed/',
+  'https://borainvestir.b3.com.br/feed/',
+  'https://www.suno.com.br/noticias/feed/',
+  'https://braziljournal.com/feed/',
+  'https://veja.abril.com.br/economia/feed/',
+  'https://www.bcb.gov.br/api/feed/sitebcb/sitefeeds/noticias',
+  'https://www.bloomberglinea.com.br/arc/outboundfeeds/rss/?outputType=xml',
+  'https://www.metropoles.com/negocios/feed',
+  'https://investnews.com.br/feed/',
+  'https://forbes.com.br/forbes-money/feed/',
+  'https://monitordomercado.com.br/feed/',
+]);
+
+// Nome do veículo quando o título do feed é genérico (ex: "Economia")
+const SOURCE_NAMES = {
+  'https://pox.globo.com/rss/valor/brasil/': 'Valor Econômico',
+  'https://pox.globo.com/rss/valor/financas/': 'Valor Econômico',
+  'https://pox.globo.com/rss/valor/empresas/': 'Valor Econômico',
+  'https://pox.globo.com/rss/valorinveste/': 'Valor Investe',
+  'https://www.estadao.com.br/arc/outboundfeeds/feeds/rss/sections/economia/': 'Estadão',
+  'https://www.gazetadopovo.com.br/feed/rss/economia.xml': 'Gazeta do Povo',
+  'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml': 'Agência Brasil',
+  'https://www.moneytimes.com.br/economia/feed/': 'Money Times',
+  'https://www.moneytimes.com.br/mercados/feed/': 'Money Times',
+  'https://exame.com/invest/feed/': 'Exame Invest',
+  'https://borainvestir.b3.com.br/feed/': 'B3 Bora Investir',
+  'https://www.suno.com.br/noticias/feed/': 'Suno',
+  'https://braziljournal.com/feed/': 'Brazil Journal',
+  'https://veja.abril.com.br/economia/feed/': 'Veja Economia',
+  'https://www.bcb.gov.br/api/feed/sitebcb/sitefeeds/noticias': 'Banco Central do Brasil',
+  'https://www.bloomberglinea.com.br/arc/outboundfeeds/rss/?outputType=xml': 'Bloomberg Línea',
+  'https://www.metropoles.com/negocios/feed': 'Metrópoles Negócios',
+  'https://investnews.com.br/feed/': 'InvestNews',
+  'https://forbes.com.br/forbes-money/feed/': 'Forbes Money',
+  'https://monitordomercado.com.br/feed/': 'Monitor do Mercado',
+};
+
 const ACCENT_COLORS = {
+  economia: '#10B981',
+  financas: '#3B82F6',
   geopolitica: '#7C3AED',
   ia: '#00C4B4',
   crypto: '#F59E0B',
 };
 
 const TOPIC_NAMES = {
+  economia: 'Economia',
+  financas: 'Finanças',
   geopolitica: 'Geopolítica',
   ia: 'Inteligência Artificial',
   crypto: 'Criptomoedas',
 };
 
 const TOPIC_ICONS = {
+  economia: '📊',
+  financas: '💰',
   geopolitica: '🌍',
   ia: '🤖',
   crypto: '₿',
 };
 
-const TOPIC_ORDER = ['geopolitica', 'ia', 'crypto'];
+const TOPIC_ORDER = ['economia', 'financas', 'geopolitica', 'ia', 'crypto'];
+
+// Cota exata por tema. Economia e Finanças têm cota separada por origem.
+const QUOTAS = {
+  economia: { br: 5, int: 3 },
+  financas: { br: 4, int: 2 },
+  geopolitica: 4,
+  ia: 6,
+  crypto: 6,
+};
+
+// Grupos da resposta do modelo → [tema, origem]
+const GROUPS = {
+  economia_brasil: ['economia', 'br'],
+  economia_internacional: ['economia', 'int'],
+  financas_brasil: ['financas', 'br'],
+  financas_internacional: ['financas', 'int'],
+  geopolitica: ['geopolitica', null],
+  ia: ['ia', null],
+  crypto: ['crypto', null],
+};
 
 const MONTHS_PT = [
   'janeiro','fevereiro','março','abril','maio','junho',
@@ -119,6 +234,9 @@ function escapeHTML(s) {
 }
 
 const TOPIC_ALIASES = {
+  economia: 'economia',
+  financas: 'financas',
+  'finanças': 'financas',
   geopolitica: 'geopolitica',
   'geopolítica': 'geopolitica',
   ia: 'ia',
@@ -135,6 +253,66 @@ const TOPIC_ALIASES = {
 function normalizeTopic(t) {
   const key = String(t || '').toLowerCase().trim();
   return TOPIC_ALIASES[key] || key;
+}
+
+// ─── DEDUPLICAÇÃO ──────────────────────────────────────────────────────────
+
+const STOPWORDS = new Set([
+  'para','com','por','que','uma','dos','das','nos','nas','mas','aos','sem','sob','apos','ate','ainda',
+  'como','mais','menos','sobre','entre','diz','foi','sao','ser','tem','vai','seu','sua','seus','suas',
+  'pelo','pela','pelos','pelas','esta','este','isso','veja','novo','nova','contra','desde','quando',
+  'the','and','for','with','from','that','this','its','are','was','has','have','will','says','said',
+  'after','over','amid','into','new','but','not','how','why','what','than','more','you','your','his','her',
+]);
+
+function normalizeTitle(t) {
+  return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function titleTokens(t) {
+  return new Set(normalizeTitle(t).split(' ').filter(w => w.length >= 3 && !STOPWORDS.has(w)));
+}
+
+function canonicalLink(link) {
+  return String(link || '').trim().toLowerCase().split('#')[0].split('?')[0].replace(/\/+$/, '');
+}
+
+// Mesmo assunto com título diferente. strict=true é usado contra edições de
+// dias anteriores, para não descartar a atualização diária de um mesmo tema
+// (ex: fechamento do Ibovespa de hoje x de ontem).
+function isSameStory(a, b, strict = false) {
+  let shared = 0;
+  for (const w of a) if (b.has(w)) shared++;
+  if (shared < 4) return false;
+  const jaccard = shared / (a.size + b.size - shared);
+  if (strict) return jaccard >= 0.6;
+  return jaccard >= 0.5 || shared / Math.min(a.size, b.size) >= 0.75;
+}
+
+// Links e títulos publicados nas edições dos dias anteriores (docs/AAAA-MM-DD/data.json).
+function loadRecentHistory(days = 3) {
+  const links = new Set();
+  const titles = [];
+  const today = nowBR();
+  for (let i = 1; i <= days; i++) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    const file = `docs/${dateSlug(d)}/data.json`;
+    if (!existsSync(file)) continue;
+    try {
+      const { grouped } = JSON.parse(readFileSync(file, 'utf-8'));
+      for (const items of Object.values(grouped || {})) {
+        for (const item of items) {
+          if (item.link) links.add(canonicalLink(item.link));
+          if (item.title) titles.push(item.title);
+        }
+      }
+    } catch (e) {
+      console.warn(`Histórico ilegível (${file}): ${e.message}`);
+    }
+  }
+  return { links, titles };
 }
 
 // ─── RSS FETCH ─────────────────────────────────────────────────────────────
@@ -163,14 +341,17 @@ export async function fetchArticles() {
       continue;
     }
     const { topic, url, feed } = result.value;
-    const source = feed.title || new URL(url).hostname;
-    for (const item of (feed.items || []).slice(0, 10)) {
+    const source = SOURCE_NAMES[url] || feed.title || new URL(url).hostname;
+    // Veículos de economia/finanças publicam em volume maior ao longo do dia
+    const perFeed = hasOrigin(topic) ? 25 : 10;
+    for (const item of (feed.items || []).slice(0, perFeed)) {
       if (!item.title) continue;
       if (!item.pubDate) continue;
       const published = new Date(item.pubDate);
       if (published < cutoff) continue;
       articles.push({
         topic,
+        origin: BR_FEEDS.has(url) ? 'br' : 'int',
         title: item.title.trim(),
         summary: (item.contentSnippet || item.content || '').slice(0, 400).trim(),
         source,
@@ -180,14 +361,22 @@ export async function fetchArticles() {
     }
   }
 
-  // Remove notícias repetidas entre fontes diferentes (mesmo título) antes
-  // de montar o lote enviado ao Claude, mantendo a primeira ocorrência.
-  const seenTitles = new Set();
+  // Remove notícias repetidas antes de montar o lote enviado ao Claude,
+  // mantendo a primeira ocorrência: mesmo link, mesmo assunto com título
+  // parecido (entre fontes e entre temas) e o que já saiu nos dias anteriores.
+  const history = loadRecentHistory();
+  const historyTokens = history.titles.map(titleTokens);
+  const seenLinks = new Set();
+  const seenTokens = [];
   const deduped = [];
   for (const a of articles) {
-    const key = a.title.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
-    if (seenTitles.has(key)) continue;
-    seenTitles.add(key);
+    const link = canonicalLink(a.link);
+    const tokens = titleTokens(a.title);
+    if (link && (seenLinks.has(link) || history.links.has(link))) continue;
+    if (seenTokens.some(t => isSameStory(tokens, t))) continue;
+    if (historyTokens.some(t => isSameStory(tokens, t, true))) continue;
+    if (link) seenLinks.add(link);
+    seenTokens.push(tokens);
     deduped.push(a);
   }
 
@@ -197,51 +386,301 @@ export async function fetchArticles() {
 
 // ─── CLAUDE SELECT + SUMMARIZE ─────────────────────────────────────────────
 
+// Tamanho do lote enviado ao Claude por grupo (tema + origem), com folga acima da cota.
+const POOL_LIMITS = {
+  economia_br: 20, economia_int: 12,
+  financas_br: 16, financas_int: 10,
+  geopolitica: 10, ia: 24, crypto: 24,
+};
+
+function hasOrigin(topic) {
+  return topic === 'economia' || topic === 'financas';
+}
+
+// Monta o lote alternando entre as fontes e priorizando as mais recentes,
+// para nenhum veículo dominar a lista de um tema.
+function buildPool(articles) {
+  const byGroup = {};
+  for (const a of articles) {
+    const g = hasOrigin(a.topic) ? `${a.topic}_${a.origin}` : a.topic;
+    if (!byGroup[g]) byGroup[g] = {};
+    if (!byGroup[g][a.source]) byGroup[g][a.source] = [];
+    byGroup[g][a.source].push(a);
+  }
+  const pool = [];
+  for (const [g, bySource] of Object.entries(byGroup)) {
+    const queues = Object.values(bySource).map(list => list.sort((x, y) => y.published - x.published));
+    const limit = POOL_LIMITS[g] || 6;
+    let taken = 0;
+    while (taken < limit && queues.some(q => q.length)) {
+      for (const q of queues) {
+        if (taken >= limit) break;
+        if (q.length) { pool.push(q.shift()); taken++; }
+      }
+    }
+  }
+  pool.forEach((a, i) => { a.id = i + 1; });
+  return pool;
+}
+
+function formatArticles(list) {
+  let text = '';
+  for (const a of list) {
+    text += `\n[${a.id}] TEMA: ${a.topic.toUpperCase()}\n`;
+    if (hasOrigin(a.topic)) text += `ORIGEM: ${a.origin === 'br' ? 'BRASIL' : 'INTERNACIONAL'}\n`;
+    text += `TÍTULO: ${a.title}\n`;
+    text += `FONTE: ${a.source}\n`;
+    const brHour = (a.published.getUTCHours() - 3 + 24) % 24;
+    const brMin = a.published.getUTCMinutes();
+    text += `HORA: ${String(brHour).padStart(2,'0')}:${String(brMin).padStart(2,'0')} (horário de Brasília)\n`;
+    if (a.link) text += `LINK: ${a.link}\n`;
+    if (a.summary) text += `DESCRIÇÃO: ${a.summary.slice(0,150)}\n`;
+  }
+  return text;
+}
+
+async function callModel(client, prompt) {
+  const msg = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 20000,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  let text = msg.content[0].text.trim();
+  if (text.includes('```json')) text = text.split('```json')[1].split('```')[0].trim();
+  else if (text.includes('```')) text = text.split('```')[1].split('```')[0].trim();
+
+  // Remove caracteres de controle que quebram JSON (exceto \t \n \r que são válidos escapados)
+  text = text.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '');
+
+  try {
+    return JSON.parse(text);
+  } catch (e1) {
+    console.warn(`JSON inválido, tentando recuperar: ${e1.message}`);
+    try {
+      return JSON.parse(text.replace(/,(\s*[}\]])/g, '$1'));
+    } catch (e2) {
+      console.warn(`Recuperação 1 falhou, tentando repair de aspas: ${e2.message}`);
+      return JSON.parse(repairJson(text.replace(/,(\s*[}\]])/g, '$1')));
+    }
+  }
+}
+
+// Distribui os itens da resposta nos temas. A origem (Brasil x internacional)
+// vem do artigo original, não da classificação do modelo.
+function collectItems(data, pool, grouped) {
+  const byId = new Map(pool.map(a => [a.id, a]));
+  const byLink = new Map(pool.filter(a => a.link).map(a => [canonicalLink(a.link), a]));
+
+  const add = (key, item) => {
+    if (!item || !item.title) return;
+    const k = normalizeTitle(key).replace(/ /g, '_');
+    const [topic, groupOrigin] = GROUPS[k] || [normalizeTopic(k), null];
+    const article = byLink.get(canonicalLink(item.link)) || byId.get(Number(item.id));
+    delete item.id;
+    if (article) {
+      item._id = article.id;
+      if (!item.link) item.link = article.link;
+    }
+    if (hasOrigin(topic)) item.origin = article ? article.origin : (groupOrigin || 'int');
+    if (!item.published_time) item.published_time = '--:--';
+    if (!grouped[topic]) grouped[topic] = [];
+    grouped[topic].push(item);
+  };
+
+  if (Array.isArray(data.news)) {
+    // Fallback para o formato antigo (array único "news"), caso o modelo responda assim
+    for (const item of data.news) add(item.topic, item);
+  } else {
+    for (const [key, value] of Object.entries(data)) {
+      if (key === 'thread_of_day' || !Array.isArray(value)) continue;
+      for (const item of value) add(key, item);
+    }
+  }
+}
+
+// Checagem final: nenhum evento pode aparecer duas vezes na edição,
+// nem no mesmo tema nem em temas diferentes.
+function dedupeSelected(grouped) {
+  const seenLinks = new Set();
+  const seenIds = new Set();
+  const seenTokens = [];
+  let removed = 0;
+  const topics = [...TOPIC_ORDER, ...Object.keys(grouped).filter(t => !TOPIC_ORDER.includes(t))];
+  for (const topic of topics) {
+    if (!grouped[topic]) continue;
+    grouped[topic] = grouped[topic].filter(item => {
+      const link = canonicalLink(item.link);
+      const tokens = titleTokens(item.title);
+      const repeated = (link && seenLinks.has(link))
+        || (item._id && seenIds.has(item._id))
+        || seenTokens.some(t => isSameStory(tokens, t));
+      if (repeated) { removed++; return false; }
+      if (link) seenLinks.add(link);
+      if (item._id) seenIds.add(item._id);
+      seenTokens.push(tokens);
+      return true;
+    });
+  }
+  if (removed) console.log(`Checagem final: ${removed} notícia(s) repetida(s) removida(s)`);
+}
+
+// Segunda leitura pelo modelo: pega o mesmo fato contado com títulos sem
+// palavras em comum (ex: duas fontes sobre o mesmo bug), que a comparação
+// de títulos não alcança.
+async function removeSameEvent(client, grouped) {
+  const flat = [];
+  for (const [topic, items] of Object.entries(grouped)) {
+    for (const item of items) flat.push({ topic, item });
+  }
+  if (flat.length < 2) return;
+
+  const prompt = `Abaixo estão as notícias escolhidas para uma edição de briefing. Identifique as que tratam do MESMO fato ou evento que outra da lista — mesmo com ângulo, fonte, título ou tema diferente (ex: duas notícias sobre a mesma falha de segurança, a mesma decisão de juros, o mesmo anúncio de empresa).
+
+Notícias sobre o mesmo assunto geral, mas sobre fatos distintos, NÃO são repetidas (ex: dois ataques hackers a empresas diferentes; resultado de duas empresas diferentes).
+
+Para cada grupo de repetidas, mantenha apenas a mais completa e liste as outras para remoção.
+
+Retorne APENAS JSON válido: {"remover": [números das notícias a remover]} — lista vazia se não houver repetição.
+
+NOTÍCIAS:
+${flat.map((f, i) => `[${i + 1}] (${f.topic}) ${f.item.title} — ${String(f.item.summary || '').slice(0, 220)}`).join(String.fromCharCode(10))}`;
+
+  try {
+    const data = await callModel(client, prompt);
+    const drop = new Set((data.remover || []).map(Number).filter(n => n >= 1 && n <= flat.length).map(n => flat[n - 1].item));
+    if (!drop.size) return;
+    for (const topic of Object.keys(grouped)) grouped[topic] = grouped[topic].filter(i => !drop.has(i));
+    console.log(`Segunda leitura: ${drop.size} notícia(s) sobre o mesmo evento removida(s)`);
+  } catch (e) {
+    console.warn(`Segunda leitura de repetidas falhou: ${e.message}`);
+  }
+}
+
+// Corta o excesso de cada tema e devolve o que ficou faltando para a cota exata.
+function applyQuotas(grouped) {
+  const deficits = [];
+  for (const [group, [topic, origin]] of Object.entries(GROUPS)) {
+    const items = grouped[topic] || [];
+    if (origin) {
+      const quota = QUOTAS[topic][origin];
+      const mine = items.filter(i => i.origin === origin);
+      const keep = new Set(mine.slice(0, quota));
+      grouped[topic] = items.filter(i => i.origin !== origin || keep.has(i));
+      if (mine.length < quota) deficits.push({ group, topic, origin, missing: quota - mine.length });
+    } else {
+      const quota = QUOTAS[topic];
+      grouped[topic] = items.slice(0, quota);
+      if (items.length < quota) deficits.push({ group, topic, origin, missing: quota - items.length });
+    }
+  }
+  return deficits;
+}
+
+// Segunda chamada, só quando algum tema ficou abaixo da cota: completa com
+// artigos reais ainda não usados daquele grupo.
+async function fillGaps(client, deficits, pool, grouped, datePT) {
+  const selected = Object.values(grouped).flat();
+  const usedIds = new Set(selected.map(i => i._id).filter(Boolean));
+  const selectedTokens = selected.map(i => titleTokens(i.title));
+
+  const matches = (a, d) => d.origin
+    ? hasOrigin(a.topic) && a.origin === d.origin
+    : a.topic === d.topic;
+  const candidates = pool.filter(a =>
+    !usedIds.has(a.id)
+    && deficits.some(d => matches(a, d))
+    && !selectedTokens.some(t => isSameStory(titleTokens(a.title), t))
+  );
+  const fillable = deficits.filter(d => candidates.some(a => matches(a, d)));
+  if (!fillable.length) return;
+
+  const prompt = `Você é um curador de notícias. Hoje é ${datePT}. Uma edição de briefing ficou com menos notícias que o necessário em alguns grupos.
+
+Selecione, APENAS entre os artigos da lista abaixo, a quantidade exata pedida para cada grupo:
+${fillable.map(d => `- "${d.group}": exatamente ${d.missing} item(ns)`).join('\n')}
+
+Regras:
+- Nunca invente notícia: use somente artigos reais da lista.
+- Grupos terminados em "_brasil" só aceitam artigos com ORIGEM: BRASIL; os terminados em "_internacional", só ORIGEM: INTERNACIONAL.
+- "economia" = cenário macro (juros, inflação, câmbio, PIB, contas públicas, bancos centrais); "financas" = mercado e bolso (bolsa, investimentos, renda fixa, empresas, bancos, crédito, impostos, finanças pessoais).
+- NÃO repita nenhum evento já publicado nesta edição:
+${selected.map(i => `  · ${i.title}`).join('\n')}
+
+Para cada notícia: resumo em português brasileiro com 6 a 8 linhas, direto ao ponto (contexto, o que aconteceu, quem está envolvido, impacto). Traduza o título para português. Valores, percentuais e datas só os que constam no artigo. Nunca use aspas duplas dentro dos textos.
+
+Retorne APENAS JSON válido, com um array por grupo pedido:
+{
+  "${fillable[0].group}": [ { "id": 12, "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "https://..." } ]
+}
+
+ARTIGOS:
+${formatArticles(candidates)}`;
+
+  try {
+    const data = await callModel(client, prompt);
+    delete data.thread_of_day;
+    collectItems(data, pool, grouped);
+  } catch (e) {
+    console.warn(`Não foi possível completar a cota: ${e.message}`);
+  }
+}
+
 export async function selectAndSummarize(articles, apiKey) {
   const client = new Anthropic({ apiKey });
 
   const today = nowBR();
   const datePT = `${today.getUTCDate()} de ${MONTHS_PT[today.getUTCMonth()]} de ${today.getUTCFullYear()}`;
 
-  const TOPIC_LIMITS = { geopolitica: 10, ia: 24, crypto: 36 };
-  const byTopic = {};
-  for (const a of articles) {
-    if (!byTopic[a.topic]) byTopic[a.topic] = [];
-    const limit = TOPIC_LIMITS[a.topic] || 6;
-    if (byTopic[a.topic].length < limit) byTopic[a.topic].push(a);
-  }
-  const balanced = Object.values(byTopic).flat().slice(0, 80);
+  const pool = buildPool(articles);
+  const articlesText = formatArticles(pool);
 
-  let articlesText = '';
-  balanced.forEach((a, i) => {
-    articlesText += `\n[${i+1}] TEMA: ${a.topic.toUpperCase()}\n`;
-    articlesText += `TÍTULO: ${a.title}\n`;
-    articlesText += `FONTE: ${a.source}\n`;
-    const brHour = (a.published.getUTCHours() - 3 + 24) % 24;
-    const brMin = a.published.getUTCMinutes();
-    articlesText += `HORA: ${String(brHour).padStart(2,'0')}:${String(brMin).padStart(2,'0')} (horário de Brasília)\n`;
-    if (a.link) articlesText += `LINK: ${a.link}\n`;
-    if (a.summary) articlesText += `DESCRIÇÃO: ${a.summary.slice(0,150)}\n`;
-  });
+  const recentTitles = loadRecentHistory(2).titles.slice(0, 70);
+  const historyText = recentTitles.length
+    ? `\nJÁ PUBLICADO NOS ÚLTIMOS DIAS — não selecione notícia sobre o mesmo evento, a não ser que haja um fato novo relevante (e, nesse caso, o resumo deve focar no que mudou):\n${recentTitles.map(t => `- ${t}`).join('\n')}\n`
+    : '';
 
-  const prompt = `Você é um curador de notícias especializado em geopolítica, economia, tecnologia e finanças. Hoje é ${datePT}.
+  const prompt = `Você é um curador de notícias especializado em economia, finanças, geopolítica e tecnologia, escrevendo para o público brasileiro. Hoje é ${datePT}.
 
-A resposta deve ter 3 arrays separados, um por tema, cada um com a quantidade de itens abaixo — preencha cada array até atingir esse número, mesmo que precise relaxar um pouco o critério de "buzz"/repercussão para completar (mas nunca invente notícia, use sempre artigos reais da lista):
+A resposta deve ter 7 arrays separados, cada um com a quantidade EXATA de itens abaixo (nunca invente notícia, use sempre artigos reais da lista):
+- "economia_brasil": exatamente 5 itens (somente artigos com ORIGEM: BRASIL)
+- "economia_internacional": exatamente 3 itens (somente artigos com ORIGEM: INTERNACIONAL)
+- "financas_brasil": exatamente 4 itens (somente artigos com ORIGEM: BRASIL)
+- "financas_internacional": exatamente 2 itens (somente artigos com ORIGEM: INTERNACIONAL)
 - "geopolitica": exatamente 4 itens
-- "ia": exatamente 10 itens
-- "crypto": até 16 itens, tentando ficar o mais próximo possível do máximo
+- "ia": exatamente 6 itens
+- "crypto": exatamente 6 itens
 
-Antes de finalizar, conte os itens de cada array. Se algum tiver menos que o exigido, volte à lista de artigos e complete com as melhores opções restantes daquele tema até bater o número mínimo.
+Os artigos marcados com TEMA: ECONOMIA ou TEMA: FINANCAS formam um conjunto só: classifique cada um em economia ou finanças pelo assunto (definições abaixo), não pela marcação. A ORIGEM, porém, nunca muda.
+
+Antes de finalizar, conte os itens de cada array. Se algum tiver menos que o exigido, volte à lista de artigos e complete com as melhores opções restantes daquele grupo, mesmo que precise relaxar um pouco o critério de repercussão — mas nunca repetindo um evento já usado.
 
 REGRAS GERAIS — válidas para todos os temas:
 1. BREAKING NEWS e eventos de alto impacto têm prioridade ABSOLUTA.
 2. Prefira sempre notícias das últimas horas — quanto mais fresca, melhor.
-3. PROIBIDO repetir a mesma notícia ou o mesmo evento em mais de uma entrada — mesmo que apareça em fontes diferentes, mesmo que pareça se encaixar em mais de um tema (ex: uma notícia sobre IA aplicada a criptomoedas deve aparecer em APENAS UM dos temas, nunca nos dois; uma notícia que envolva geopolítica E economia ao mesmo tempo conta como uma única entrada). Escolha sempre o tema mais adequado e a melhor cobertura, e use cada evento só uma vez.
-4. EXCLUIR: notícias de projetos pequenos e irrelevantes, opiniões sem fato concreto.
+3. PROIBIDO REPETIR. Cada evento ou assunto aparece UMA única vez em toda a edição — mesmo que venha de fontes diferentes, com títulos diferentes, em idiomas diferentes ou pareça se encaixar em mais de um tema (ex: a mesma decisão do Copom não pode aparecer em economia e em finanças; uma notícia sobre IA aplicada a criptomoedas aparece em APENAS UM tema; a mesma alta do Bitcoin contada por dois sites é UMA notícia). Escolha o tema mais adequado e a melhor cobertura. Antes de finalizar, releia todos os títulos escolhidos e troque qualquer um que trate do mesmo fato que outro.
+4. EXCLUIR: notícias de projetos pequenos e irrelevantes, opiniões sem fato concreto, conteúdo patrocinado e publicidade, resultados de loterias, horóscopo, esportes, cultura e entretenimento.
 5. EXCLUIR notícias "frias" — factuais sem impacto real, sem tendência, sem repercussão. Priorize sempre o que está gerando buzz, debate ou consequência prática agora.
 6. EXCLUIR notícias isoladas, genéricas ou de baixo impacto — sejam internacionais (ex: crimes locais, casos pontuais sem repercussão global) ou nacionais (Brasil) sem conexão clara com tendências maiores.
-
+7. Valores, percentuais, cotações, taxas e datas: use SOMENTE os que constam no artigo. Nunca estime, arredonde por conta própria ou complete com números de memória.
+${historyText}
 REGRAS POR TEMA:
+
+ECONOMIA (cenário macro) — priorizar:
+- Brasil: Selic e decisões do Copom, inflação (IPCA), dólar e câmbio, PIB, emprego e renda
+- Brasil: contas públicas, arcabouço fiscal, orçamento, reforma tributária e medidas do governo e do Banco Central
+- Brasil: comércio exterior, agronegócio, indústria e setores que movem a economia
+- Internacional: Fed, BCE e outros bancos centrais, inflação e emprego nos EUA
+- Internacional: China, petróleo, commodities, tarifas e guerras comerciais
+- Sempre que possível, explique o impacto para o brasileiro comum
+
+FINANÇAS (mercado e bolso) — priorizar:
+- Brasil: Ibovespa e ações em destaque, resultados e dividendos de empresas, IPOs, fusões e aquisições
+- Brasil: renda fixa, Tesouro Direto, CDBs, fundos imobiliários e fundos de investimento
+- Brasil: bancos, fintechs, crédito, Pix, endividamento, imposto de renda e regras que afetam o investidor
+- Brasil: finanças pessoais com fato novo (mudanças de regra, novos produtos, golpes relevantes)
+- Internacional: Wall Street, S&P 500, Nasdaq, big techs na bolsa, juros dos Treasuries, ouro
+- Sempre que possível, explique o que muda para quem investe ou para o bolso
 
 GEOPOLÍTICA — priorizar:
 - Guerras ativas, escaladas militares e ataques relevantes
@@ -278,83 +717,56 @@ CRIPTOMOEDAS — priorizar:
 - ETFs de cripto (mencionar pouco, só se houver fato muito relevante)
 - Projetos e tokens ganhando tração/atenção no momento (ex: Hyperliquid, novas L2s, memecoins relevantes, narrativas virais)
 
-Para cada notícia: escreva um resumo em português brasileiro com 6 a 8 linhas, direto ao ponto, explicando o contexto, o que aconteceu, quem está envolvido e o impacto. Traduza os títulos para português. Inclua o link original da notícia.
+Para cada notícia: escreva um resumo em português brasileiro com 6 a 8 linhas, direto ao ponto, explicando o contexto, o que aconteceu, quem está envolvido e o impacto. Traduza os títulos para português. Inclua o link original da notícia e, no campo "id", o número entre colchetes do artigo usado.
 
 Além das notícias, gere um "fio condutor do dia" (campo thread_of_day): um parágrafo editorial de 3 a 4 frases conectando os principais temas do dia, explicando o que une as notícias mais importantes desta edição.
 
-Retorne APENAS JSON válido, sem texto antes ou depois, seguindo EXATAMENTE esta estrutura com 3 arrays separados (não use um array único "news"). IMPORTANTE: nos campos de texto (summary, title, thread_of_day), nunca use aspas duplas — use aspas simples ou reescreva a frase para evitá-las:
+Retorne APENAS JSON válido, sem texto antes ou depois, seguindo EXATAMENTE esta estrutura com 7 arrays separados (não use um array único "news"). IMPORTANTE: nos campos de texto (summary, title, thread_of_day), nunca use aspas duplas — use aspas simples ou reescreva a frase para evitá-las:
 {
   "thread_of_day": "Parágrafo editorial de 3 a 4 frases conectando os principais temas do dia.",
-  "geopolitica": [
-    { "title": "Título em português", "summary": "Resumo direto com 6 a 8 linhas.", "source": "Fonte", "published_time": "HH:MM", "link": "https://..." }
+  "economia_brasil": [
+    { "id": 12, "title": "Título em português", "summary": "Resumo direto com 6 a 8 linhas.", "source": "Fonte", "published_time": "HH:MM", "link": "https://..." }
   ],
-  "ia": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
-  "crypto": [ { "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ]
+  "economia_internacional": [ { "id": 0, "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
+  "financas_brasil": [ { "id": 0, "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
+  "financas_internacional": [ { "id": 0, "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
+  "geopolitica": [ { "id": 0, "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
+  "ia": [ { "id": 0, "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ],
+  "crypto": [ { "id": 0, "title": "...", "summary": "...", "source": "...", "published_time": "HH:MM", "link": "..." } ]
 }
 
 ARTIGOS:
 ${articlesText}`;
 
-  const msg = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 20000,
-    messages: [{ role: 'user', content: prompt }],
-  });
-
-  let text = msg.content[0].text.trim();
-  if (text.includes('```json')) text = text.split('```json')[1].split('```')[0].trim();
-  else if (text.includes('```')) text = text.split('```')[1].split('```')[0].trim();
-
-  // Remove caracteres de controle que quebram JSON (exceto \t \n \r que são válidos escapados)
-  text = text.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '');
-
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e1) {
-    console.warn(`JSON inválido, tentando recuperar: ${e1.message}`);
-    try {
-      const cleaned = text.replace(/,(\s*[}\]])/g, '$1');
-      data = JSON.parse(cleaned);
-    } catch (e2) {
-      console.warn(`Recuperação 1 falhou, tentando repair de aspas: ${e2.message}`);
-      const repaired = repairJson(text.replace(/,(\s*[}\]])/g, '$1'));
-      data = JSON.parse(repaired);
-    }
-  }
+  const data = await callModel(client, prompt);
   const threadOfDay = data.thread_of_day || '';
 
   const grouped = {};
-  if (Array.isArray(data.news)) {
-    // Fallback para o formato antigo (array único "news"), caso o modelo responda assim
-    for (const item of data.news) {
-      if (!item.published_time) item.published_time = '--:--';
-      const topic = normalizeTopic(item.topic);
-      if (!grouped[topic]) grouped[topic] = [];
-      grouped[topic].push(item);
-    }
-  } else {
-    for (const [key, value] of Object.entries(data)) {
-      if (key === 'thread_of_day' || !Array.isArray(value)) continue;
-      const topic = normalizeTopic(key);
-      if (!grouped[topic]) grouped[topic] = [];
-      for (const item of value) {
-        if (!item.published_time) item.published_time = '--:--';
-        grouped[topic].push(item);
-      }
-    }
+  collectItems(data, pool, grouped);
+  dedupeSelected(grouped);
+  await removeSameEvent(client, grouped);
+
+  // Garante a cota exata por tema: corta o excesso e, se faltar, completa
+  // uma vez com artigos reais ainda não usados.
+  let deficits = applyQuotas(grouped);
+  if (deficits.length) {
+    console.log(`Abaixo da cota: ${deficits.map(d => `${d.group} (-${d.missing})`).join(', ')} — tentando completar`);
+    await fillGaps(client, deficits, pool, grouped, datePT);
+    dedupeSelected(grouped);
+    deficits = applyQuotas(grouped);
+  }
+  for (const d of deficits) {
+    console.warn(`Cota não atingida em ${d.group}: faltaram ${d.missing} (sem notícia real e inédita disponível)`);
   }
 
-  // Garante a cota por tema, mesmo que o modelo retorne mais itens.
-  // Mantém os mais recentes quando há excesso.
-  const QUOTAS = { geopolitica: 4, ia: 10, crypto: 16 };
   for (const topic of Object.keys(grouped)) {
+    if (!grouped[topic].length) { delete grouped[topic]; continue; }
+    for (const item of grouped[topic]) delete item._id;
     grouped[topic].sort((a, b) => b.published_time.localeCompare(a.published_time));
-    if (QUOTAS[topic]) grouped[topic] = grouped[topic].slice(0, QUOTAS[topic]);
   }
 
   const totalSelecionado = Object.values(grouped).reduce((sum, items) => sum + items.length, 0);
-  console.log(`Claude selecionou ${totalSelecionado} notícias`);
+  console.log(`Claude selecionou ${totalSelecionado} notícias (${Object.entries(grouped).map(([t, v]) => `${t}: ${v.length}`).join(', ')})`);
   return { grouped, threadOfDay };
 }
 
