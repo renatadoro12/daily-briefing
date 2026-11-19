@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Briefing — Renata Doro IA &amp; Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0F172A; color: #F8FAFC; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+
+  #neural-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+  .hero, .ticker-bar, .thread-section, .pagination, .topics-nav, .search-bar,
+  .section, .newsletter-section, .search-empty, .footer, .fab-group { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero { padding: 32px 24px 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .hero-title { font-size: 24px; font-weight: 800; color: #F8FAFC; letter-spacing: -0.5px; line-height: 1.2; font-family: 'Space Grotesk', sans-serif; }
+  .hero-title span { background: linear-gradient(135deg, #00C4B4, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-brand { font-size: 13px; color: #94A3B8; margin-top: 6px; font-weight: 500; }
+  .hero-date { font-size: 10px; color: #475569; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* TICKER */
+  .ticker-bar { display: flex; justify-content: center; flex-wrap: wrap; background: #0B1120; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ticker-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-right: 1px solid rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label { color: #475569; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .ticker-value { color: #F8FAFC; }
+  .ticker-value.up { color: #84CC16; }
+  .ticker-value.down { color: #EF4444; }
+  .ticker-fng { font-weight: 700; }
+  .ticker-loading { color: #334155; }
+
+  /* THREAD */
+  .thread-section { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .thread-inner { max-width: 760px; margin: 0 auto; background: rgba(0,196,180,0.06); border: 1px solid rgba(0,196,180,0.2); border-left: 3px solid #00C4B4; border-radius: 0 8px 8px 0; padding: 16px 20px; }
+  .thread-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #00C4B4; margin-bottom: 8px; }
+  .thread-text { font-size: 14px; color: #94A3B8; line-height: 1.75; }
+
+  /* PAGINATION */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; transition: .2s; text-transform: uppercase; }
+  .page-btn:hover { border-color: #00C4B4; color: #00C4B4; }
+  .page-btn.disabled { opacity: 0.2; pointer-events: none; }
+  .date-select { background: #1E2937; border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; outline: none; transition: .2s; }
+  .date-select:hover, .date-select:focus { border-color: #00C4B4; color: #F8FAFC; }
+
+  /* TOPICS NAV */
+  .topics-nav { display: flex; gap: 8px; justify-content: center; padding: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0F172A; position: sticky; top: 0; z-index: 100; }
+  .topic-pill { padding: 5px 14px; border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid; text-decoration: none; transition: all 0.15s; cursor: pointer; background: none; }
+  .topic-pill:hover { opacity: 0.8; transform: translateY(-1px); }
+  .topic-pill.active { opacity: 1; transform: translateY(-1px); box-shadow: 0 0 12px rgba(0,0,0,0.3); }
+
+  /* SEARCH */
+  .search-bar { display: none; padding: 10px 24px; background: #0F172A; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 49px; z-index: 99; }
+  .search-bar.open { display: block; }
+  .search-input { width: 100%; max-width: 600px; display: block; margin: 0 auto; background: #1E2937; border: 1px solid rgba(0,196,180,0.2); color: #F8FAFC; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .search-input:focus { border-color: #00C4B4; }
+  .search-input::placeholder { color: #475569; }
+
+  /* SECTIONS */
+  .section { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 40px 24px; max-width: 760px; margin: 0 auto; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .section-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+  /* NEWS ITEMS */
+  .news-item { padding: 18px 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); border-left: 3px solid #00C4B4; transition: background 0.15s; }
+  .news-item:last-child { border-bottom: none; }
+  .news-item.hidden { display: none; }
+  .news-item:hover { background: rgba(255,255,255,0.01); border-radius: 0 4px 4px 0; }
+  .news-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .news-date { font-size: 10px; color: #475569; font-weight: 600; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-time { font-size: 10px; color: #475569; font-weight: 700; background: #1E2937; padding: 2px 7px; border-radius: 4px; }
+  .news-source { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .news-title { font-size: 15px; font-weight: 700; color: #CBD5E1; line-height: 1.45; margin-bottom: 10px; font-family: 'Space Grotesk', sans-serif; }
+  .news-summary { font-size: 13px; color: #94A3B8; line-height: 1.75; margin-bottom: 12px; }
+  .news-link { margin-bottom: 10px; }
+  .news-link a { font-size: 12px; color: #475569; text-decoration: none; }
+  .news-link a:hover { color: #00C4B4; }
+
+  /* SHARE BUTTONS */
+  .share-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-decoration: none; padding: 4px 10px; border-radius: 6px; border: 1px solid; transition: .15s; font-family: 'Inter', sans-serif; }
+  .share-wa { color: #25D366; border-color: rgba(37,211,102,0.25); background: rgba(37,211,102,0.06); }
+  .share-wa:hover { background: rgba(37,211,102,0.12); }
+  .share-x { color: #94A3B8; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+  .share-x:hover { border-color: rgba(255,255,255,0.2); color: #F8FAFC; }
+
+  /* NEWSLETTER MODAL */
+  .nl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: flex-end; justify-content: flex-end; padding: 90px 24px; }
+  .nl-overlay.open { display: flex; }
+  .nl-modal-box { background: #1E2937; border: 1px solid rgba(0,196,180,0.2); border-radius: 12px; padding: 20px; width: 280px; box-shadow: 0 0 40px rgba(0,196,180,0.1); }
+  .nl-modal-close { float: right; background: none; border: none; color: #475569; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+  .nl-modal-close:hover { color: #94A3B8; }
+  .nl-title { font-size: 14px; font-weight: 700; color: #F8FAFC; font-family: 'Space Grotesk', sans-serif; margin-bottom: 4px; }
+  .nl-sub { font-size: 11px; color: #94A3B8; margin-bottom: 14px; }
+  .nl-form { display: flex; flex-direction: column; gap: 8px; }
+  .nl-input { background: #0F172A; border: 1px solid rgba(255,255,255,0.1); color: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; transition: .2s; }
+  .nl-input:focus { border-color: #00C4B4; }
+  .nl-input::placeholder { color: #475569; }
+  .nl-btn { background: linear-gradient(135deg, #00C4B4, #7C3AED); color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .15s; }
+  .nl-btn:hover { opacity: 0.9; }
+
+  /* SEARCH EMPTY */
+  .search-empty { display: none; text-align: center; padding: 60px 24px; color: #475569; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 32px 24px; color: #334155; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid rgba(255,255,255,0.04); }
+  .footer a { color: #475569; text-decoration: none; }
+  .footer a:hover { color: #00C4B4; }
+
+  /* FAB */
+  .fab-group { position: fixed; bottom: 28px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .fab { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); background: #1E2937; color: #94A3B8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; }
+  .fab:hover { border-color: #00C4B4; color: #00C4B4; }
+  .fab.active { border-color: #00C4B4; color: #00C4B4; background: rgba(0,196,180,0.1); }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    .hero-title { font-size: 20px; }
+    .ticker-bar { display: grid; grid-template-columns: 1fr 1fr; }
+    .ticker-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 12px; }
+    .section { padding: 28px 16px; }
+    .news-item { padding-left: 12px; }
+    .news-title { font-size: 14px; }
+    .news-summary { font-size: 12px; }
+    .topics-nav { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding: 10px 16px; }
+    .nl-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<canvas id="neural-bg"></canvas>
+
+<div class="hero">
+  <div class="hero-title">Daily Briefing</div>
+  <div class="hero-brand">Renata Doro IA &amp; Cripto</div>
+  <div class="hero-date">19 DE NOVEMBRO DE 2026</div>
+</div>
+
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/USD</span>
+    <span class="ticker-value ticker-loading" id="btc-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">BTC/BRL</span>
+    <span class="ticker-value ticker-loading" id="btc-brl">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">ETH/USD</span>
+    <span class="ticker-value ticker-loading" id="eth-usd">—</span>
+  </div>
+  <div class="ticker-item">
+    <span class="ticker-label">Fear &amp; Greed</span>
+    <span class="ticker-value ticker-fng ticker-loading" id="fng">—</span>
+  </div>
+</div>
+
+
+<div class="thread-section" id="thread-section" style="display:none;">
+  <div class="thread-inner">
+    <div class="thread-label">Fio Condutor do Dia</div>
+    <div class="thread-text">O Brasil enfrenta um momento crítico de confluência entre pressões fiscais domésticas e volatilidade global: enquanto o Senado aprova o pacote de ajuste fiscal em negociação complexa, o dólar sobe para novos patamares históricos e o mercado cobra prêmio recorde contra inflação, refletindo desconfiança nas contas públicas. Paralelamente, a cena geopolítica se intensifica com Trump, Xi e Putin reunindo-se na China para discussões sobre IA e comércio, cenário que pressiona ainda mais as expectativas de juros globais e afeta diretamente a atratividade do Brasil para investidores estrangeiros. No front tecnológico, o IPO histórico da Anthropic marca uma inflexão no setor de IA, enquanto reguladores em todo o mundo buscam enquadrar tanto a inteligência artificial quanto o mercado de criptomoedas.</div>
+  </div>
+</div>
+
+<div class="pagination">
+  <a class="page-btn" href="../2026-11-18/">← Anterior</a>
+  <select class="date-select" id="date-select" onchange="goToDate(this.value)"><option value="2026-04-12">2026-04-12</option><option value="2026-04-23">2026-04-23</option><option value="2026-04-24">2026-04-24</option><option value="2026-04-25">2026-04-25</option><option value="2026-04-26">2026-04-26</option><option value="2026-04-27">2026-04-27</option><option value="2026-04-28">2026-04-28</option><option value="2026-04-29">2026-04-29</option><option value="2026-04-30">2026-04-30</option><option value="2026-05-01">2026-05-01</option><option value="2026-05-02">2026-05-02</option><option value="2026-05-03">2026-05-03</option><option value="2026-05-04">2026-05-04</option><option value="2026-05-05">2026-05-05</option><option value="2026-05-06">2026-05-06</option><option value="2026-05-07">2026-05-07</option><option value="2026-05-08">2026-05-08</option><option value="2026-05-09">2026-05-09</option><option value="2026-05-10">2026-05-10</option><option value="2026-05-11">2026-05-11</option><option value="2026-05-12">2026-05-12</option><option value="2026-05-13">2026-05-13</option><option value="2026-05-14">2026-05-14</option><option value="2026-05-15">2026-05-15</option><option value="2026-05-16">2026-05-16</option><option value="2026-05-17">2026-05-17</option><option value="2026-05-18">2026-05-18</option><option value="2026-05-19">2026-05-19</option><option value="2026-05-20">2026-05-20</option><option value="2026-05-21">2026-05-21</option><option value="2026-05-22">2026-05-22</option><option value="2026-05-23">2026-05-23</option><option value="2026-05-24">2026-05-24</option><option value="2026-05-25">2026-05-25</option><option value="2026-05-26">2026-05-26</option><option value="2026-05-27">2026-05-27</option><option value="2026-05-28">2026-05-28</option><option value="2026-05-29">2026-05-29</option><option value="2026-05-30">2026-05-30</option><option value="2026-05-31">2026-05-31</option><option value="2026-06-01">2026-06-01</option><option value="2026-06-02">2026-06-02</option><option value="2026-06-03">2026-06-03</option><option value="2026-06-04">2026-06-04</option><option value="2026-06-05">2026-06-05</option><option value="2026-06-06">2026-06-06</option><option value="2026-06-07">2026-06-07</option><option value="2026-06-08">2026-06-08</option><option value="2026-06-09">2026-06-09</option><option value="2026-06-10">2026-06-10</option><option value="2026-06-12">2026-06-12</option><option value="2026-06-13">2026-06-13</option><option value="2026-06-14">2026-06-14</option><option value="2026-06-15">2026-06-15</option><option value="2026-06-16">2026-06-16</option><option value="2026-06-17">2026-06-17</option><option value="2026-06-18">2026-06-18</option><option value="2026-06-19">2026-06-19</option><option value="2026-06-20">2026-06-20</option><option value="2026-06-21">2026-06-21</option><option value="2026-06-22">2026-06-22</option><option value="2026-06-23">2026-06-23</option><option value="2026-06-24">2026-06-24</option><option value="2026-06-25">2026-06-25</option><option value="2026-06-26">2026-06-26</option><option value="2026-06-27">2026-06-27</option><option value="2026-06-28">2026-06-28</option><option value="2026-06-29">2026-06-29</option><option value="2026-06-30">2026-06-30</option><option value="2026-07-01">2026-07-01</option><option value="2026-07-02">2026-07-02</option><option value="2026-07-03">2026-07-03</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-05">2026-07-05</option><option value="2026-07-06">2026-07-06</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-11">2026-07-11</option><option value="2026-07-12">2026-07-12</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-14">2026-07-14</option><option value="2026-07-15">2026-07-15</option><option value="2026-07-16">2026-07-16</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-24">2026-07-24</option><option value="2026-07-25">2026-07-25</option><option value="2026-07-26">2026-07-26</option><option value="2026-07-27">2026-07-27</option><option value="2026-07-28">2026-07-28</option><option value="2026-07-30">2026-07-30</option><option value="2026-07-31">2026-07-31</option><option value="2026-08-02">2026-08-02</option><option value="2026-08-03">2026-08-03</option><option value="2026-08-04">2026-08-04</option><option value="2026-08-05">2026-08-05</option><option value="2026-08-06">2026-08-06</option><option value="2026-08-07">2026-08-07</option><option value="2026-08-08">2026-08-08</option><option value="2026-08-09">2026-08-09</option><option value="2026-08-10">2026-08-10</option><option value="2026-08-11">2026-08-11</option><option value="2026-08-12">2026-08-12</option><option value="2026-08-13">2026-08-13</option><option value="2026-08-14">2026-08-14</option><option value="2026-08-15">2026-08-15</option><option value="2026-08-16">2026-08-16</option><option value="2026-08-17">2026-08-17</option><option value="2026-08-18">2026-08-18</option><option value="2026-08-19">2026-08-19</option><option value="2026-08-20">2026-08-20</option><option value="2026-08-21">2026-08-21</option><option value="2026-08-22">2026-08-22</option><option value="2026-08-23">2026-08-23</option><option value="2026-08-24">2026-08-24</option><option value="2026-08-25">2026-08-25</option><option value="2026-08-27">2026-08-27</option><option value="2026-08-28">2026-08-28</option><option value="2026-08-29">2026-08-29</option><option value="2026-08-30">2026-08-30</option><option value="2026-08-31">2026-08-31</option><option value="2026-09-01">2026-09-01</option><option value="2026-09-02">2026-09-02</option><option value="2026-09-03">2026-09-03</option><option value="2026-09-04">2026-09-04</option><option value="2026-09-05">2026-09-05</option><option value="2026-09-06">2026-09-06</option><option value="2026-09-07">2026-09-07</option><option value="2026-09-08">2026-09-08</option><option value="2026-09-09">2026-09-09</option><option value="2026-09-10">2026-09-10</option><option value="2026-09-11">2026-09-11</option><option value="2026-09-12">2026-09-12</option><option value="2026-09-13">2026-09-13</option><option value="2026-09-14">2026-09-14</option><option value="2026-09-15">2026-09-15</option><option value="2026-09-16">2026-09-16</option><option value="2026-09-17">2026-09-17</option><option value="2026-09-18">2026-09-18</option><option value="2026-09-19">2026-09-19</option><option value="2026-09-20">2026-09-20</option><option value="2026-09-21">2026-09-21</option><option value="2026-09-22">2026-09-22</option><option value="2026-09-23">2026-09-23</option><option value="2026-09-24">2026-09-24</option><option value="2026-09-25">2026-09-25</option><option value="2026-09-26">2026-09-26</option><option value="2026-09-27">2026-09-27</option><option value="2026-09-28">2026-09-28</option><option value="2026-09-29">2026-09-29</option><option value="2026-09-30">2026-09-30</option><option value="2026-10-01">2026-10-01</option><option value="2026-10-02">2026-10-02</option><option value="2026-10-03">2026-10-03</option><option value="2026-10-04">2026-10-04</option><option value="2026-10-05">2026-10-05</option><option value="2026-10-06">2026-10-06</option><option value="2026-10-07">2026-10-07</option><option value="2026-10-08">2026-10-08</option><option value="2026-10-09">2026-10-09</option><option value="2026-10-10">2026-10-10</option><option value="2026-10-11">2026-10-11</option><option value="2026-10-13">2026-10-13</option><option value="2026-10-14">2026-10-14</option><option value="2026-10-15">2026-10-15</option><option value="2026-10-16">2026-10-16</option><option value="2026-10-17">2026-10-17</option><option value="2026-10-18">2026-10-18</option><option value="2026-10-19">2026-10-19</option><option value="2026-10-20">2026-10-20</option><option value="2026-10-21">2026-10-21</option><option value="2026-10-22">2026-10-22</option><option value="2026-10-23">2026-10-23</option><option value="2026-10-24">2026-10-24</option><option value="2026-10-25">2026-10-25</option><option value="2026-10-26">2026-10-26</option><option value="2026-10-27">2026-10-27</option><option value="2026-10-28">2026-10-28</option><option value="2026-10-29">2026-10-29</option><option value="2026-10-30">2026-10-30</option><option value="2026-10-31">2026-10-31</option><option value="2026-11-01">2026-11-01</option><option value="2026-11-03">2026-11-03</option><option value="2026-11-05">2026-11-05</option><option value="2026-11-06">2026-11-06</option><option value="2026-11-07">2026-11-07</option><option value="2026-11-08">2026-11-08</option><option value="2026-11-10">2026-11-10</option><option value="2026-11-12">2026-11-12</option><option value="2026-11-13">2026-11-13</option><option value="2026-11-14">2026-11-14</option><option value="2026-11-15">2026-11-15</option><option value="2026-11-17">2026-11-17</option><option value="2026-11-18">2026-11-18</option><option value="2026-11-19" selected>2026-11-19</option></select>
+  <span class="page-btn disabled">Próximo →</span>
+  <a id="btnHoje" class="page-btn" style="display:none;" href="#">Hoje</a>
+</div>
+<div class="topics-nav">
+  <button class="topic-pill active" data-topic="all" onclick="filterTopic('all')" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.15);">Todos</button>
+    <button class="topic-pill" data-topic="economia" onclick="filterTopic('economia')" style="color:#10B981;border-color:#10B98140;background:#10B98115;">📊 Economia</button>
+    <button class="topic-pill" data-topic="financas" onclick="filterTopic('financas')" style="color:#3B82F6;border-color:#3B82F640;background:#3B82F615;">💰 Finanças</button>
+    <button class="topic-pill" data-topic="geopolitica" onclick="filterTopic('geopolitica')" style="color:#7C3AED;border-color:#7C3AED40;background:#7C3AED15;">🌍 Geopolítica</button>
+    <button class="topic-pill" data-topic="ia" onclick="filterTopic('ia')" style="color:#00C4B4;border-color:#00C4B440;background:#00C4B415;">🤖 Inteligência Artificial</button>
+    <button class="topic-pill" data-topic="crypto" onclick="filterTopic('crypto')" style="color:#F59E0B;border-color:#F59E0B40;background:#F59E0B15;">₿ Criptomoedas</button>
+    <button class="topic-pill" data-topic="thread" onclick="toggleThread()" style="color:#00C4B4;border-color:rgba(0,196,180,0.4);background:rgba(0,196,180,0.08);">✦ Fio do Dia</button>
+  <button class="topic-pill" onclick="toggleSearch()" style="color:#475569;border-color:rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);">🔍 Buscar</button>
+</div>
+<div class="search-bar" id="searchBar">
+  <input class="search-input" id="searchInput" type="text" placeholder="Buscar notícias..." oninput="filterNews(this.value)">
+</div>
+
+  <div class="section" id="economia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#10B981;box-shadow:0 0 10px #10B98180;"></div>
+      <div class="section-title" style="color:#10B981;">📊 Economia</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="Valorização da moeda americana pressiona custos de produção e inflação no Brasil A alta do dólar de quase 15% após as eleições pressiona a inflação brasileira ao encarecer insumos importados, especialmente alimentos e combustíveis. Empresas enfrentam dilema entre absorver custos ou repassá-los ao consumidor, impactando o poder de compra das famílias. Economistas alertam que o cenário pode levar a Selic ainda mais elevada caso o Banco Central se veja obrigado a combater pressões inflacionárias de origem cambial. Gazeta do Povo" data-title="Valorização da moeda americana pressiona custos de produção e inflação no Brasil" data-share-url="https://www.gazetadopovo.com.br/economia/valorizacao-da-moeda-americana-pressiona-custos-de-producao-e-inflacao-no-brasil/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">22:36</span>
+          <span class="news-source">Gazeta do Povo</span>
+        </div>
+        <div class="news-title">Valorização da moeda americana pressiona custos de produção e inflação no Brasil</div>
+        <div class="news-summary">A alta do dólar de quase 15% após as eleições pressiona a inflação brasileira ao encarecer insumos importados, especialmente alimentos e combustíveis. Empresas enfrentam dilema entre absorver custos ou repassá-los ao consumidor, impactando o poder de compra das famílias. Economistas alertam que o cenário pode levar a Selic ainda mais elevada caso o Banco Central se veja obrigado a combater pressões inflacionárias de origem cambial.</div>
+        <div class="news-link"><a href="https://www.gazetadopovo.com.br/economia/valorizacao-da-moeda-americana-pressiona-custos-de-producao-e-inflacao-no-brasil/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="Mercado Livre capta US$ 735 milhões para dar crédito na Amazônia O Mercado Livre captou US$ 735 milhões em financiamento para expandir operações de crédito na Amazônia brasileira, ampliando acesso a recursos para pequenas e médias empresas da região. A iniciativa alinha-se com o movimento de fintechs em aproveitar lacunas de crédito em áreas menos servidas pelo sistema bancário tradicional. O investimento reflete confiança no potencial de crescimento do segmento de crédito digital no Brasil. Estadão" data-title="Mercado Livre capta US$ 735 milhões para dar crédito na Amazônia" data-share-url="https://www.estadao.com.br/economia/coluna-da-broad/mercado-livre-capta-us-735-milhoes-para-dar-credito-na-amazonia/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">21:59</span>
+          <span class="news-source">Estadão</span>
+        </div>
+        <div class="news-title">Mercado Livre capta US$ 735 milhões para dar crédito na Amazônia</div>
+        <div class="news-summary">O Mercado Livre captou US$ 735 milhões em financiamento para expandir operações de crédito na Amazônia brasileira, ampliando acesso a recursos para pequenas e médias empresas da região. A iniciativa alinha-se com o movimento de fintechs em aproveitar lacunas de crédito em áreas menos servidas pelo sistema bancário tradicional. O investimento reflete confiança no potencial de crescimento do segmento de crédito digital no Brasil.</div>
+        <div class="news-link"><a href="https://www.estadao.com.br/economia/coluna-da-broad/mercado-livre-capta-us-735-milhoes-para-dar-credito-na-amazonia/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="Pacote fiscal tem negociação difícil e retorno limitado O Senado aprovou o pacote fiscal do governo após negociação tensa, com rejeição de destaques importantes da oposição. A votação final ocorreu nesta quarta-feira (18), marcada por acordos políticos em torno da Lei Kandir, que exigiu elevação dos repasses a R$ 2 bilhões ao ano para viabilizar apoio. O texto mantém a limitação de crédito tributário e segue para votação na Câmara ainda esta semana. Economistas apontam que as medidas têm escopo limitado para resolver a crise fiscal brasileira de forma robusta. Valor Econômico" data-title="Pacote fiscal tem negociação difícil e retorno limitado" data-share-url="https://valor.globo.com/brasil/noticia/2026/11/18/analise-pacote-fiscal-tem-negociacao-dificil-e-retorno-limitado.ghtml">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">20:29</span>
+          <span class="news-source">Valor Econômico</span>
+        </div>
+        <div class="news-title">Pacote fiscal tem negociação difícil e retorno limitado</div>
+        <div class="news-summary">O Senado aprovou o pacote fiscal do governo após negociação tensa, com rejeição de destaques importantes da oposição. A votação final ocorreu nesta quarta-feira (18), marcada por acordos políticos em torno da Lei Kandir, que exigiu elevação dos repasses a R$ 2 bilhões ao ano para viabilizar apoio. O texto mantém a limitação de crédito tributário e segue para votação na Câmara ainda esta semana. Economistas apontam que as medidas têm escopo limitado para resolver a crise fiscal brasileira de forma robusta.</div>
+        <div class="news-link"><a href="https://valor.globo.com/brasil/noticia/2026/11/18/analise-pacote-fiscal-tem-negociacao-dificil-e-retorno-limitado.ghtml" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="IA está piorando o colapso de empregos da China Análise de Bloomberg identifica queda de dois dígitos na contratação para empregos mais expostos à inteligência artificial na China, sinalizando aceleração do desemprego tecnológico. O fenômeno agrava pressões econômicas já existentes no país e levanta questões sobre a capacidade do sistema laboral de absorver trabalhadores deslocados. O cenário pode impactar demanda interna e competitividade global chinesa. Bloomberg Economics" data-title="IA está piorando o colapso de empregos da China" data-share-url="https://www.bloomberg.com/graphics/2026-china-ai-jobs-slump/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">19:00</span>
+          <span class="news-source">Bloomberg Economics</span>
+        </div>
+        <div class="news-title">IA está piorando o colapso de empregos da China</div>
+        <div class="news-summary">Análise de Bloomberg identifica queda de dois dígitos na contratação para empregos mais expostos à inteligência artificial na China, sinalizando aceleração do desemprego tecnológico. O fenômeno agrava pressões econômicas já existentes no país e levanta questões sobre a capacidade do sistema laboral de absorver trabalhadores deslocados. O cenário pode impactar demanda interna e competitividade global chinesa.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/graphics/2026-china-ai-jobs-slump/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="Mercado exige o maior prêmio contra inflação desde Dilma e cobra mais para financiar o Brasil A inflação implícita de um ano voltou ao maior patamar desde o governo Dilma Rousseff, sinalizando deterioração nas expectativas de preços. O mercado financeiro passa a exigir prêmios maiores para financiar a dívida pública brasileira, refletindo desconfiança com as contas públicas. Esse movimento ocorre em meio às discussões sobre o pacote fiscal do governo e pressões cambiais. A elevação do prêmio contra inflação indica que investidores estão precificando riscos maiores para a economia brasileira nos próximos meses. Money Times" data-title="Mercado exige o maior prêmio contra inflação desde Dilma e cobra mais para financiar o Brasil" data-share-url="https://www.moneytimes.com.br/mercado-exige-o-maior-premio-contra-inflacao-desde-dilma-e-cobra-mais-para-financiar-o-brasil/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">15:48</span>
+          <span class="news-source">Money Times</span>
+        </div>
+        <div class="news-title">Mercado exige o maior prêmio contra inflação desde Dilma e cobra mais para financiar o Brasil</div>
+        <div class="news-summary">A inflação implícita de um ano voltou ao maior patamar desde o governo Dilma Rousseff, sinalizando deterioração nas expectativas de preços. O mercado financeiro passa a exigir prêmios maiores para financiar a dívida pública brasileira, refletindo desconfiança com as contas públicas. Esse movimento ocorre em meio às discussões sobre o pacote fiscal do governo e pressões cambiais. A elevação do prêmio contra inflação indica que investidores estão precificando riscos maiores para a economia brasileira nos próximos meses.</div>
+        <div class="news-link"><a href="https://www.moneytimes.com.br/mercado-exige-o-maior-premio-contra-inflacao-desde-dilma-e-cobra-mais-para-financiar-o-brasil/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="Número de desempregados há dois anos ou mais é o menor já registrado O número de trabalhadores em busca de emprego há pelo menos dois anos atingiu o menor patamar em 14 anos no terceiro trimestre de 2026, conforme dados divulgados nesta quarta-feira (18). O indicador sugere que o mercado de trabalho brasileiro continua absorvendo desempregados de longa duração, ainda que a taxa geral de desemprego permaneça elevada. O resultado reforça sinais de recuperação gradual no mercado laboral, apesar das pressões fiscais e cambiais. Agência Brasil" data-title="Número de desempregados há dois anos ou mais é o menor já registrado" data-share-url="https://agenciabrasil.ebc.com.br/economia/noticia/2026/11/numero-de-desempregados-ha-dois-anos-ou-mais-e-o-menor-ja-registrado">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">12:36</span>
+          <span class="news-source">Agência Brasil</span>
+        </div>
+        <div class="news-title">Número de desempregados há dois anos ou mais é o menor já registrado</div>
+        <div class="news-summary">O número de trabalhadores em busca de emprego há pelo menos dois anos atingiu o menor patamar em 14 anos no terceiro trimestre de 2026, conforme dados divulgados nesta quarta-feira (18). O indicador sugere que o mercado de trabalho brasileiro continua absorvendo desempregados de longa duração, ainda que a taxa geral de desemprego permaneça elevada. O resultado reforça sinais de recuperação gradual no mercado laboral, apesar das pressões fiscais e cambiais.</div>
+        <div class="news-link"><a href="https://agenciabrasil.ebc.com.br/economia/noticia/2026/11/numero-de-desempregados-ha-dois-anos-ou-mais-e-o-menor-ja-registrado" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="O boom de data centers do Sudeste Asiático dependia da demanda chinesa. Novas regras dos EUA colocam esse fluxo em risco Novas restrições dos EUA à exportação de chips de IA avançados exigem aprovação para venda em data centers do Sudeste Asiático, afetando diretamente a expansão regional alimentada pela demanda chinesa. As regras representam endurecimento da política de controle tecnológico americana e ameaçam desacelerar investimentos em infraestrutura de computação na região. O impacto pode reconfigurar a competição global por recursos de IA e beneficiar fornecedores alternativos. CNBC" data-title="O boom de data centers do Sudeste Asiático dependia da demanda chinesa. Novas regras dos EUA colocam esse fluxo em risco" data-share-url="https://www.cnbc.com/2026/11/18/nvidia-us-ai-chip-export-controls-data-centers-.html">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">11:09</span>
+          <span class="news-source">CNBC</span>
+        </div>
+        <div class="news-title">O boom de data centers do Sudeste Asiático dependia da demanda chinesa. Novas regras dos EUA colocam esse fluxo em risco</div>
+        <div class="news-summary">Novas restrições dos EUA à exportação de chips de IA avançados exigem aprovação para venda em data centers do Sudeste Asiático, afetando diretamente a expansão regional alimentada pela demanda chinesa. As regras representam endurecimento da política de controle tecnológico americana e ameaçam desacelerar investimentos em infraestrutura de computação na região. O impacto pode reconfigurar a competição global por recursos de IA e beneficiar fornecedores alternativos.</div>
+        <div class="news-link"><a href="https://www.cnbc.com/2026/11/18/nvidia-us-ai-chip-export-controls-data-centers-.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#10B981;" data-searchable="Salários australianos crescem no ritmo mais rápido desde 2023, mas preços sobem ainda mais depressa Na Austrália, os salários crescem aproximadamente 1 ponto percentual acima das taxas pré-pandemia, desencadeando alertas sobre possível sexta alta dos juros do Banco de Reserva Australiano (RBA). Apesar dos ganhos reais de renda, a inflação continua superando o crescimento salarial, erodindo o poder de compra das famílias. O cenário pressiona o banco central a manter postura restritiva na política monetária. The Guardian" data-title="Salários australianos crescem no ritmo mais rápido desde 2023, mas preços sobem ainda mais depressa" data-share-url="https://www.theguardian.com/australia-news/2026/nov/18/wages-grow-at-fastest-pace-since-2023-but-prices-are-climbing-even-more-quickly">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">01:33</span>
+          <span class="news-source">The Guardian</span>
+        </div>
+        <div class="news-title">Salários australianos crescem no ritmo mais rápido desde 2023, mas preços sobem ainda mais depressa</div>
+        <div class="news-summary">Na Austrália, os salários crescem aproximadamente 1 ponto percentual acima das taxas pré-pandemia, desencadeando alertas sobre possível sexta alta dos juros do Banco de Reserva Australiano (RBA). Apesar dos ganhos reais de renda, a inflação continua superando o crescimento salarial, erodindo o poder de compra das famílias. O cenário pressiona o banco central a manter postura restritiva na política monetária.</div>
+        <div class="news-link"><a href="https://www.theguardian.com/australia-news/2026/nov/18/wages-grow-at-fastest-pace-since-2023-but-prices-are-climbing-even-more-quickly" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="financas">
+    <div class="section-header">
+      <div class="section-dot" style="background:#3B82F6;box-shadow:0 0 10px #3B82F680;"></div>
+      <div class="section-title" style="color:#3B82F6;">💰 Finanças</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Consórcio liderado por RRJ Capital compra US$ 619 milhões em dívida de mineradora de carvão australiana Consórcio liderado pela firma de private equity RRJ Capital fechou a aquisição de US$ 619 milhões em títulos da empresa de carvão coqueificável australiana GM3. O movimento sinaliza apetite de investidores por papéis de risco em setores tradicionais e reflete dinâmica de consolidação de dívida em mercados emergentes. O deal ilustra tentativa de reestruturação em mineração global. Bloomberg Markets" data-title="Consórcio liderado por RRJ Capital compra US$ 619 milhões em dívida de mineradora de carvão australiana" data-share-url="https://www.bloomberg.com/news/articles/2026-11-19/rrj-led-consortium-buys-australia-coal-miner-s-619-million-debt">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">23:33</span>
+          <span class="news-source">Bloomberg Markets</span>
+        </div>
+        <div class="news-title">Consórcio liderado por RRJ Capital compra US$ 619 milhões em dívida de mineradora de carvão australiana</div>
+        <div class="news-summary">Consórcio liderado pela firma de private equity RRJ Capital fechou a aquisição de US$ 619 milhões em títulos da empresa de carvão coqueificável australiana GM3. O movimento sinaliza apetite de investidores por papéis de risco em setores tradicionais e reflete dinâmica de consolidação de dívida em mercados emergentes. O deal ilustra tentativa de reestruturação em mineração global.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-11-19/rrj-led-consortium-buys-australia-coal-miner-s-619-million-debt" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Anthropic estreia na bolsa nesta quinta (19); IPO sai a US$ 83 por ação A Anthropic, criadora do chatbot Claude, estreia na Nasdaq nesta quinta-feira (19) com ações precificadas a US$ 83, acima da faixa prevista de US$ 70 a US$ 78, em IPO de US$ 68 bilhões. A oferta atraiu demanda múltiplas vezes superior ao número de ações disponíveis, refletindo apetite institucional por exposição a IA. O resultado marca um dos maiores IPOs da história e reposiciona a empresa entre os líderes globais em tecnologia. Seu Dinheiro" data-title="Anthropic estreia na bolsa nesta quinta (19); IPO sai a US$ 83 por ação" data-share-url="https://www.seudinheiro.com/2026/internacional/anthropic-estreia-na-bolsa-nesta-quinta-19-ipo-sai-a-us-83-por-acao-o-que-o-investidor-precisa-saber-agora-ccgg/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">20:05</span>
+          <span class="news-source">Seu Dinheiro</span>
+        </div>
+        <div class="news-title">Anthropic estreia na bolsa nesta quinta (19); IPO sai a US$ 83 por ação</div>
+        <div class="news-summary">A Anthropic, criadora do chatbot Claude, estreia na Nasdaq nesta quinta-feira (19) com ações precificadas a US$ 83, acima da faixa prevista de US$ 70 a US$ 78, em IPO de US$ 68 bilhões. A oferta atraiu demanda múltiplas vezes superior ao número de ações disponíveis, refletindo apetite institucional por exposição a IA. O resultado marca um dos maiores IPOs da história e reposiciona a empresa entre os líderes globais em tecnologia.</div>
+        <div class="news-link"><a href="https://www.seudinheiro.com/2026/internacional/anthropic-estreia-na-bolsa-nesta-quinta-19-ipo-sai-a-us-83-por-acao-o-que-o-investidor-precisa-saber-agora-ccgg/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Custo Brasil chega a 27,5% do PIB, ainda maior do que se imaginava Novo cálculo revela que o Custo Brasil — soma de burocracias, tributos, ineficiências e gargalos infraestruturais — equivale a 27,5% do PIB anual, superior às estimativas anteriores. O número ilustra o peso de obstáculos regulatórios e logísticos que impactam competitividade de empresas brasileiras e reduzem atratividade para investimentos estrangeiros. O cenário reforça urgência de reformas estruturais para liberalizar a economia. Brazil Journal" data-title="Custo Brasil chega a 27,5% do PIB, ainda maior do que se imaginava" data-share-url="https://braziljournal.com/custo-brasil-chega-a-27-5-do-pib-ainda-maior-do-que-se-imaginava">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">19:23</span>
+          <span class="news-source">Brazil Journal</span>
+        </div>
+        <div class="news-title">Custo Brasil chega a 27,5% do PIB, ainda maior do que se imaginava</div>
+        <div class="news-summary">Novo cálculo revela que o Custo Brasil — soma de burocracias, tributos, ineficiências e gargalos infraestruturais — equivale a 27,5% do PIB anual, superior às estimativas anteriores. O número ilustra o peso de obstáculos regulatórios e logísticos que impactam competitividade de empresas brasileiras e reduzem atratividade para investimentos estrangeiros. O cenário reforça urgência de reformas estruturais para liberalizar a economia.</div>
+        <div class="news-link"><a href="https://braziljournal.com/custo-brasil-chega-a-27-5-do-pib-ainda-maior-do-que-se-imaginava" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Observações do encontro Trump, Xi e Putin na China Trump, Xi Jinping e Putin se reuniram em Shenzhen nesta quinta-feira (19) em raro encontro trilateral, onde discutiram inteligência artificial, comércio e geopolítica. O encontro marca ponto de inflexão nas relações EUA-China-Rússia e sinaliza possíveis mudanças nas dinâmicas comerciais e tecnológicas globais. O mercado monitora possíveis acordos sobre tarifas e exportação de chips que poderiam impactar fluxos de capital internacionais. CNBC" data-title="Observações do encontro Trump, Xi e Putin na China" data-share-url="https://www.cnbc.com/2026/11/18/trump-xi-putin-apec-shenzhen-china.html">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">16:47</span>
+          <span class="news-source">CNBC</span>
+        </div>
+        <div class="news-title">Observações do encontro Trump, Xi e Putin na China</div>
+        <div class="news-summary">Trump, Xi Jinping e Putin se reuniram em Shenzhen nesta quinta-feira (19) em raro encontro trilateral, onde discutiram inteligência artificial, comércio e geopolítica. O encontro marca ponto de inflexão nas relações EUA-China-Rússia e sinaliza possíveis mudanças nas dinâmicas comerciais e tecnológicas globais. O mercado monitora possíveis acordos sobre tarifas e exportação de chips que poderiam impactar fluxos de capital internacionais.</div>
+        <div class="news-link"><a href="https://www.cnbc.com/2026/11/18/trump-xi-putin-apec-shenzhen-china.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="Dona do Claude cobra US$ 83 por ação, acima do previsto, em IPO de US$ 68 bilhões A Anthropic, desenvolvedora do chatbot Claude, precificou suas ações a US$ 83 cada, acima da faixa indicativa de US$ 70 a US$ 78, em seu IPO de US$ 68 bilhões. A ação estreia nesta quinta-feira na Nasdaq com forte demanda de investidores. A empresa de inteligência artificial se torna uma das maiores estreias do mercado, refletindo o entusiasmo dos mercados com o setor de IA. O IPO marca um momento importante para startups de IA que buscam financiamento público. Exame Invest" data-title="Dona do Claude cobra US$ 83 por ação, acima do previsto, em IPO de US$ 68 bilhões" data-share-url="https://exame.com/invest/mercados/dona-do-claude-cobra-us-83-por-acao-acima-do-previsto-em-ipo-de-us-68-bilhoes/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">16:21</span>
+          <span class="news-source">Exame Invest</span>
+        </div>
+        <div class="news-title">Dona do Claude cobra US$ 83 por ação, acima do previsto, em IPO de US$ 68 bilhões</div>
+        <div class="news-summary">A Anthropic, desenvolvedora do chatbot Claude, precificou suas ações a US$ 83 cada, acima da faixa indicativa de US$ 70 a US$ 78, em seu IPO de US$ 68 bilhões. A ação estreia nesta quinta-feira na Nasdaq com forte demanda de investidores. A empresa de inteligência artificial se torna uma das maiores estreias do mercado, refletindo o entusiasmo dos mercados com o setor de IA. O IPO marca um momento importante para startups de IA que buscam financiamento público.</div>
+        <div class="news-link"><a href="https://exame.com/invest/mercados/dona-do-claude-cobra-us-83-por-acao-acima-do-previsto-em-ipo-de-us-68-bilhoes/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#3B82F6;" data-searchable="CEO do SoftBank classifica oportunidade perdida de investir na Anthropic como um de seus erros Masayoshi Son, fundador e CEO do SoftBank Group, admitiu na quarta-feira (19) que ter deixado passar uma oportunidade anterior de investimento na Anthropic foi um de seus principais erros estratégicos. A declaração marca uma inflexão crítica na reconhecimento de poder de mercado em IA, com a Anthropic agora avaliada em quase US$ 1,5 trilhão em seu IPO. O comentário reflete dinâmica competitiva feroz no setor de inteligência artificial. Valor Econômico" data-title="CEO do SoftBank classifica oportunidade perdida de investir na Anthropic como um de seus erros" data-share-url="https://valor.globo.com/financas/noticia/2026/11/19/ceo-do-softbank-classifica-oportunidade-perdida-de-investir-na-anthropic-como-um-de-seus-erros.ghtml">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">00:56</span>
+          <span class="news-source">Valor Econômico</span>
+        </div>
+        <div class="news-title">CEO do SoftBank classifica oportunidade perdida de investir na Anthropic como um de seus erros</div>
+        <div class="news-summary">Masayoshi Son, fundador e CEO do SoftBank Group, admitiu na quarta-feira (19) que ter deixado passar uma oportunidade anterior de investimento na Anthropic foi um de seus principais erros estratégicos. A declaração marca uma inflexão crítica na reconhecimento de poder de mercado em IA, com a Anthropic agora avaliada em quase US$ 1,5 trilhão em seu IPO. O comentário reflete dinâmica competitiva feroz no setor de inteligência artificial.</div>
+        <div class="news-link"><a href="https://valor.globo.com/financas/noticia/2026/11/19/ceo-do-softbank-classifica-oportunidade-perdida-de-investir-na-anthropic-como-um-de-seus-erros.ghtml" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="geopolitica">
+    <div class="section-header">
+      <div class="section-dot" style="background:#7C3AED;box-shadow:0 0 10px #7C3AED80;"></div>
+      <div class="section-title" style="color:#7C3AED;">🌍 Geopolítica</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Crimeia sofre novo ataque, diz autoridade russa A Ponte da Crimeia foi atacada novamente nesta terça-feira (18), conforme relatado pelo chefe da região ocupada. O tráfego foi suspenso após o ataque, marcando continua campanha ucraniana de degradação de infraestrutura estratégica russa. Os ataques repetidos sinalizam despreparo russo para defender linhas de suprimento críticas e reforçam vulnerabilidade de posições militares na Crimeia. BBC News" data-title="Crimeia sofre novo ataque, diz autoridade russa" data-share-url="https://www.bbc.co.uk/news/articles/cm879dqn3e1jo?at_medium=RSS&amp;at_campaign=rss">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">22:05</span>
+          <span class="news-source">BBC News</span>
+        </div>
+        <div class="news-title">Crimeia sofre novo ataque, diz autoridade russa</div>
+        <div class="news-summary">A Ponte da Crimeia foi atacada novamente nesta terça-feira (18), conforme relatado pelo chefe da região ocupada. O tráfego foi suspenso após o ataque, marcando continua campanha ucraniana de degradação de infraestrutura estratégica russa. Os ataques repetidos sinalizam despreparo russo para defender linhas de suprimento críticas e reforçam vulnerabilidade de posições militares na Crimeia.</div>
+        <div class="news-link"><a href="https://www.bbc.co.uk/news/articles/cm879dqn3e1jo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Tanques israelenses avançam através de linha de cessar-fogo em Gaza em rara incursão O exército israelense conduziu uma incursão limitada em território controlado pelo Hamas nesta quarta-feira (18), com tanques atravessando a linha de cessar-fogo para endereçar uma ameaça tática. O Hamas acusou Israel de violar o acordo, enquanto autoridades israelenses justificam a ação como operação defensiva pontual. O incidente ressalta fragilidade do cessar-fogo em Gaza e risco de retomada de escalação. New York Times" data-title="Tanques israelenses avançam através de linha de cessar-fogo em Gaza em rara incursão" data-share-url="https://www.nytimes.com/2026/11/18/world/middleeast/israel-gaza-war-ground-operation.html">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">17:29</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Tanques israelenses avançam através de linha de cessar-fogo em Gaza em rara incursão</div>
+        <div class="news-summary">O exército israelense conduziu uma incursão limitada em território controlado pelo Hamas nesta quarta-feira (18), com tanques atravessando a linha de cessar-fogo para endereçar uma ameaça tática. O Hamas acusou Israel de violar o acordo, enquanto autoridades israelenses justificam a ação como operação defensiva pontual. O incidente ressalta fragilidade do cessar-fogo em Gaza e risco de retomada de escalação.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/11/18/world/middleeast/israel-gaza-war-ground-operation.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Crescem temores de que EUA sancionará juiz premiado com Nobel após sentença sobre genocídio em Mianmar Temores crescem de que a administração Trump possa impor sanções contra juiz da Corte Internacional de Justiça após decisão contra Mianmar por genocídio, estabelecendo precedente para julgamento de ações de Israel em Gaza. O movimento sinalizaria desafio sem precedentes à ordem jurídica internacional e poderia impactar legitimidade de cortes globais. O cenário reflete tensão entre soberania nacional e direito internacional. The Guardian" data-title="Crescem temores de que EUA sancionará juiz premiado com Nobel após sentença sobre genocídio em Mianmar" data-share-url="https://www.theguardian.com/world/2026/nov/18/us-sanctions-icj-judges-myanmar-genocide-ruling-israel-gaza-court">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">06:58</span>
+          <span class="news-source">The Guardian</span>
+        </div>
+        <div class="news-title">Crescem temores de que EUA sancionará juiz premiado com Nobel após sentença sobre genocídio em Mianmar</div>
+        <div class="news-summary">Temores crescem de que a administração Trump possa impor sanções contra juiz da Corte Internacional de Justiça após decisão contra Mianmar por genocídio, estabelecendo precedente para julgamento de ações de Israel em Gaza. O movimento sinalizaria desafio sem precedentes à ordem jurídica internacional e poderia impactar legitimidade de cortes globais. O cenário reflete tensão entre soberania nacional e direito internacional.</div>
+        <div class="news-link"><a href="https://www.theguardian.com/world/2026/nov/18/us-sanctions-icj-judges-myanmar-genocide-ruling-israel-gaza-court" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#7C3AED;" data-searchable="Trump, Xi e Putin se cumprimentam enquanto líderes se reúnem na China O presidente Trump, o líder chinês Xi Jinping e o presidente Putin se encontraram na China para um encontro regional de cúpula em Shenzhen. Xi abraçou Trump na pista de pouso em sua chegada, marcando um momento simbólico nas relações entre as potências. O encontro é esperado gerar discussões sobre questões geopolíticas críticas entre os três líderes mundiais. A reunião ocorre em contexto de tensões comerciais e geopolíticas internacionais. NYT &gt; World News" data-title="Trump, Xi e Putin se cumprimentam enquanto líderes se reúnem na China" data-share-url="https://www.nytimes.com/live/2026/11/18/world/trump-china-asia-apec">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">00:50</span>
+          <span class="news-source">NYT &gt; World News</span>
+        </div>
+        <div class="news-title">Trump, Xi e Putin se cumprimentam enquanto líderes se reúnem na China</div>
+        <div class="news-summary">O presidente Trump, o líder chinês Xi Jinping e o presidente Putin se encontraram na China para um encontro regional de cúpula em Shenzhen. Xi abraçou Trump na pista de pouso em sua chegada, marcando um momento simbólico nas relações entre as potências. O encontro é esperado gerar discussões sobre questões geopolíticas críticas entre os três líderes mundiais. A reunião ocorre em contexto de tensões comerciais e geopolíticas internacionais.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/live/2026/11/18/world/trump-china-asia-apec" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-dot" style="background:#00C4B4;box-shadow:0 0 10px #00C4B480;"></div>
+      <div class="section-title" style="color:#00C4B4;">🤖 Inteligência Artificial</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="MAS adverte que agentes de IA poderiam mover dinheiro mais rápido e elevar riscos financeiros O banco central de Singapura alertou que agentes autônomos de IA poderiam transferir depósitos e fundos em velocidades muito maiores, criando novos riscos de liquidez e estabilidade financeira. A advertência sinaliza urgência de frameworks regulatórios para governar comportamento de sistemas autônomos em finanças. O cenário levanta questões sobre adequação de salvaguardas existentes contra eventos sistêmicos. Bloomberg Technology" data-title="MAS adverte que agentes de IA poderiam mover dinheiro mais rápido e elevar riscos financeiros" data-share-url="https://www.bloomberg.com/news/articles/2026-11-19/mas-warns-ai-agents-could-move-money-faster-raise-finance-risks">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">23:31</span>
+          <span class="news-source">Bloomberg Technology</span>
+        </div>
+        <div class="news-title">MAS adverte que agentes de IA poderiam mover dinheiro mais rápido e elevar riscos financeiros</div>
+        <div class="news-summary">O banco central de Singapura alertou que agentes autônomos de IA poderiam transferir depósitos e fundos em velocidades muito maiores, criando novos riscos de liquidez e estabilidade financeira. A advertência sinaliza urgência de frameworks regulatórios para governar comportamento de sistemas autônomos em finanças. O cenário levanta questões sobre adequação de salvaguardas existentes contra eventos sistêmicos.</div>
+        <div class="news-link"><a href="https://www.bloomberg.com/news/articles/2026-11-19/mas-warns-ai-agents-could-move-money-faster-raise-finance-risks" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Como chips Nvidia terminaram ao alcance dos militares da China Investigação revela que a Alibaba, gigante chinesa de internet por trás da empresa no centro do escândalo de espionagem Nvidia, utilizou sua tecnologia de computação em IA para auxiliar laboratório militar chinês com pesquisa em defesa. A descoberta ilustra como restrições de exportação americana podem ser contornadas via parceiros comerciais locais. O episódio intensifica debate sobre controle tecnológico e vazamento de segurança. New York Times" data-title="Como chips Nvidia terminaram ao alcance dos militares da China" data-share-url="https://www.nytimes.com/2026/11/18/technology/nvidia-alibaba-china-military.html">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">22:54</span>
+          <span class="news-source">New York Times</span>
+        </div>
+        <div class="news-title">Como chips Nvidia terminaram ao alcance dos militares da China</div>
+        <div class="news-summary">Investigação revela que a Alibaba, gigante chinesa de internet por trás da empresa no centro do escândalo de espionagem Nvidia, utilizou sua tecnologia de computação em IA para auxiliar laboratório militar chinês com pesquisa em defesa. A descoberta ilustra como restrições de exportação americana podem ser contornadas via parceiros comerciais locais. O episódio intensifica debate sobre controle tecnológico e vazamento de segurança.</div>
+        <div class="news-link"><a href="https://www.nytimes.com/2026/11/18/technology/nvidia-alibaba-china-military.html" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Os maiores distritos escolares do país consideram abandonar Google Search Escolas de Nova York, Los Angeles e Chicago avaliam alternativas ao Google Search após a empresa anunciar que desabilitará a ferramenta para escolas que optarem por sair do ecossistema Google. A medida reflete preocupações com monopólio tecnológico e privacidade estudantil, além de resistência a integração forçada de IA em pesquisa. O movimento sinaliza crescente crítica institucional a prácticas de big tech. The Verge" data-title="Os maiores distritos escolares do país consideram abandonar Google Search" data-share-url="https://www.theverge.com/ai-artificial-intelligence/1037151/school-districts-ditching-google">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">20:18</span>
+          <span class="news-source">The Verge</span>
+        </div>
+        <div class="news-title">Os maiores distritos escolares do país consideram abandonar Google Search</div>
+        <div class="news-summary">Escolas de Nova York, Los Angeles e Chicago avaliam alternativas ao Google Search após a empresa anunciar que desabilitará a ferramenta para escolas que optarem por sair do ecossistema Google. A medida reflete preocupações com monopólio tecnológico e privacidade estudantil, além de resistência a integração forçada de IA em pesquisa. O movimento sinaliza crescente crítica institucional a prácticas de big tech.</div>
+        <div class="news-link"><a href="https://www.theverge.com/ai-artificial-intelligence/1037151/school-districts-ditching-google" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Nvidia suspende venda de chips H200 aprovados pelos EUA para a China A Nvidia anunciou suspensão temporária de vendas de chips H200 aprovados pelos EUA para a China, em resposta a possível aumento de escrutínio de legisladores americanos. A decisão reflete tentativa da empresa de evitar nova controvérsia regulatória após escândalo de espionagem. O movimento sinaliza que pressões políticas podem levar a restrições de facto além das regras formais de exportação. Semafor" data-title="Nvidia suspende venda de chips H200 aprovados pelos EUA para a China" data-share-url="https://www.semafor.com/article/11/18/2026/nvidia-halts-sale-of-us-approved-h200-chips-to-china">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">19:33</span>
+          <span class="news-source">Semafor</span>
+        </div>
+        <div class="news-title">Nvidia suspende venda de chips H200 aprovados pelos EUA para a China</div>
+        <div class="news-summary">A Nvidia anunciou suspensão temporária de vendas de chips H200 aprovados pelos EUA para a China, em resposta a possível aumento de escrutínio de legisladores americanos. A decisão reflete tentativa da empresa de evitar nova controvérsia regulatória após escândalo de espionagem. O movimento sinaliza que pressões políticas podem levar a restrições de facto além das regras formais de exportação.</div>
+        <div class="news-link"><a href="https://www.semafor.com/article/11/18/2026/nvidia-halts-sale-of-us-approved-h200-chips-to-china" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="O Download: IA aprende a cheirar e hidroeletricidade enfrenta dificuldades Novo desenvolvimento permite que IA identifique e classifique odores com precisão comparável à do olfato humano, abrindo aplicações em indústrias de fragrância, alimentos e segurança. A tecnologia de 'nariz artificial' utiliza redes neurais treinadas para reconhecer padrões moleculares. Simultaneamente, questões energéticas emergem como gargalo crítico para expansão da IA, com demanda de hidroeletricidade superando disponibilidade. MIT Technology Review" data-title="O Download: IA aprende a cheirar e hidroeletricidade enfrenta dificuldades" data-share-url="https://www.technologyreview.com/2026/11/18/1148845/the-download-ai-learns-to-smell-hydropower-struggles/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">10:10</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">O Download: IA aprende a cheirar e hidroeletricidade enfrenta dificuldades</div>
+        <div class="news-summary">Novo desenvolvimento permite que IA identifique e classifique odores com precisão comparável à do olfato humano, abrindo aplicações em indústrias de fragrância, alimentos e segurança. A tecnologia de 'nariz artificial' utiliza redes neurais treinadas para reconhecer padrões moleculares. Simultaneamente, questões energéticas emergem como gargalo crítico para expansão da IA, com demanda de hidroeletricidade superando disponibilidade.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/11/18/1148845/the-download-ai-learns-to-smell-hydropower-struggles/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#00C4B4;" data-searchable="Esta startup de olfato diz que seu nariz de IA é tão bom quanto o humano Uma startup está desenvolvendo tecnologia de inteligência artificial capaz de detectar odores com precisão comparável à do olfato humano. Em laboratório próximo ao Aeroporto de Newark em Nova Jersey, uma equipe de cerca de trinta provadores humanos experientes trabalha testando todos os odores conhecidos. A tecnologia promete aplicações em indústrias como alimentos, bebidas e segurança. O avanço representa um passo significativo na capacidade de máquinas perceberem e interpretarem estímulos sensoriais complexos. MIT Technology Review" data-title="Esta startup de olfato diz que seu nariz de IA é tão bom quanto o humano" data-share-url="https://www.technologyreview.com/2026/11/18/1148816/smell-startup-osmo-ai-nose-good-as-humans/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">07:20</span>
+          <span class="news-source">MIT Technology Review</span>
+        </div>
+        <div class="news-title">Esta startup de olfato diz que seu nariz de IA é tão bom quanto o humano</div>
+        <div class="news-summary">Uma startup está desenvolvendo tecnologia de inteligência artificial capaz de detectar odores com precisão comparável à do olfato humano. Em laboratório próximo ao Aeroporto de Newark em Nova Jersey, uma equipe de cerca de trinta provadores humanos experientes trabalha testando todos os odores conhecidos. A tecnologia promete aplicações em indústrias como alimentos, bebidas e segurança. O avanço representa um passo significativo na capacidade de máquinas perceberem e interpretarem estímulos sensoriais complexos.</div>
+        <div class="news-link"><a href="https://www.technologyreview.com/2026/11/18/1148816/smell-startup-osmo-ai-nose-good-as-humans/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+
+  <div class="section" id="crypto">
+    <div class="section-header">
+      <div class="section-dot" style="background:#F59E0B;box-shadow:0 0 10px #F59E0B80;"></div>
+      <div class="section-title" style="color:#F59E0B;">₿ Criptomoedas</div>
+    </div>
+    
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Administração Trump apresenta novo centro para interromper pagamentos de golpes A administração Trump revelou novo centro federal dedicado a bloquear fluxos de pagamento relacionados a fraudes online, em resposta aos US$ 17,7 bilhões em perdas por fraude digital registrados em 2025. A iniciativa visa coordenar esforços entre órgãos federais para rastrear e congelar transferências em tempo real, incluindo transações em criptomoedas. O movimento sinaliza aproximação regulatória mais agressiva ao setor de cripto. Cointelegraph" data-title="Administração Trump apresenta novo centro para interromper pagamentos de golpes" data-share-url="https://cointelegraph.com/news/trump-administration-unveils-new-center-choke-off-scam-payments?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">22:45</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Administração Trump apresenta novo centro para interromper pagamentos de golpes</div>
+        <div class="news-summary">A administração Trump revelou novo centro federal dedicado a bloquear fluxos de pagamento relacionados a fraudes online, em resposta aos US$ 17,7 bilhões em perdas por fraude digital registrados em 2025. A iniciativa visa coordenar esforços entre órgãos federais para rastrear e congelar transferências em tempo real, incluindo transações em criptomoedas. O movimento sinaliza aproximação regulatória mais agressiva ao setor de cripto.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/news/trump-administration-unveils-new-center-choke-off-scam-payments?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Oficiais do Fed viram parada de juros em outubro como 'uma decisão cerrada', mostram atas Atas do Federal Reserve revelam que comitê de política monetária considerou a parada de juros de outubro como decisão apertada, com apetite maior para altas do que sugeriu a votação 10-2 final. Mercados agora precificam chance significativa de aumento em dezembro, impactando posições em criptomoedas sensíveis a perspectivas de taxa de juros. Os sinais sugerem ciclo de aperto mais prolongado que o mercado havia anticipado. Cointelegraph" data-title="Oficiais do Fed viram parada de juros em outubro como 'uma decisão cerrada', mostram atas" data-share-url="https://cointelegraph.com/markets/fed-officials-saw-october-rate-hold-as-close-call-minutes-show?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">21:35</span>
+          <span class="news-source">Cointelegraph</span>
+        </div>
+        <div class="news-title">Oficiais do Fed viram parada de juros em outubro como 'uma decisão cerrada', mostram atas</div>
+        <div class="news-summary">Atas do Federal Reserve revelam que comitê de política monetária considerou a parada de juros de outubro como decisão apertada, com apetite maior para altas do que sugeriu a votação 10-2 final. Mercados agora precificam chance significativa de aumento em dezembro, impactando posições em criptomoedas sensíveis a perspectivas de taxa de juros. Os sinais sugerem ciclo de aperto mais prolongado que o mercado havia anticipado.</div>
+        <div class="news-link"><a href="https://cointelegraph.com/markets/fed-officials-saw-october-rate-hold-as-close-call-minutes-show?utm_source=rss_feed&amp;utm_medium=rss&amp;utm_campaign=rss_partner_inbound" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Ledger confirma carteiras Bitcoin danificadas em Berlim enquanto investigação de implante ultrapassa Ásia A Ledger confirmou descoberta de dispositivos hardware tampados em Berlim e está investigando duas unidades suspeitas em Dubai, expandindo escopo do escândalo de implante espião além da Ásia. O incidente compromete confiança em carteiras de hardware e levanta questões sobre segurança da cadeia de suprimento. A empresa implementou comunicação transparente com usuários e oferece verificação de autenticidade. Decrypt" data-title="Ledger confirma carteiras Bitcoin danificadas em Berlim enquanto investigação de implante ultrapassa Ásia" data-share-url="https://decrypt.co/383586/ledger-confirms-tampered-bitcoin-wallets-berlin-spreads-beyond-asia">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">19:16</span>
+          <span class="news-source">Decrypt</span>
+        </div>
+        <div class="news-title">Ledger confirma carteiras Bitcoin danificadas em Berlim enquanto investigação de implante ultrapassa Ásia</div>
+        <div class="news-summary">A Ledger confirmou descoberta de dispositivos hardware tampados em Berlim e está investigando duas unidades suspeitas em Dubai, expandindo escopo do escândalo de implante espião além da Ásia. O incidente compromete confiança em carteiras de hardware e levanta questões sobre segurança da cadeia de suprimento. A empresa implementou comunicação transparente com usuários e oferece verificação de autenticidade.</div>
+        <div class="news-link"><a href="https://decrypt.co/383586/ledger-confirms-tampered-bitcoin-wallets-berlin-spreads-beyond-asia" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Exchange Backpack diz que aprovação NFA completa stack para trazer perpétuos alavancados aos EUA A exchange de criptomoedas Backpack anunciou que aprovação da Futures Commission Merchant (FCM) pela National Futures Association (NFA) completa seu stack regulatório para lançar derivativos alavancados (perpétuos) nos EUA. A notícia segue aprovação anterior de exchange e clearinghouse, formando infraestrutura integral de derivativos conforme exigências federais. O resultado marca avanço significativo na legitimação de mercados cripto derivativos. Unchained" data-title="Exchange Backpack diz que aprovação NFA completa stack para trazer perpétuos alavancados aos EUA" data-share-url="https://unchainedcrypto.com/crypto-exchange-backpack-says-nfa-approval-completes-stack-to-bring-leveraged-perps-to-u-s/">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">14:00</span>
+          <span class="news-source">Unchained</span>
+        </div>
+        <div class="news-title">Exchange Backpack diz que aprovação NFA completa stack para trazer perpétuos alavancados aos EUA</div>
+        <div class="news-summary">A exchange de criptomoedas Backpack anunciou que aprovação da Futures Commission Merchant (FCM) pela National Futures Association (NFA) completa seu stack regulatório para lançar derivativos alavancados (perpétuos) nos EUA. A notícia segue aprovação anterior de exchange e clearinghouse, formando infraestrutura integral de derivativos conforme exigências federais. O resultado marca avanço significativo na legitimação de mercados cripto derivativos.</div>
+        <div class="news-link"><a href="https://unchainedcrypto.com/crypto-exchange-backpack-says-nfa-approval-completes-stack-to-bring-leveraged-perps-to-u-s/" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+      <div class="news-item" style="border-left-color:#F59E0B;" data-searchable="Payward, dona da Kraken, adquire Tribe Capital para expandir ofertas de mercado privado Payward, empresa-mãe da exchange de criptomoedas Kraken, anunciou aquisição da Tribe Capital para agregar capacidades de sourcing, subscrição e gestão de fundos de mercado privado. O CEO de Kraken, Rahul Sethi, também preside Tribe Capital, sinalizando integração estratégica de private equity ao ecossistema cripto. O deal reflete movimento maior de consolidação em fintech e expansão de serviços financeiros alternativos. The Block" data-title="Payward, dona da Kraken, adquire Tribe Capital para expandir ofertas de mercado privado" data-share-url="https://www.theblock.co/news/business/2026-11-18-kraken-parent-payward-tribe-capital-443522">
+        <div class="news-meta">
+          <span class="news-date">19 nov 2026</span>
+          <span class="news-time">00:18</span>
+          <span class="news-source">The Block</span>
+        </div>
+        <div class="news-title">Payward, dona da Kraken, adquire Tribe Capital para expandir ofertas de mercado privado</div>
+        <div class="news-summary">Payward, empresa-mãe da exchange de criptomoedas Kraken, anunciou aquisição da Tribe Capital para agregar capacidades de sourcing, subscrição e gestão de fundos de mercado privado. O CEO de Kraken, Rahul Sethi, também preside Tribe Capital, sinalizando integração estratégica de private equity ao ecossistema cripto. O deal reflete movimento maior de consolidação em fintech e expansão de serviços financeiros alternativos.</div>
+        <div class="news-link"><a href="https://www.theblock.co/news/business/2026-11-18-kraken-parent-payward-tribe-capital-443522" target="_blank" rel="noopener">🔗 Ver notícia original</a></div>
+        <div class="share-btns">
+          <a class="share-btn share-wa" href="#" target="_blank" rel="noopener">&#128232; WhatsApp</a>
+          <a class="share-btn share-x" href="#" target="_blank" rel="noopener">X</a>
+        </div>
+      </div>
+  </div>
+<div class="search-empty" id="searchEmpty">Nenhuma notícia encontrada</div>
+<div class="footer">
+  Daily Briefing &nbsp;·&nbsp; <a href="https://x.com/renatadoro1" target="_blank">@renatadoro1</a>
+  &nbsp;·&nbsp; <a href="https://cripto-educacional.pages.dev" target="_blank">Cripto Educacional</a>
+  &nbsp;·&nbsp; © 2026
+</div>
+<div class="nl-overlay" id="nlOverlay">
+  <div class="nl-modal-box">
+    <button class="nl-modal-close" onclick="toggleNewsletter()">✕</button>
+    <div class="nl-title">Receba o Daily Briefing</div>
+    <div class="nl-sub">Todo dia no seu email. Gratuito.</div>
+    <form class="nl-form" action="https://formspree.io/f/mqejkokq" method="POST" onsubmit="return nlSubmit(this)">
+      <input class="nl-input" type="email" name="email" placeholder="seu@email.com" required>
+      <button class="nl-btn" type="submit">Inscrever</button>
+    </form>
+  </div>
+</div>
+<div class="fab-group">
+  <button class="fab" id="fabNewsletter" onclick="toggleNewsletter()" title="Receber por email">✉</button>
+  <button class="fab" id="fabSearch" onclick="toggleSearch()">🔍</button>
+  <button class="fab" onclick="window.scrollBy({top:window.innerHeight*0.85,behavior:'smooth'})">↓</button>
+</div>
+<script>
+  // Rede neural animada no fundo
+  (function() {
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    function draw() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const W = canvas.width, H = canvas.height;
+      const nodes = [];
+      for (let i = 0; i < 35; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H });
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            ctx.strokeStyle = 'rgba(0,196,180,' + (0.07 * (1 - dist / 180)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.stroke();
+          }
+        }
+      }
+      nodes.forEach(function(n) {
+        ctx.fillStyle = 'rgba(0,196,180,0.15)';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    draw(); window.addEventListener('resize', draw);
+  })();
+
+  // Formata labels do dropdown de datas
+  (function() {
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const sel = document.getElementById('date-select');
+    if (!sel) return;
+    Array.from(sel.options).forEach(function(opt) {
+      const parts = opt.value.split('-');
+      if (parts.length === 3) opt.textContent = parseInt(parts[2]) + ' ' + months[parseInt(parts[1]) - 1] + ' ' + parts[0];
+    });
+  })();
+
+  function goToDate(slug) { if (slug) window.location.href = '../' + slug + '/'; }
+
+  // Botão "Hoje" — aparece apenas quando não estamos na página de hoje
+  (function() {
+    function todayBRT() {
+      const d = new Date(Date.now() - 3 * 60 * 60 * 1000);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+    }
+    const today = todayBRT();
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const current = parts[parts.length - 1] || '';
+    const btn = document.getElementById('btnHoje');
+    if (btn && current !== today) {
+      btn.href = '/' + today + '/';
+      btn.style.display = 'inline-flex';
+    }
+  })();
+
+  // Share buttons
+  document.querySelectorAll('.news-item').forEach(function(item) {
+    const title = item.dataset.title || item.querySelector('.news-title')?.textContent || '';
+    const url = item.dataset.shareUrl || window.location.href;
+    const wa = item.querySelector('.share-wa');
+    const x = item.querySelector('.share-x');
+    if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url);
+    if (x) x.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=renatadoro1';
+  });
+
+  // Fio condutor do dia
+  function toggleThread() {
+    const section = document.getElementById('thread-section');
+    const btn = document.querySelector('.topic-pill[data-topic="thread"]');
+    if (!section) return;
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  // Filtro por nicho
+  function filterTopic(topic) {
+    const sections = document.querySelectorAll('.section');
+    const pills = document.querySelectorAll('.topic-pill[data-topic]');
+    pills.forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('.topic-pill[data-topic="' + topic + '"]').classList.add('active');
+    sections.forEach(function(s) {
+      s.style.display = (topic === 'all' || s.id === topic) ? '' : 'none';
+    });
+  }
+
+  // Accordion das notícias
+  function toggleItem(item) {
+    const isOpen = item.classList.contains('open');
+    item.classList.toggle('open', !isOpen);
+  }
+
+  // Busca
+  function toggleSearch() {
+    const bar = document.getElementById('searchBar');
+    const btn = document.getElementById('fabSearch');
+    const open = bar.classList.toggle('open');
+    btn.classList.toggle('active', open);
+    if (open) document.getElementById('searchInput').focus();
+    else { filterNews(''); document.getElementById('searchInput').value = ''; }
+  }
+  function filterNews(q) {
+    const term = q.toLowerCase().trim();
+    const items = document.querySelectorAll('.news-item');
+    const sections = document.querySelectorAll('.section');
+    let any = false;
+    items.forEach(function(item) {
+      const match = !term || (item.dataset.searchable||'').toLowerCase().includes(term);
+      item.classList.toggle('hidden', !match);
+      if (match) any = true;
+    });
+    sections.forEach(function(s) {
+      const vis = s.querySelectorAll('.news-item:not(.hidden)').length > 0;
+      s.style.display = (!term || vis) ? '' : 'none';
+    });
+    document.getElementById('searchEmpty').style.display = (term && !any) ? 'block' : 'none';
+  }
+
+  // Ticker de preços
+  async function updateTicker() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,brl');
+      const data = await res.json();
+      const btcUsd = data?.bitcoin?.usd;
+      const btcBrl = data?.bitcoin?.brl;
+      const ethUsd = data?.ethereum?.usd;
+      if (btcUsd) { const el = document.getElementById('btc-usd'); el.textContent = '$' + btcUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+      if (btcBrl) { const el = document.getElementById('btc-brl'); el.textContent = 'R$ ' + btcBrl.toLocaleString('pt-BR'); el.classList.remove('ticker-loading'); }
+      if (ethUsd) { const el = document.getElementById('eth-usd'); el.textContent = '$' + ethUsd.toLocaleString('en-US'); el.classList.remove('ticker-loading'); }
+    } catch(e) {}
+    try {
+      const res2 = await fetch('https://api.alternative.me/fng/');
+      const data2 = await res2.json();
+      const val = data2?.data?.[0];
+      if (val) {
+        const el = document.getElementById('fng');
+        el.textContent = val.value + ' — ' + val.value_classification;
+        el.classList.remove('ticker-loading');
+        const v = parseInt(val.value);
+        if (v >= 55) el.classList.add('up');
+        else if (v <= 40) el.classList.add('down');
+      }
+    } catch(e) {}
+  }
+  updateTicker();
+  setInterval(updateTicker, 5 * 60 * 1000);
+
+  function toggleNewsletter() {
+    const overlay = document.getElementById('nlOverlay');
+    const btn = document.getElementById('fabNewsletter');
+    const isOpen = overlay.classList.contains('open');
+    overlay.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+  }
+
+  function nlSubmit(form) {
+    var btn = form.querySelector('.nl-btn');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+    return true;
+  }
+</script>
+</body>
+</html>
